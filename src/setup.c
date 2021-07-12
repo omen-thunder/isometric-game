@@ -1,11 +1,19 @@
 #include "game.h"
 
-// destroys resources and exits SDL
-void closeSDL(SDL_Window* win, SDL_Renderer* rend) {
+// frees resources and exits SDL
+void closeSDL(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
 	if (rend)
 		SDL_DestroyRenderer(rend);
 	if (win)
 		SDL_DestroyWindow(win);
+	if (map) {
+		for (int i = 0; i < map->size; i++)
+			free(map->tiles[i]);
+		free(map->tiles);
+		for (int i = 0; i < NUM_TEX; i++)
+			if (map->textures[i])
+					SDL_DestroyTexture(map->textures[i]);
+	}
 	SDL_Quit();
 }
 
@@ -26,7 +34,7 @@ int make_renderer(SDL_Window* win, SDL_Renderer** rend) {
 	*rend = SDL_CreateRenderer(win, -1,
 			SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (!*rend) {
-		printf("Error creating renderer: %s\n", SDL_GetError());
+		fprintf(stderr, "Error creating renderer: %s\n", SDL_GetError());
 		return -1;
 	}
 

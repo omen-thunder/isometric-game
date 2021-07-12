@@ -3,10 +3,8 @@
 
 #define SPEED (200) // speed in pixels/second
 #define MAX_NPC (200)
-#define TILE_W (82)
-#define TILE_H (41)
-#define GRID_X (WINDOW_W / TILE_W)
-#define GRID_Y (WINDOW_H / (TILE_H / 2) - 1)
+#define TILE_W (128)
+#define TILE_H (64)
 
 struct npc {
 	SDL_Texture* texture;
@@ -18,71 +16,103 @@ struct npc {
 };
 
 int get_row(float mouse_x, float mouse_y) {
-	return (int) floor(((mouse_y - mouse_x / 2) * -2 + TILE_W / 2) / TILE_W);
+	return (int) floor(((mouse_y - mouse_x / 2) * -2 - TILE_H) / (float) TILE_W) + 10;
 }
 
 int get_column(float mouse_x, float mouse_y) {
-	return (int) floor(((mouse_y + mouse_x / 2) * 2 - TILE_W / 2) / TILE_W);
+	return (int) floor(((mouse_y + mouse_x / 2) * 2 + TILE_H) / (float) TILE_W) + 10;
 }
 
-int draw_bg(SDL_Window* win, SDL_Renderer* rend, int map[GRID_X][GRID_Y]) {
-	SDL_Texture* tile_tex;
-	SDL_Texture* tile_tex2;
-	SDL_Rect tile_rect;
-	tile_rect.w = TILE_W;
-	tile_rect.h = TILE_W;
-	if (load_texture(rend, &tile_tex, "../resources/tiles/grass1.gif")) {
-		closeSDL(win, rend);
-		return -1;
-	}
-	if (load_texture(rend, &tile_tex2, "../resources/tiles/water1.gif")) {
-		closeSDL(win, rend);
-		return -1;
-	}
+int draw_bg(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
+	SDL_Rect rect;
+	rect.w = TILE_W;
+	rect.h = TILE_H;
 
-	for (int x = 0; x < GRID_X; x++) {
-		for (int y = 0; y < GRID_Y; y++) {
-			tile_rect.x = x * TILE_W + y * TILE_W / 2;
+	for (int x = 0; x < map->size; x++) {
+		for (int y = 0; y < map->size; y++) {
+			rect.x = x * TILE_W / 2 - y * TILE_W / 2 + map->x_off;
+			rect.y = y * TILE_H / 2 + x * TILE_H / 2 + map->y_off;
 
-			tile_rect.y = y * (TILE_H / 2) - TILE_H;
-
-			if (!map[x][y])
-				SDL_RenderCopy(rend, tile_tex, NULL, &tile_rect);
-			else
-				SDL_RenderCopy(rend, tile_tex2, NULL, &tile_rect);
-		}
-	}
-
-	SDL_DestroyTexture(tile_tex);
-	SDL_DestroyTexture(tile_tex2);
-	return 0;
-}
-
-int animate(SDL_Window* win, SDL_Renderer* rend, int map[GRID_X][GRID_Y]) {
-	while (1) {
-		int button, mouse_x, mouse_y;
-		button = SDL_GetMouseState(&mouse_x, &mouse_y);
-		if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
-			map[get_row((float) mouse_x, (float) mouse_y)][get_column((float) mouse_x, (float) mouse_y) - get_row((float) mouse_x, (float) mouse_y)] = 1;
-		else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
-			map[get_row((float) mouse_x, (float) mouse_y)][get_column((float) mouse_x, (float) mouse_y) - get_row((float) mouse_x, (float) mouse_y)] = 0;
-
-
-		// process events
-		SDL_Event event;
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
-				case SDL_QUIT:
-					return 0;
+			switch (map->tiles[x][y]) {
+				case 0:
+					SDL_RenderCopy(rend, map->textures[0], NULL, &rect);
 					break;
-				case SDL_MOUSEBUTTONDOWN:
-					printf("mouse_x: %d, mouse_y: %d\n", mouse_x, mouse_y);
-					printf("row: %d\n", get_row((float) mouse_x, (float) mouse_y));
-					printf("column: %d\n", get_column((float) mouse_x, (float) mouse_y) - get_row((float) mouse_x, (float) mouse_y));
+				case 1:
+					SDL_RenderCopy(rend, map->textures[0], NULL, &rect);
 					break;
 			}
 		}
+	}
 
+	return 0;
+}
+
+int map_init(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
+	map->size  = (int) ceil((float) WINDOW_H / (float) TILE_H) * 2;
+	if (!(map->tiles = malloc(map->size * sizeof(int *)))) {
+		fprintf(stderr, "malloc() failled\n");
+		return -1;
+	}
+	for (int i = 0; i < map->size; i++)
+		if (!(map->tiles[i] = malloc(map->size * sizeof(int)))) {
+			for (int j = 0; j < i; j++)
+				free(map->tiles[j]);
+			free(map->tiles);
+			fprintf(stderr, "malloc() failled\n");
+			return -1;
+		}
+
+	for (int x = 0; x < map->size; x++)
+		for (int y = 0; y < map->size; y++)
+			map->tiles[x][y] = 0;
+
+	map->x_off = WINDOW_W / 2 - TILE_W / 2;
+	map->y_off = -WINDOW_H / 2;
+	return 0;
+}
+
+int texture_init(SDL_Renderer* rend, struct mdata* map) {
+	if (load_texture(rend, &map->textures[0], "../resources/tiles/grassA.png")) {
+		fprintf(stderr, "Failed to load texture 0\n");
+		return -1;
+	}
+	if (load_texture(rend, &map->textures[1], "../resources/tiles/water.png")) {
+		fprintf(stderr, "Failed to load texture 1\n");
+		return -1;
+	}
+	return 0;
+}
+
+// processes events
+int event(struct mdata* map) {
+	int button, mouse_x, mouse_y;
+	button = SDL_GetMouseState(&mouse_x, &mouse_y);
+	/*
+	if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
+		map->tiles[get_row((float) mouse_x, (float) mouse_y) + map->size][get_column((float) mouse_x, (float) mouse_y) - get_row((float) mouse_x, (float) mouse_y)] = 1;
+	else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
+		map->tiles[get_row((float) mouse_x, (float) mouse_y) + map->size][get_column((float) mouse_x, (float) mouse_y) - get_row((float) mouse_x, (float) mouse_y)] = 0;
+	*/
+
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+			case SDL_QUIT:
+				return 1;
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				printf("mouse_x: %d, mouse_y: %d\n", mouse_x, mouse_y);
+				printf("row: %d\n", get_row((float) mouse_x, (float) mouse_y));
+				printf("column: %d\n", get_column((float) mouse_x, (float) mouse_y) - get_row((float) mouse_x, (float) mouse_y));
+				break;
+		}
+	}
+
+	return 0;
+}
+
+int animate(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
+	while (!event(map)) {
 		// clear the window
 		SDL_RenderClear(rend);
 
@@ -94,6 +124,8 @@ int animate(SDL_Window* win, SDL_Renderer* rend, int map[GRID_X][GRID_Y]) {
 		// wait 1/60th of a second
 		SDL_Delay(1000/60);
 	}
+
+	return 0;
 }
 
 int main(void) {
@@ -105,21 +137,29 @@ int main(void) {
 
 	SDL_Window* win;
 	if (make_window(&win)) {
-		closeSDL(NULL, NULL);
+		closeSDL(NULL, NULL, NULL);
 		return 1;
 	}
 	
 	SDL_Renderer* rend;
 	if (make_renderer(win, &rend)) {
-		closeSDL(win, NULL);
+		closeSDL(win, NULL, NULL);
 		return 1;
 	}
 
-	int map[GRID_X][GRID_Y] = {0};
+	struct mdata world_map;
+	if (map_init(win, rend, &world_map)) {
+		closeSDL(win, rend, NULL);
+		return 1;
+	}
 
-	animate(win, rend, map);
+	if (texture_init(rend, &world_map)) {
+		closeSDL(win, rend, &world_map);
+		return 1;
+	}
 
-	// clean up resources before exiting
-	closeSDL(win, rend);
+	animate(win, rend, &world_map);
+
+	closeSDL(win, rend, &world_map);
 	return 0;
 }
