@@ -15,13 +15,36 @@ struct npc {
 	float y_vel;
 };
 
+// returns the distance between two points
+float dist(float x1, float y1, float x2, float y2) {
+	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+}
+
+// returns the row the given point is in
+float x(float mouse_x, float mouse_y) {
+	// derived from the cartesian equation y = x / 2 + b
+	// to find the row, solve for the x-intercept and divide
+	// by the tile width
+	return (mouse_y - mouse_x / 2) * -2 / (float) TILE_W;
+}
+
+// returns the column the given point is in
+float y(float mouse_x, float mouse_y) {
+	// derived from the cartesian equation y = -x / 2 + b
+	// to find the column, solve for the x-intercept and divide
+	// by the tile width
+	return (mouse_y + mouse_x / 2) * 2 / (float) TILE_W;
+}
+
+/*
 int get_row(float mouse_x, float mouse_y) {
-	return (int) floor(((mouse_y - mouse_x / 2) * -2 - TILE_H) / (float) TILE_W) + 10;
+	return (int) floor(((mouse_x - mouse_y / 2) * -2 - TILE_H) / (float) TILE_W);
 }
 
 int get_column(float mouse_x, float mouse_y) {
-	return (int) floor(((mouse_y + mouse_x / 2) * 2 + TILE_H) / (float) TILE_W) + 10;
+	return (int) floor(((mouse_y + mouse_x / 2) * 2 + TILE_H) / (float) TILE_W);
 }
+*/
 
 int draw_bg(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
 	SDL_Rect rect;
@@ -38,7 +61,7 @@ int draw_bg(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
 					SDL_RenderCopy(rend, map->textures[0], NULL, &rect);
 					break;
 				case 1:
-					SDL_RenderCopy(rend, map->textures[0], NULL, &rect);
+					SDL_RenderCopy(rend, map->textures[1], NULL, &rect);
 					break;
 			}
 		}
@@ -48,7 +71,15 @@ int draw_bg(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
 }
 
 int map_init(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
-	map->size  = (int) ceil((float) WINDOW_H / (float) TILE_H) * 2;
+	// calculate the size of each side of the background rhombus by
+	// finding its side length based on the window height and width
+	// and dividing it by the side length of one tile rhombus
+	map->size  = (int) ceil(dist((float) -WINDOW_H,
+			(float) WINDOW_H / 2,
+			(float) WINDOW_W / 2,
+			(float) -WINDOW_W / 4)
+			/ dist(0, (float) TILE_W / 2, (float) TILE_H / 2, 0));
+
 	if (!(map->tiles = malloc(map->size * sizeof(int *)))) {
 		fprintf(stderr, "malloc() failled\n");
 		return -1;
@@ -66,8 +97,12 @@ int map_init(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
 		for (int y = 0; y < map->size; y++)
 			map->tiles[x][y] = 0;
 
+	// offset for the background rhombus derived from the intercepts
+	// between the sides of the window rectangle and the sides of the
+	// background rhombus
 	map->x_off = WINDOW_W / 2 - TILE_W / 2;
-	map->y_off = -WINDOW_H / 2;
+	map->y_off = -WINDOW_W / 4;
+
 	return 0;
 }
 
@@ -102,8 +137,10 @@ int event(struct mdata* map) {
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				printf("mouse_x: %d, mouse_y: %d\n", mouse_x, mouse_y);
-				printf("row: %d\n", get_row((float) mouse_x, (float) mouse_y));
-				printf("column: %d\n", get_column((float) mouse_x, (float) mouse_y) - get_row((float) mouse_x, (float) mouse_y));
+				mouse_x += map->x_off;
+				mouse_y += map->y_off;
+				printf("row: %f\n", x((float) mouse_x, (float) mouse_y));
+				printf("column: %f\n", y((float) mouse_x, (float) mouse_y));
 				break;
 		}
 	}
@@ -116,6 +153,7 @@ int animate(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
 		// clear the window
 		SDL_RenderClear(rend);
 
+		// render the background
 		draw_bg(win, rend, map);
 
 		// display the window
@@ -152,6 +190,10 @@ int main(void) {
 		closeSDL(win, rend, NULL);
 		return 1;
 	}
+
+	world_map.tiles[world_map.size / 2][world_map.size / 2] = 1;
+	printf("size / 2: %d\n", world_map.size / 2);
+	printf("x_off: %d, y_off: %d\n", world_map.x_off, world_map.y_off);
 
 	if (texture_init(rend, &world_map)) {
 		closeSDL(win, rend, &world_map);
