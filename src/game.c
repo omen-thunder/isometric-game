@@ -21,30 +21,26 @@ float dist(float x1, float y1, float x2, float y2) {
 }
 
 // returns the row the given point is in
-float x(float mouse_x, float mouse_y) {
-	// derived from the cartesian equation y = x / 2 + b
-	// to find the row, solve for the x-intercept and divide
-	// by the tile width
-	return (mouse_y - mouse_x / 2) * -2 / (float) TILE_W;
-}
-
-// returns the column the given point is in
-float y(float mouse_x, float mouse_y) {
+int get_row(float mouse_x, float mouse_y) {
 	// derived from the cartesian equation y = -x / 2 + b
 	// to find the column, solve for the x-intercept and divide
 	// by the tile width
-	return (mouse_y + mouse_x / 2) * 2 / (float) TILE_W;
+	float x_off = WINDOW_W / 2 - TILE_W / 2;
+	float y_off = -WINDOW_W / 4;
+	float y_inter = mouse_y + mouse_x / 2 - y_off;
+	return floor((x_off / -2 + y_inter) / (float) TILE_H - 0.5);
 }
 
-/*
-int get_row(float mouse_x, float mouse_y) {
-	return (int) floor(((mouse_x - mouse_y / 2) * -2 - TILE_H) / (float) TILE_W);
-}
-
+// returns the column the given point is in
 int get_column(float mouse_x, float mouse_y) {
-	return (int) floor(((mouse_y + mouse_x / 2) * 2 + TILE_H) / (float) TILE_W);
+	// derived from the cartesian equation y = x / 2 + b
+	// to find the row, solve for the x-intercept and divide
+	// by the tile width
+	float x_off = WINDOW_W / 2 - TILE_W / 2;
+	float y_off = -WINDOW_W / 4;
+	float y_inter = mouse_y - mouse_x / 2 - y_off;
+	return floor((x_off / 2 + y_inter) / (float) TILE_H + 0.5);
 }
-*/
 
 int draw_bg(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
 	SDL_Rect rect;
@@ -100,6 +96,7 @@ int map_init(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
 	// offset for the background rhombus derived from the intercepts
 	// between the sides of the window rectangle and the sides of the
 	// background rhombus
+	
 	map->x_off = WINDOW_W / 2 - TILE_W / 2;
 	map->y_off = -WINDOW_W / 4;
 
@@ -122,12 +119,11 @@ int texture_init(SDL_Renderer* rend, struct mdata* map) {
 int event(struct mdata* map) {
 	int button, mouse_x, mouse_y;
 	button = SDL_GetMouseState(&mouse_x, &mouse_y);
-	/*
+	
 	if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
-		map->tiles[get_row((float) mouse_x, (float) mouse_y) + map->size][get_column((float) mouse_x, (float) mouse_y) - get_row((float) mouse_x, (float) mouse_y)] = 1;
+		map->tiles[get_row(mouse_x, mouse_y)][get_column(mouse_x,  mouse_y)] = 1;
 	else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
-		map->tiles[get_row((float) mouse_x, (float) mouse_y) + map->size][get_column((float) mouse_x, (float) mouse_y) - get_row((float) mouse_x, (float) mouse_y)] = 0;
-	*/
+		map->tiles[get_row(mouse_x, mouse_y)][get_column(mouse_x,  mouse_y)] = 0;
 
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -137,10 +133,8 @@ int event(struct mdata* map) {
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				printf("mouse_x: %d, mouse_y: %d\n", mouse_x, mouse_y);
-				mouse_x += map->x_off;
-				mouse_y += map->y_off;
-				printf("row: %f\n", x((float) mouse_x, (float) mouse_y));
-				printf("column: %f\n", y((float) mouse_x, (float) mouse_y));
+				printf("row: %d\n", get_row(mouse_x, mouse_y));
+				printf("column: %d\n", get_column(mouse_x, mouse_y));
 				break;
 		}
 	}
@@ -190,10 +184,6 @@ int main(void) {
 		closeSDL(win, rend, NULL);
 		return 1;
 	}
-
-	world_map.tiles[world_map.size / 2][world_map.size / 2] = 1;
-	printf("size / 2: %d\n", world_map.size / 2);
-	printf("x_off: %d, y_off: %d\n", world_map.x_off, world_map.y_off);
 
 	if (texture_init(rend, &world_map)) {
 		closeSDL(win, rend, &world_map);
