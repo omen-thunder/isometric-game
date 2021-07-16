@@ -7,7 +7,7 @@ void closeSDL(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
 	if (win)
 		SDL_DestroyWindow(win);
 	if (map) {
-		for (int i = 0; i < map->size; i++)
+		for (int i = 0; i < map->map_sz; i++)
 			free(map->tiles[i]);
 		free(map->tiles);
 		for (int i = 0; i < NUM_TEX; i++)

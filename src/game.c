@@ -3,8 +3,6 @@
 
 #define SPEED (200) // speed in pixels/second
 #define MAX_NPC (200)
-#define TILE_W (128)
-#define TILE_H (64)
 
 struct npc {
 	SDL_Texture* texture;
@@ -15,90 +13,30 @@ struct npc {
 	float y_vel;
 };
 
-// returns the distance between two points
-float dist(float x1, float y1, float x2, float y2) {
-	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
-}
-
-// returns the row the given point is in
-int get_row(float mouse_x, float mouse_y) {
-	// derived from the cartesian equation y = -x / 2 + b
-	// to find the column, solve for the x-intercept and divide
-	// by the tile width
-	float x_off = WINDOW_W / 2 - TILE_W / 2;
-	float y_off = -WINDOW_W / 4;
-	float y_inter = mouse_y + mouse_x / 2 - y_off;
-	return floor((x_off / -2 + y_inter) / (float) TILE_H - 0.5);
-}
-
-// returns the column the given point is in
-int get_column(float mouse_x, float mouse_y) {
-	// derived from the cartesian equation y = x / 2 + b
-	// to find the row, solve for the x-intercept and divide
-	// by the tile width
-	float x_off = WINDOW_W / 2 - TILE_W / 2;
-	float y_off = -WINDOW_W / 4;
-	float y_inter = mouse_y - mouse_x / 2 - y_off;
-	return floor((x_off / 2 + y_inter) / (float) TILE_H + 0.5);
-}
-
 int draw_bg(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
 	SDL_Rect rect;
 	rect.w = TILE_W;
 	rect.h = TILE_H;
 
-	for (int x = 0; x < map->size; x++) {
-		for (int y = 0; y < map->size; y++) {
+	for (int x = 0; x < map->win_sz; x++) {
+		for (int y = 0; y < map->win_sz; y++) {
 			rect.x = x * TILE_W / 2 - y * TILE_W / 2 + map->x_off;
 			rect.y = y * TILE_H / 2 + x * TILE_H / 2 + map->y_off;
 
-			switch (map->tiles[x][y]) {
-				case 0:
-					SDL_RenderCopy(rend, map->textures[0], NULL, &rect);
-					break;
-				case 1:
-					SDL_RenderCopy(rend, map->textures[1], NULL, &rect);
-					break;
+			if (rect.x > -TILE_W && rect.x < WINDOW_W && rect.y > -TILE_H && rect.y < WINDOW_H) {
+				rect.x += map->x_off2;
+				rect.y += map->y_off2;
+				switch (map->tiles[x + map->x_cur][y + map->y_cur]) {
+					case 0:
+						SDL_RenderCopy(rend, map->textures[0], NULL, &rect);
+						break;
+					case 1:
+						SDL_RenderCopy(rend, map->textures[1], NULL, &rect);
+						break;
+				}
 			}
 		}
 	}
-
-	return 0;
-}
-
-int map_init(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
-	// calculate the size of each side of the background rhombus by
-	// finding its side length based on the window height and width
-	// and dividing it by the side length of one tile rhombus
-	map->size  = (int) ceil(dist((float) -WINDOW_H,
-			(float) WINDOW_H / 2,
-			(float) WINDOW_W / 2,
-			(float) -WINDOW_W / 4)
-			/ dist(0, (float) TILE_W / 2, (float) TILE_H / 2, 0));
-
-	if (!(map->tiles = malloc(map->size * sizeof(int *)))) {
-		fprintf(stderr, "malloc() failled\n");
-		return -1;
-	}
-	for (int i = 0; i < map->size; i++)
-		if (!(map->tiles[i] = malloc(map->size * sizeof(int)))) {
-			for (int j = 0; j < i; j++)
-				free(map->tiles[j]);
-			free(map->tiles);
-			fprintf(stderr, "malloc() failled\n");
-			return -1;
-		}
-
-	for (int x = 0; x < map->size; x++)
-		for (int y = 0; y < map->size; y++)
-			map->tiles[x][y] = 0;
-
-	// offset for the background rhombus derived from the intercepts
-	// between the sides of the window rectangle and the sides of the
-	// background rhombus
-	
-	map->x_off = WINDOW_W / 2 - TILE_W / 2;
-	map->y_off = -WINDOW_W / 4;
 
 	return 0;
 }
@@ -115,15 +53,66 @@ int texture_init(SDL_Renderer* rend, struct mdata* map) {
 	return 0;
 }
 
+void cam_pan(struct mdata* map, struct cdata* cam, int mouse_x, int mouse_y) {
+	if (mouse_x > WINDOW_W * 9 / 10 && mouse_y < WINDOW_H / 10) {
+		if (--cam->frame <= 0) {
+			cam_u(map);
+			cam->frame = cam->rate;
+		}
+	} else if (mouse_x < WINDOW_W / 10 && mouse_y < WINDOW_H / 10) {
+		if (--cam->frame <= 0) {
+			cam_l(map);
+			cam->frame = cam->rate;
+		}
+	} else if (mouse_x < WINDOW_W / 10 && mouse_y > WINDOW_H * 9 / 10) {
+		if (--cam->frame <= 0) {
+			cam_d(map);
+			cam->frame = cam->rate;
+		}
+	} else if (mouse_x > WINDOW_W * 9 / 10 && mouse_y > WINDOW_H * 9 / 10) {
+		if (--cam->frame <= 0) {
+			cam_r(map);
+			cam->frame = cam->rate;
+		}
+	} else if (mouse_y < WINDOW_H / 10) {
+		if (--cam->frame <= 0) {
+			cam_u(map);
+			cam_l(map);
+			cam->frame = cam->rate;
+		}
+	} else if (mouse_y > WINDOW_H * 9 / 10) {
+		if (--cam->frame <= 0) {
+			cam_d(map);
+			cam_r(map);
+			cam->frame = cam->rate;
+		}
+	} if (mouse_x < WINDOW_W / 10) {
+		if (--cam->frame <= 0) {
+			cam_l(map);
+			cam_d(map);
+			cam->frame = cam->rate;
+		}
+	} else if (mouse_x > WINDOW_W * 9 / 10) {
+		if (--cam->frame <= 0) {
+			cam_r(map);
+			cam_u(map);
+			cam->frame = cam->rate;
+		}
+	}
+	return;
+}
+
 // processes events
-int event(struct mdata* map) {
+int event(struct mdata* map, struct cdata* cam) {
 	int button, mouse_x, mouse_y;
 	button = SDL_GetMouseState(&mouse_x, &mouse_y);
 	
 	if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
-		map->tiles[get_row(mouse_x, mouse_y)][get_column(mouse_x,  mouse_y)] = 1;
+		map->tiles[get_column(map, mouse_x, mouse_y)][get_row(map, mouse_x,  mouse_y)] = 1;
 	else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
-		map->tiles[get_row(mouse_x, mouse_y)][get_column(mouse_x,  mouse_y)] = 0;
+		map->tiles[get_column(map, mouse_x, mouse_y)][get_row(map, mouse_x,  mouse_y)] = 0;
+
+	cam_pan(map, cam, mouse_x, mouse_y);
 
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -132,9 +121,36 @@ int event(struct mdata* map) {
 				return 1;
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				printf("mouse_x: %d, mouse_y: %d\n", mouse_x, mouse_y);
-				printf("row: %d\n", get_row(mouse_x, mouse_y));
-				printf("column: %d\n", get_column(mouse_x, mouse_y));
+				//printf("row: %d column: %d x_cur: %d y_cur: %d\n", get_row(map, mouse_x, mouse_y), get_column(map, mouse_x, mouse_y), map->x_cur, map->y_cur);
+				printf("mouse_x: %d mouse_y: %d\n", mouse_x, mouse_y);
+				break;
+			case SDL_KEYDOWN:
+				switch(event.key.keysym.sym) {
+					case SDLK_UP:
+						cam_u(map);
+						break;
+					case SDLK_DOWN:
+						cam_d(map);
+						break;
+					case SDLK_LEFT:
+						cam_l(map);
+						break;
+					case SDLK_RIGHT:
+						cam_r(map);
+						break;
+					case SDLK_w:
+						map->y_off2 += 5;
+						break;
+					case SDLK_s:
+						map->y_off2 -= 5;
+						break;
+					case SDLK_a:
+						map->x_off2 -= 5;
+						break;
+					case SDLK_d:
+						map->x_off2 += 5;
+						break;
+				}
 				break;
 		}
 	}
@@ -143,7 +159,9 @@ int event(struct mdata* map) {
 }
 
 int animate(SDL_Window* win, SDL_Renderer* rend, struct mdata* map) {
-	while (!event(map)) {
+	struct cdata camera = {0, 0, 15};
+
+	while (!event(map, &camera)) {
 		// clear the window
 		SDL_RenderClear(rend);
 
