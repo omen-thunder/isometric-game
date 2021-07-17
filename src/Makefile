@@ -18,3 +18,7 @@ $(ODIR)/%.o: %.c $(DEPS)
 
 exec: $(OBJ)
 	$(CC) -o ../$@ $^ $(CFLAGS) $(LDFLAGS) 
+
+clean:
+	-rm ../exec
+	-rm $(ODIR)/*

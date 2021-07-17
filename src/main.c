@@ -1,32 +1,34 @@
 #include "game.h"
 #include <math.h>
 
-int draw_bg(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_d) {
+void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, int x, int y) {
 	SDL_Rect rect;
 	rect.w = TILE_W;
 	rect.h = TILE_H;
 
-	for (int x = 0; x < map_d->win_sz; x++) {
-		for (int y = 0; y < map_d->win_sz; y++) {
-			rect.x = x * TILE_W / 2 - y * TILE_W / 2 + map_d->x_off;
-			rect.y = y * TILE_H / 2 + x * TILE_H / 2 + map_d->y_off;
+	rect.x = x * TILE_W / 2 - y * TILE_W / 2 + map_d->x_off;
+	rect.y = y * TILE_H / 2 + x * TILE_H / 2 + map_d->y_off;
 
-			if (rect.x > -TILE_W && rect.x < win_d->win_w && rect.y > -TILE_H && rect.y < win_d->win_h) {
-				rect.x += map_d->x_off2;
-				rect.y += map_d->y_off2;
-				switch (map_d->tiles[x + map_d->x_cur][y + map_d->y_cur]) {
-					case 0:
-						SDL_RenderCopy(rend, map_d->textures[0], NULL, &rect);
-						break;
-					case 1:
-						SDL_RenderCopy(rend, map_d->textures[1], NULL, &rect);
-						break;
-				}
-			}
+	if (rect.x > -TILE_W && rect.x < win_d->win_w && rect.y > -TILE_H && rect.y < win_d->win_h) {
+		rect.x += map_d->x_off2;
+		rect.y += map_d->y_off2;
+		switch (map_d->tiles[x + map_d->x_cur][y + map_d->y_cur]) {
+			case 0:
+				SDL_RenderCopy(rend, map_d->textures[0], NULL, &rect);
+				break;
+			case 1:
+				SDL_RenderCopy(rend, map_d->textures[1], NULL, &rect);
+				break;
 		}
 	}
+}
 
-	return 0;
+void draw_bg(SDL_Renderer* rend, win_data* win_d, map_data* map_d) {
+	for (int x = 0; x < map_d->win_sz; x++) {
+		for (int y = 0; y < map_d->win_sz; y++) {
+			draw_tile(rend, win_d, map_d, x, y);
+		}
+	}
 }
 
 int texture_init(SDL_Renderer* rend, map_data* map_d) {
@@ -152,7 +154,7 @@ int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_
 		SDL_RenderClear(rend);
 
 		// render the background
-		draw_bg(win, rend, win_d, map_d);
+		draw_bg(rend, win_d, map_d);
 
 		// display the window
 		SDL_RenderPresent(rend);
