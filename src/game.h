@@ -2,14 +2,18 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#define WINDOW_W (1280)
-#define WINDOW_H (720)
 #define TILE_W (128)
 #define TILE_H (64)
 #define NUM_TEX (2)
 
+// contains window related variables
+typedef struct {
+	int win_w;		// the window width
+	int win_h;		// the window height
+} win_data;
+
 // containts map related variables
-struct mdata {
+typedef struct {
 	int** tiles;	// 2D array representing the background tiles
 	int** objs;	// 2D array representing the objects on the map
 	unsigned win_sz;	// the number of tiles in one edge of the background rhombus
@@ -21,26 +25,26 @@ struct mdata {
 	int y_off2;	// used for testing
 	int x_cur;	// the x-axis cursor for the current camera location on the map
 	int y_cur;	// the x-axis cursor for the current camera location on the map
-};
+} map_data;
 
 // contains camera related variables
-struct cdata {
+typedef struct {
 	int frame;	// frame counter
 	int dir;	// last edge-pan direction the mouse was in
 	int rate;	// scroll rate when edge-panning
-};
+} cam_data;
 
 // in setup.c
-void closeSDL(SDL_Window* win, SDL_Renderer* rend, struct mdata* map);
-int make_window(SDL_Window** win);
+void closeSDL(SDL_Window* win, SDL_Renderer* rend, map_data* map_d);
+int make_window(SDL_Window** win, win_data* win_d);
 int make_renderer(SDL_Window* win, SDL_Renderer** rend);
 int load_texture(SDL_Renderer* rend, SDL_Texture** tex, char* path);
 
 // in map.c
-int map_init(SDL_Window* win, SDL_Renderer* rend, struct mdata* map);
-int get_row(struct mdata* map, float mouse_x, float mouse_y);
-int get_column(struct mdata* map, float mouse_x, float mouse_y);
-void cam_l(struct mdata* map);
-void cam_u(struct mdata* map);
-void cam_r(struct mdata* map);
-void cam_d(struct mdata* map);
+int map_init(win_data* win_d, map_data* map_d);
+int get_row(map_data* map_d, float mouse_x, float mouse_y);
+int get_column(map_data* map_d, float mouse_x, float mouse_y);
+void move_l(map_data* map_d);
+void move_u(map_data* map_d);
+void move_r(win_data* win_d, map_data* map_d);
+void move_d(win_data* win_d, map_data* map_d);

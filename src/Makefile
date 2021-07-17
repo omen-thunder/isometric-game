@@ -3,7 +3,7 @@ CFLAGS = -g -O4 -Wall
 LDFLAGS = -lm
 
 DEPS = game.h
-_OBJ = game.o setup.o map.o
+_OBJ = main.o setup.o map.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 ODIR=obj
