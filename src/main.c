@@ -10,9 +10,10 @@ float iso_x(float x, float y) {
 // converts a cartesian vector to an isometric vector
 // and returns the y-axis component
 float iso_y(float x, float y) {
-	return -(x + y) / 2;
+	return (x + y) / -2;
 }
 
+// draws a single tile
 void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, cam_data* cam_d, int x, int y) {
 	SDL_Rect rect;
 	rect.w = TILE_W;
@@ -20,12 +21,6 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, cam_data* c
 
 	rect.x = x * TILE_W / 2 - y * TILE_W / 2 + map_d->x_off + cam_d->frame * (int) iso_x(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir);
 	rect.y = y * TILE_H / 2 + x * TILE_H / 2 + map_d->y_off + cam_d->frame * (int) iso_y(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir);
-
-	/*
-	if (cam_d->frame > 0)
-		printf("x_off: %d\t y_off: %d\n", cam_d->frame * (int) iso_x(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir),
-				cam_d->frame * (int) iso_y(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir));
-	*/
 
 	if (rect.x > -TILE_W && rect.x < win_d->win_w && rect.y > -TILE_H && rect.y < win_d->win_h) {
 		rect.x += map_d->x_off2;
@@ -41,11 +36,13 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, cam_data* c
 	}
 }
 
+// draws the background
 void draw_bg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	for (int x = 0; x < map_d->win_sz; x++)
 		for (int y = 0; y < map_d->win_sz; y++)
 			draw_tile(rend, win_d, map_d, cam_d, x, y);
 
+	// if the camera is moving on the x-axis, draw an extra column
 	if (cam_d->x_dir == 1) {
 		for (int y = 0; y < map_d->win_sz; y++)
 			draw_tile(rend, win_d, map_d, cam_d, map_d->win_sz, y);
@@ -54,6 +51,7 @@ void draw_bg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, cam_data* cam
 			draw_tile(rend, win_d, map_d, cam_d, -1, y);
 	}
 
+	// if the camera is moving on the y-axis, draw an extra row 
 	if (cam_d->y_dir == -1) {
 		for (int x = 0; x < map_d->win_sz; x++)
 			draw_tile(rend, win_d, map_d, cam_d, x, -1);
@@ -63,6 +61,7 @@ void draw_bg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, cam_data* cam
 	}
 }
 
+// initialise the textures
 int texture_init(SDL_Renderer* rend, map_data* map_d) {
 	if (load_texture(rend, &map_d->textures[0], "../resources/tiles/grassA.png")) {
 		fprintf(stderr, "Failed to load texture 0\n");
@@ -75,7 +74,32 @@ int texture_init(SDL_Renderer* rend, map_data* map_d) {
 	return 0;
 }
 
-// this is spag code, fix
+// returns the edge-pan direction based on the mouse position
+int pan_dir(win_data* win_d, int mouse_x, int mouse_y) {
+	if ((mouse_x > win_d->win_w * 9 / 10 && mouse_y < win_d->win_h / 5) 
+			|| (mouse_x > win_d->win_w * 8 / 10 && mouse_y < win_d->win_h / 10))
+		return 2;
+	else if ((mouse_x < win_d->win_w / 10 && mouse_y < win_d->win_h / 5) 
+			|| (mouse_x < win_d->win_w / 5 && mouse_y < win_d->win_h / 10))
+		return 4;
+	else if ((mouse_x < win_d->win_w / 10 && mouse_y > win_d->win_h * 8 / 10) 
+			|| (mouse_x < win_d->win_w / 5 && mouse_y > win_d->win_h * 9 / 10))
+		return 6;
+	else if ((mouse_x > win_d->win_w * 9 / 10 && mouse_y > win_d->win_h * 8 / 10) 
+			|| (mouse_x > win_d->win_w * 8 / 10 && mouse_y > win_d->win_h * 9 / 10))
+		return 8;
+	else if (mouse_x > win_d->win_w * 9 / 10)
+		return 1;
+	else if (mouse_y < win_d->win_h / 10)
+		return 3;
+	else if (mouse_x < win_d->win_w / 10)
+		return 5;
+	else if (mouse_y > win_d->win_h * 9 / 10)
+		return 7;
+	return 0;
+}
+
+// edge-pans the camera
 void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y) {
 	if (cam_d->frame >= TILE_H / cam_d->rate) {
 		map_d->x_cur += cam_d->x_dir;
@@ -89,31 +113,38 @@ void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int
 
 	if (cam_d->frame > 0) {
 		cam_d->frame++;
-	} else {
-		if ((mouse_x > win_d->win_w * 9 / 10 && mouse_y < win_d->win_h / 5) 
-				|| (mouse_x > win_d->win_w * 8 / 10 && mouse_y < win_d->win_h / 10)) {
-			move_ur(map_d, cam_d);
-		} else if ((mouse_x < win_d->win_w / 10 && mouse_y < win_d->win_h / 5) 
-				|| (mouse_x < win_d->win_w / 5 && mouse_y < win_d->win_h / 10)) {
-			move_ul(map_d, cam_d);
-		} else if ((mouse_x < win_d->win_w / 10 && mouse_y > win_d->win_h * 8 / 10) 
-				|| (mouse_x < win_d->win_w / 5 && mouse_y > win_d->win_h * 9 / 10)) {
-			move_dl(map_d, cam_d);
-		} else if ((mouse_x > win_d->win_w * 9 / 10 && mouse_y > win_d->win_h * 8 / 10) 
-				|| (mouse_x > win_d->win_w * 8 / 10 && mouse_y > win_d->win_h * 9 / 10)) {
-			move_dr(map_d, cam_d);
-		} else if (mouse_y < win_d->win_h / 10) {
-			move_u(map_d, cam_d);
-		} else if (mouse_y > win_d->win_h * 9 / 10) {
-			move_d(map_d, cam_d);
-		} else if (mouse_x < win_d->win_w / 10) {
-			move_l(map_d, cam_d);
-		} else if (mouse_x > win_d->win_w * 9 / 10) {
-			move_r(map_d, cam_d);
-		} else {
+		return;
+	}
+
+	switch (pan_dir(win_d, mouse_x, mouse_y)) {
+		case 0:
 			cam_d->x_dir = 0;
 			cam_d->y_dir = 0;
-		}
+			break;
+		case 1:
+			move_r(map_d, cam_d);
+			break;
+		case 2:
+			move_ur(map_d, cam_d);
+			break;
+		case 3:
+			move_u(map_d, cam_d);
+			break;
+		case 4:
+			move_ul(map_d, cam_d);
+			break;
+		case 5:
+			move_l(map_d, cam_d);
+			break;
+		case 6:
+			move_dl(map_d, cam_d);
+			break;
+		case 7:
+			move_d(map_d, cam_d);
+			break;
+		case 8:
+			move_dr(map_d, cam_d);
+			break;
 	}
 }
 
@@ -129,6 +160,7 @@ int event(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 	cam_pan(win_d, map_d, cam_d, mouse_x, mouse_y);
 
+	// not really spag code, but not pretty
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
@@ -136,8 +168,6 @@ int event(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 				return 1;
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				// printf("row: %d column: %d x_cur: %d y_cur: %d\n", get_row(map, mouse_x, mouse_y), get_column(map, mouse_x, mouse_y), map->x_cur, map->y_cur);
-				// printf("mouse_x: %d mouse_y: %d\n", mouse_x, mouse_y);
 				break;
 			case SDL_KEYDOWN:
 				switch(event.key.keysym.sym) {
