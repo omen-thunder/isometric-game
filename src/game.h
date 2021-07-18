@@ -4,6 +4,7 @@
 
 #define TILE_W (128)
 #define TILE_H (64)
+#define CAM_FR (32)
 #define NUM_TEX (2)
 
 // contains window related variables
@@ -30,8 +31,9 @@ typedef struct {
 // contains camera related variables
 typedef struct {
 	int frame;	// frame counter
-	int dir;	// last edge-pan direction the mouse was in
 	int rate;	// scroll rate when edge-panning
+	int x_dir;	// last x-axis edge-pan direction the mouse was in
+	int y_dir;	// last x-axis edge-pan direction the mouse was in
 } cam_data;
 
 // in setup.c
@@ -44,7 +46,7 @@ int load_texture(SDL_Renderer* rend, SDL_Texture** tex, char* path);
 int map_init(win_data* win_d, map_data* map_d);
 int get_row(map_data* map_d, float mouse_x, float mouse_y);
 int get_column(map_data* map_d, float mouse_x, float mouse_y);
-void move_l(map_data* map_d);
-void move_u(map_data* map_d);
-void move_r(win_data* win_d, map_data* map_d);
-void move_d(win_data* win_d, map_data* map_d);
+void move_l(map_data* map_d, cam_data* cam_d);
+void move_u(map_data* map_d, cam_data* cam_d);
+void move_r(win_data* win_d, map_data* map_d, cam_data* cam_d);
+void move_d(win_data* win_d, map_data* map_d, cam_data* cam_d);
