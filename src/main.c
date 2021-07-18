@@ -46,16 +46,18 @@ void draw_bg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, cam_data* cam
 		for (int y = 0; y < map_d->win_sz; y++)
 			draw_tile(rend, win_d, map_d, cam_d, x, y);
 
-	if (cam_d->x_dir == 1 && cam_d->y_dir == 0) {
+	if (cam_d->x_dir == 1) {
 		for (int y = 0; y < map_d->win_sz; y++)
 			draw_tile(rend, win_d, map_d, cam_d, map_d->win_sz, y);
-	} else if (cam_d->x_dir == 0 && cam_d->y_dir == -1) {
-		for (int x = 0; x < map_d->win_sz; x++)
-			draw_tile(rend, win_d, map_d, cam_d, x, -1);
-	} else if (cam_d->x_dir == -1 && cam_d->y_dir == 0) {
+	} else if (cam_d->x_dir == -1) {
 		for (int y = 0; y < map_d->win_sz; y++)
 			draw_tile(rend, win_d, map_d, cam_d, -1, y);
-	} else if (cam_d->x_dir == 0 && cam_d->y_dir == 1) {
+	}
+
+	if (cam_d->y_dir == -1) {
+		for (int x = 0; x < map_d->win_sz; x++)
+			draw_tile(rend, win_d, map_d, cam_d, x, -1);
+	} else if (cam_d->y_dir == 1) {
 		for (int x = 0; x < map_d->win_sz; x++)
 			draw_tile(rend, win_d, map_d, cam_d, x, map_d->win_sz);
 	}
@@ -78,6 +80,8 @@ void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int
 	if (cam_d->frame >= TILE_H / cam_d->rate) {
 		map_d->x_cur += cam_d->x_dir;
 		map_d->y_cur += cam_d->y_dir;
+		if ((cam_d->x_dir == 1 && cam_d->y_dir == -1) || (cam_d->x_dir == -1 && cam_d->y_dir == 1))
+			cam_d->rate *= 2;
 		cam_d->x_dir = 0;
 		cam_d->y_dir = 0;
 		cam_d->frame = 0;
@@ -88,31 +92,25 @@ void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int
 	} else {
 		if ((mouse_x > win_d->win_w * 9 / 10 && mouse_y < win_d->win_h / 5) 
 				|| (mouse_x > win_d->win_w * 8 / 10 && mouse_y < win_d->win_h / 10)) {
-			move_u(map_d, cam_d);
+			move_ur(map_d, cam_d);
 		} else if ((mouse_x < win_d->win_w / 10 && mouse_y < win_d->win_h / 5) 
 				|| (mouse_x < win_d->win_w / 5 && mouse_y < win_d->win_h / 10)) {
-			move_l(map_d, cam_d);
+			move_ul(map_d, cam_d);
 		} else if ((mouse_x < win_d->win_w / 10 && mouse_y > win_d->win_h * 8 / 10) 
 				|| (mouse_x < win_d->win_w / 5 && mouse_y > win_d->win_h * 9 / 10)) {
-			move_d(win_d, map_d, cam_d);
+			move_dl(map_d, cam_d);
 		} else if ((mouse_x > win_d->win_w * 9 / 10 && mouse_y > win_d->win_h * 8 / 10) 
 				|| (mouse_x > win_d->win_w * 8 / 10 && mouse_y > win_d->win_h * 9 / 10)) {
-			move_r(win_d, map_d, cam_d);
-		} /*else if (mouse_y < win_d->win_h / 10) {
+			move_dr(map_d, cam_d);
+		} else if (mouse_y < win_d->win_h / 10) {
 			move_u(map_d, cam_d);
-			move_l(map_d, cam_d);
 		} else if (mouse_y > win_d->win_h * 9 / 10) {
-			move_d(win_d, map_d, cam_d);
-			move_r(win_d, map_d, cam_d);
+			move_d(map_d, cam_d);
 		} else if (mouse_x < win_d->win_w / 10) {
 			move_l(map_d, cam_d);
-			move_d(win_d, map_d, cam_d);
 		} else if (mouse_x > win_d->win_w * 9 / 10) {
-			move_r(win_d, map_d, cam_d);
-			move_u(map_d, cam_d);
-		}
-		*/
-		else {
+			move_r(map_d, cam_d);
+		} else {
 			cam_d->x_dir = 0;
 			cam_d->y_dir = 0;
 		}
@@ -144,16 +142,12 @@ int event(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 			case SDL_KEYDOWN:
 				switch(event.key.keysym.sym) {
 					case SDLK_UP:
-						move_u(map_d, cam_d);
 						break;
 					case SDLK_DOWN:
-						move_d(win_d, map_d, cam_d);
 						break;
 					case SDLK_LEFT:
-						move_l(map_d, cam_d);
 						break;
 					case SDLK_RIGHT:
-						move_r(win_d, map_d, cam_d);
 						break;
 					case SDLK_w:
 						map_d->y_off2 += 5;
@@ -197,7 +191,7 @@ int main(void) {
 	win_data win_data = {.win_w = 1280, .win_h = 720};
 	cam_data cam_data = {
 		.frame = 0,
-		.rate = 4,
+		.rate = 8,	// should be a power of 2
 		.x_dir = 0,
 		.y_dir = 0
 	};

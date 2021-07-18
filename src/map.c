@@ -78,15 +78,19 @@ int get_column(map_data* map_d, float mouse_x, float mouse_y) {
 			TILE_H / 2.0) / (float) TILE_H) + map_d->x_cur;
 }
 
-void move_l(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur > 0) {
-		cam_d->x_dir = -1;
-		cam_d->y_dir = 0;
+void move_r(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur < map_d->map_sz - map_d->win_sz && map_d->y_cur > 0) {
+		cam_d->x_dir = 1;
+		cam_d->y_dir = -1;
+		cam_d->rate /= 2;
 		cam_d->frame++;
+	} else {
+		move_ur(map_d, cam_d);
+		move_dr(map_d, cam_d);
 	}
 }
 
-void move_u(map_data* map_d, cam_data* cam_d) {
+void move_ur(map_data* map_d, cam_data* cam_d) {
 	if (map_d->y_cur > 0) {
 		cam_d->x_dir = 0;
 		cam_d->y_dir = -1;
@@ -94,18 +98,60 @@ void move_u(map_data* map_d, cam_data* cam_d) {
 	}
 }
 
-void move_r(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur < map_d->map_sz - map_d->win_sz) {
-		cam_d->x_dir = 1;
+void move_u(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur > 0 && map_d->y_cur > 0) {
+		cam_d->x_dir = -1;
+		cam_d->y_dir = -1;
+		cam_d->frame++;
+	} else {
+		move_ur(map_d, cam_d);
+		move_ul(map_d, cam_d);
+	}
+}
+
+void move_ul(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur > 0) {
+		cam_d->x_dir = -1;
 		cam_d->y_dir = 0;
 		cam_d->frame++;
 	}
 }
 
-void move_d(win_data* win_d, map_data* map_d, cam_data* cam_d) {
+void move_l(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur > 0 && map_d->y_cur < map_d->map_sz - map_d->win_sz) {
+		cam_d->x_dir = -1;
+		cam_d->y_dir = 1;
+		cam_d->rate /= 2;
+		cam_d->frame++;
+	} else {
+		move_ul(map_d, cam_d);
+		move_dl(map_d, cam_d);
+	}
+}
+
+void move_dl(map_data* map_d, cam_data* cam_d) {
 	if (map_d->y_cur < map_d->map_sz - map_d->win_sz) {
 		cam_d->x_dir = 0;
 		cam_d->y_dir = 1;
+		cam_d->frame++;
+	}
+}
+
+void move_d(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur < map_d->map_sz - map_d->win_sz && map_d->y_cur < map_d->map_sz - map_d->win_sz) {
+		cam_d->x_dir = 1;
+		cam_d->y_dir = 1;
+		cam_d->frame++;
+	} else {
+		move_dl(map_d, cam_d);
+		move_dr(map_d, cam_d);
+	}
+}
+
+void move_dr(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur < map_d->map_sz - map_d->win_sz) {
+		cam_d->x_dir = 1;
+		cam_d->y_dir = 0;
 		cam_d->frame++;
 	}
 }
