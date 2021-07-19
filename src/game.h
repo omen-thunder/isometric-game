@@ -36,6 +36,10 @@ typedef struct {
 	int y_dir;	// last x-axis edge-pan direction the mouse was in
 } cam_data;
 
+// in main.c
+int iso_x(int x, int y);
+int iso_y(int x, int y);
+
 // in setup.c
 void closeSDL(SDL_Window* win, SDL_Renderer* rend, map_data* map_d);
 int make_window(SDL_Window** win, win_data* win_d);
@@ -44,8 +48,10 @@ int load_texture(SDL_Renderer* rend, SDL_Texture** tex, char* path);
 
 // in map.c
 int map_init(win_data* win_d, map_data* map_d);
-int get_row(map_data* map_d, float mouse_x, float mouse_y);
-int get_column(map_data* map_d, float mouse_x, float mouse_y);
+int get_row(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y);
+int get_column(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y);
+
+// in camera.c
 void move_r(map_data* map_d, cam_data* cam_d);
 void move_ur(map_data* map_d, cam_data* cam_d);
 void move_u(map_data* map_d, cam_data* cam_d);
@@ -54,3 +60,6 @@ void move_l(map_data* map_d, cam_data* cam_d);
 void move_dl(map_data* map_d, cam_data* cam_d);
 void move_d(map_data* map_d, cam_data* cam_d);
 void move_dr(map_data* map_d, cam_data* cam_d);
+int pan_dir(win_data* win_d, int mouse_x, int mouse_y);
+void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
+

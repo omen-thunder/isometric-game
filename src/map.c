@@ -52,7 +52,7 @@ int map_init(win_data* win_d, map_data* map_d) {
 }
 
 // returns the row the given point is in
-int get_row(map_data* map_d, float mouse_x, float mouse_y) {
+int get_row(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y) {
 	/* Derived from the cartesian equation y = x / 2 + b.
 	To find the row, solve for the y-intercept of the above line
 	using the mouse's x and y position and subtract the y-axis
@@ -60,13 +60,13 @@ int get_row(map_data* map_d, float mouse_x, float mouse_y) {
 	offset of the background, solve for the y value in the original
 	equation for the line. Divide this y value by the tile height
 	to get the row index */
-	return floor(Y_INTER(-(float) map_d->x_off,
-			Y_INTER(mouse_x, mouse_y, map_d->y_off),
+	return floor(Y_INTER(-(float) map_d->x_off - cam_d->frame * iso_x(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir),
+			Y_INTER(mouse_x, mouse_y, map_d->y_off + cam_d->frame * iso_y(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir)),
 			TILE_H / -2.0) / (float) TILE_H) + map_d->y_cur;
 }
 
 // returns the column the given point is in
-int get_column(map_data* map_d, float mouse_x, float mouse_y) {
+int get_column(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y) {
 	/* Derived from the cartesian equation y = -x / 2 + b.
 	To find the column, solve for the y-intercept of the above line
 	using the mouse's x and y position and subtract the y-axis
@@ -74,93 +74,7 @@ int get_column(map_data* map_d, float mouse_x, float mouse_y) {
 	offset of the background, solve for the y value in the original
 	equation for the line. Divide this y value by the tile height
 	to get the column index */
-	return floor(Y_INTER((float) map_d->x_off,
-			Y_INTER(-mouse_x, mouse_y, map_d->y_off),
+	return floor(Y_INTER((float) map_d->x_off + cam_d->frame * iso_x(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir),
+			Y_INTER(-mouse_x, mouse_y, map_d->y_off + cam_d->frame * iso_y(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir)),
 			TILE_H / 2.0) / (float) TILE_H) + map_d->x_cur;
-}
-
-// moves the camera to the right one tile
-void move_r(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur < map_d->map_sz - map_d->win_sz && map_d->y_cur > 0) {
-		cam_d->x_dir = 1;
-		cam_d->y_dir = -1;
-		cam_d->rate /= 2;
-		cam_d->frame++;
-	} else {
-		move_ur(map_d, cam_d);
-		move_dr(map_d, cam_d);
-	}
-}
-
-// moves the camera up and to the right one tile
-void move_ur(map_data* map_d, cam_data* cam_d) {
-	if (map_d->y_cur > 0) {
-		cam_d->x_dir = 0;
-		cam_d->y_dir = -1;
-		cam_d->frame++;
-	}
-}
-
-// moves the camera up one tile
-void move_u(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur > 0 && map_d->y_cur > 0) {
-		cam_d->x_dir = -1;
-		cam_d->y_dir = -1;
-		cam_d->frame++;
-	} else {
-		move_ur(map_d, cam_d);
-		move_ul(map_d, cam_d);
-	}
-}
-
-// moves the camera up and to the left one tile
-void move_ul(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur > 0) {
-		cam_d->x_dir = -1;
-		cam_d->y_dir = 0;
-		cam_d->frame++;
-	}
-}
-
-// moves the camera to the left one tile
-void move_l(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur > 0 && map_d->y_cur < map_d->map_sz - map_d->win_sz) {
-		cam_d->x_dir = -1;
-		cam_d->y_dir = 1;
-		cam_d->rate /= 2;
-		cam_d->frame++;
-	} else {
-		move_ul(map_d, cam_d);
-		move_dl(map_d, cam_d);
-	}
-}
-
-// moves the camera down and to the left one tile each
-void move_dl(map_data* map_d, cam_data* cam_d) {
-	if (map_d->y_cur < map_d->map_sz - map_d->win_sz) {
-		cam_d->x_dir = 0;
-		cam_d->y_dir = 1;
-		cam_d->frame++;
-	}
-}
-
-// moves the camera down one tile
-void move_d(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur < map_d->map_sz - map_d->win_sz && map_d->y_cur < map_d->map_sz - map_d->win_sz) {
-		cam_d->x_dir = 1;
-		cam_d->y_dir = 1;
-		cam_d->frame++;
-	} else {
-		move_dl(map_d, cam_d);
-		move_dr(map_d, cam_d);
-	}
-}
-
-// moves the camera down and to the right one tile each
-void move_dr(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur < map_d->map_sz - map_d->win_sz) {
-		cam_d->x_dir = 1;
-		cam_d->y_dir = 0;
-		cam_d->frame++;
-	}
 }
