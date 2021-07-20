@@ -1,7 +1,7 @@
 #include "game.h"
 
 // frees resources and exits SDL
-void closeSDL(SDL_Window* win, SDL_Renderer* rend, map_data* map_d) {
+void closeSDL(SDL_Window* win, SDL_Renderer* rend, map_data* map_d, tex_data* tex_d) {
 	if (rend)
 		SDL_DestroyRenderer(rend);
 	if (win)
@@ -10,17 +10,26 @@ void closeSDL(SDL_Window* win, SDL_Renderer* rend, map_data* map_d) {
 		for (int i = 0; i < map_d->map_sz; i++)
 			free(map_d->tiles[i]);
 		free(map_d->tiles);
-		for (int i = 0; i < NUM_TEX; i++)
-			if (map_d->textures[i])
-					SDL_DestroyTexture(map_d->textures[i]);
+
+		for (int i = 0; i < map_d->map_sz; i++)
+			free(map_d->objs[i]);
+		free(map_d->objs);
+
 	}
+	if (tex_d) {
+		for (int i = 0; i < NUM_TILES; i++)
+			SDL_DestroyTexture(tex_d->tile_tex[i]);
+		for (int i = 1; i < NUM_OBJS; i++)
+			SDL_DestroyTexture(tex_d->obj_tex[i]);
+	}
+
 	SDL_Quit();
 }
 
 // creates an SDL window
 int make_window(SDL_Window** win, win_data* win_d) {
 	*win = SDL_CreateWindow("game", SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED, win_d->win_w, win_d->win_h, (Uint32) 0);  
+			SDL_WINDOWPOS_CENTERED, win_d->win_w, win_d->win_h, 0);  
 	if (!*win) {
 		fprintf(stderr, "Error creating window: %s\n", SDL_GetError());
 		return -1;

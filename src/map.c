@@ -17,10 +17,11 @@ int map_init(win_data* win_d, map_data* map_d) {
 			win_d->win_w / -4.0)
 			/ dist(0, TILE_W / 2.0, TILE_H / 2.0, 0));
 
-	map_d->map_sz = map_d->win_sz * 2;
+	map_d->map_sz = map_d->win_sz * 4;
 
+	// allocate memory for the tile map
 	if (!(map_d->tiles = malloc(map_d->map_sz * sizeof(int *)))) {
-		fprintf(stderr, "malloc() failled\n");
+		fprintf(stderr, "malloc() failed\n");
 		return -1;
 	}
 
@@ -29,7 +30,7 @@ int map_init(win_data* win_d, map_data* map_d) {
 			for (int j = 0; j < i; j++)
 				free(map_d->tiles[j]);
 			free(map_d->tiles);
-			fprintf(stderr, "malloc() failled\n");
+			fprintf(stderr, "malloc() failed\n");
 			return -1;
 		}
 
@@ -37,6 +38,32 @@ int map_init(win_data* win_d, map_data* map_d) {
 	for (int x = 0; x < map_d->map_sz; x++)
 		for (int y = 0; y < map_d->map_sz; y++)
 			map_d->tiles[x][y] = 0;
+
+	// allocate memory for the object map
+	if (!(map_d->objs = malloc(map_d->map_sz * sizeof(int *)))) {
+		for (int i = 0; i < map_d->map_sz; i ++)
+			free(map_d->tiles[i]);
+		free(map_d->tiles);
+		fprintf(stderr, "malloc() failed\n");
+		return -1;
+	}
+
+	for (int i = 0; i < map_d->map_sz; i++)
+		if (!(map_d->objs[i] = malloc(map_d->map_sz * sizeof(int)))) {
+			for (int j = 0; j < i; j++)
+				free(map_d->objs[j]);
+			free(map_d->objs);
+			for (int i = 0; i < map_d->map_sz; i ++)
+				free(map_d->tiles[i]);
+			free(map_d->tiles);
+			fprintf(stderr, "malloc() failed\n");
+			return -1;
+		}
+
+	// initialise the object map
+	for (int x = 0; x < map_d->map_sz; x++)
+		for (int y = 0; y < map_d->map_sz; y++)
+			map_d->objs[x][y] = 0;
 
 	// offset for the background rhombus derived from the intercepts
 	// between the sides of the window rectangle and the sides of the
