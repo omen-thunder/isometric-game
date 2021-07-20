@@ -49,8 +49,28 @@ void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 
 	rect.x = (x - y) * TILE_W / 2 + map_d->x_off + cam_d->frame * iso_x(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir) + 30;
 	rect.y = (y + x) * TILE_H / 2 + map_d->y_off + cam_d->frame * iso_y(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir) - 85;
+	switch ((x + map_d->x_cur + y + map_d->y_cur) % 5) {
+		case 0:
+			break;
+		case 1:
+			rect.x -= 8;
+			rect.y -= 8;
+			break;
+		case 2:
+			rect.x += 8;
+			rect.y += 8;
+			break;
+		case 3:
+			rect.x -= 8;
+			rect.y += 8;
+			break;
+		case 4:
+			rect.x += 8;
+			rect.y -= 8;
+			break;
+	}
 
-	if (rect.x > -TILE_W && rect.x < win_d->win_w && rect.y > -TILE_H && rect.y < win_d->win_h) {
+	if (rect.x > -rect.w && rect.x < win_d->win_w && rect.y > -rect.h && rect.y < win_d->win_h) {
 		rect.x += map_d->x_off2;
 		rect.y += map_d->y_off2;
 		switch (map_d->objs[x + map_d->x_cur][y + map_d->y_cur]) {
