@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g -O4 -Wall  
+CFLAGS = -g -O0 -Wall  
 LDFLAGS = -lm
 
 DEPS = game.h

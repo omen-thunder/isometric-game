@@ -2,7 +2,7 @@
 
 // moves the camera to the right one tile
 void move_r(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur < map_d->map_sz - map_d->win_sz && map_d->y_cur > 0) {
+	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 2 && map_d->y_cur > 2) {
 		cam_d->x_dir = 1;
 		cam_d->y_dir = -1;
 		cam_d->rate /= 2;
@@ -15,7 +15,7 @@ void move_r(map_data* map_d, cam_data* cam_d) {
 
 // moves the camera up and to the right one tile
 void move_ur(map_data* map_d, cam_data* cam_d) {
-	if (map_d->y_cur > 0) {
+	if (map_d->y_cur > 2) {
 		cam_d->x_dir = 0;
 		cam_d->y_dir = -1;
 		cam_d->frame++;
@@ -24,7 +24,7 @@ void move_ur(map_data* map_d, cam_data* cam_d) {
 
 // moves the camera up one tile
 void move_u(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur > 0 && map_d->y_cur > 0) {
+	if (map_d->x_cur > 2 && map_d->y_cur > 2) {
 		cam_d->x_dir = -1;
 		cam_d->y_dir = -1;
 		cam_d->frame++;
@@ -36,7 +36,7 @@ void move_u(map_data* map_d, cam_data* cam_d) {
 
 // moves the camera up and to the left one tile
 void move_ul(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur > 0) {
+	if (map_d->x_cur > 2) {
 		cam_d->x_dir = -1;
 		cam_d->y_dir = 0;
 		cam_d->frame++;
@@ -45,7 +45,7 @@ void move_ul(map_data* map_d, cam_data* cam_d) {
 
 // moves the camera to the left one tile
 void move_l(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur > 0 && map_d->y_cur < map_d->map_sz - map_d->win_sz) {
+	if (map_d->x_cur > 2 && map_d->y_cur < map_d->map_sz - map_d->win_sz - 2) {
 		cam_d->x_dir = -1;
 		cam_d->y_dir = 1;
 		cam_d->rate /= 2;
@@ -58,7 +58,7 @@ void move_l(map_data* map_d, cam_data* cam_d) {
 
 // moves the camera down and to the left one tile each
 void move_dl(map_data* map_d, cam_data* cam_d) {
-	if (map_d->y_cur < map_d->map_sz - map_d->win_sz) {
+	if (map_d->y_cur < map_d->map_sz - map_d->win_sz - 2) {
 		cam_d->x_dir = 0;
 		cam_d->y_dir = 1;
 		cam_d->frame++;
@@ -67,7 +67,7 @@ void move_dl(map_data* map_d, cam_data* cam_d) {
 
 // moves the camera down one tile
 void move_d(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur < map_d->map_sz - map_d->win_sz && map_d->y_cur < map_d->map_sz - map_d->win_sz) {
+	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 2 && map_d->y_cur < map_d->map_sz - map_d->win_sz - 2) {
 		cam_d->x_dir = 1;
 		cam_d->y_dir = 1;
 		cam_d->frame++;
@@ -79,7 +79,7 @@ void move_d(map_data* map_d, cam_data* cam_d) {
 
 // moves the camera down and to the right one tile each
 void move_dr(map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur < map_d->map_sz - map_d->win_sz) {
+	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 2) {
 		cam_d->x_dir = 1;
 		cam_d->y_dir = 0;
 		cam_d->frame++;

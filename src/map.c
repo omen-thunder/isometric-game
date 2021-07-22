@@ -62,8 +62,12 @@ int map_init(win_data* win_d, map_data* map_d) {
 
 	// initialise the object map
 	for (int x = 0; x < map_d->map_sz; x++)
-		for (int y = 0; y < map_d->map_sz; y++)
-			map_d->objs[x][y] = 0;
+		for (int y = 0; y < map_d->map_sz; y++) {
+			if (x <= 10 || y <= 10 || x >= map_d->map_sz - 10 || y >= map_d->map_sz - 10)
+				map_d->objs[x][y] = 1;
+			else
+				map_d->objs[x][y] = 0;
+		}
 
 	// offset for the background rhombus derived from the intercepts
 	// between the sides of the window rectangle and the sides of the
@@ -71,8 +75,8 @@ int map_init(win_data* win_d, map_data* map_d) {
 	map_d->x_off = win_d->win_w / 2 - TILE_W / 2;
 	map_d->y_off = -win_d->win_w / 4;
 
-	map_d->x_cur = 0;
-	map_d->y_cur = 0;
+	map_d->x_cur = 10;
+	map_d->y_cur = 10;
 	map_d->x_off2 = 0;
 	map_d->y_off2 = 0;
 	return 0;

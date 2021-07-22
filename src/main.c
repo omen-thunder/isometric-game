@@ -49,30 +49,32 @@ void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 
 	rect.x = (x - y) * TILE_W / 2 + map_d->x_off + cam_d->frame * iso_x(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir) + 30;
 	rect.y = (y + x) * TILE_H / 2 + map_d->y_off + cam_d->frame * iso_y(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir) - 85;
+
 	switch ((x + map_d->x_cur + y + map_d->y_cur) % 5) {
 		case 0:
 			break;
 		case 1:
 			rect.x -= 8;
-			rect.y -= 8;
+			rect.y -= 4;
 			break;
 		case 2:
 			rect.x += 8;
-			rect.y += 8;
+			rect.y += 4;
 			break;
 		case 3:
 			rect.x -= 8;
-			rect.y += 8;
+			rect.y += 4;
 			break;
 		case 4:
 			rect.x += 8;
-			rect.y -= 8;
+			rect.y -= 4;
 			break;
 	}
 
-	if (rect.x > -rect.w && rect.x < win_d->win_w && rect.y > -rect.h && rect.y < win_d->win_h) {
+	if (rect.x > -rect.w && rect.x < win_d->win_w  && rect.y > -rect.h && rect.y < win_d->win_h) {
 		rect.x += map_d->x_off2;
 		rect.y += map_d->y_off2;
+
 		switch (map_d->objs[x + map_d->x_cur][y + map_d->y_cur]) {
 			case 0:
 				break;
@@ -110,15 +112,15 @@ void draw_bg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex
 
 // draws the foreground
 void draw_fg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d) {
-	for (int x = 0; x < map_d->win_sz; x++)
-		for (int y = 0; y < map_d->win_sz; y++)
+	for (int x = -2; x < (int) map_d->win_sz + 2; x++)
+		for (int y = -2; y < (int) map_d->win_sz + 2; y++)
 			draw_obj(rend, win_d, map_d, tex_d, cam_d, x, y);
 }
 
 // initialise the textures
 int texture_init(SDL_Renderer* rend, tex_data* tex_d) {
 	// load tile textures
-	if (load_texture(rend, &tex_d->tile_tex[GRASS], "../resources/tiles/grassA.png")) {
+	if (load_texture(rend, &tex_d->tile_tex[GRASS], "../resources/tiles/grassB.png")) {
 		fprintf(stderr, "Failed to load texture 0\n");
 		return -1;
 	}
@@ -146,10 +148,14 @@ int event(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	int button, mouse_x, mouse_y;
 	button = SDL_GetMouseState(&mouse_x, &mouse_y);
 	
-	if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
-		map_d->objs[get_column(map_d, cam_d, mouse_x, mouse_y)][get_row(map_d, cam_d,  mouse_x,  mouse_y)] = 1;
-	else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
-		map_d->objs[get_column(map_d, cam_d, mouse_x, mouse_y)][get_row(map_d, cam_d, mouse_x,  mouse_y)] = 0;
+	int col = get_column(map_d, cam_d, mouse_x, mouse_y);
+	int row = get_row(map_d, cam_d, mouse_x, mouse_y);
+	if (col > 10 && row > 10 && col < map_d->map_sz - 10 && row < map_d->map_sz - 10) {
+		if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
+			map_d->tiles[col][row] = 1;
+		else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
+			map_d->tiles[col][row] = 0;
+	}
 
 	cam_pan(win_d, map_d, cam_d, mouse_x, mouse_y);
 
@@ -224,15 +230,14 @@ int main(void) {
 	if (map_init(&win_data, &map_data)) {
 		return 1;
 	}
-	map_data.tiles[10][10] = 1;
-	map_data.objs[10][10] = 1;
 
 	tex_data tex_data;
 
 	cam_data cam_data = {
 		.frame = 0,
 		.rate = 8,	// should be a power of 2
-		.x_dir = 0, .y_dir = 0
+		.x_dir = 0,
+		.y_dir = 0
 	};
 
 	// attempt to initialise graphics and timer system
