@@ -4,7 +4,7 @@
 
 #define TILE_W (128)
 #define TILE_H (64)
-#define NUM_TILES (2)
+#define NUM_TILES (48)
 #define NUM_OBJS (2)
 
 // contains window related variables
