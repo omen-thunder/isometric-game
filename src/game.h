@@ -1,3 +1,6 @@
+#ifndef GAME_H
+#define GAME_H
+
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -68,3 +71,15 @@ void move_dr(map_data* map_d, cam_data* cam_d);
 int pan_dir(win_data* win_d, int mouse_x, int mouse_y);
 void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
 
+// in water.c
+int water_count(map_data* map_d, int x, int y);
+size_t water_sel_1(map_data* map_d, int x, int y);
+size_t water_sel_2(map_data* map_d, int x, int y);
+size_t water_sel_3(map_data* map_d, int x, int y);
+size_t water_sel_4(map_data* map_d, int x, int y);
+size_t water_sel_5(map_data* map_d, int x, int y);
+size_t water_sel_6(map_data* map_d, int x, int y);
+size_t water_sel_7(map_data* map_d, int x, int y);
+size_t water_index(map_data* map_d, int x, int y);
+
+#endif
