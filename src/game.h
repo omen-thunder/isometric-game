@@ -20,8 +20,8 @@ typedef struct {
 typedef struct {
 	int** tiles;	// 2D array representing the background tiles
 	int** objs;	// 2D array representing the objects on the map
-	unsigned win_sz;	// the number of tiles in one edge of the background rhombus
-	unsigned map_sz;	// the number of tiles in one edge of the map
+	int win_sz;	// the number of tiles in one edge of the background rhombus
+	int map_sz;	// the number of tiles in one edge of the map
 	int x_off;	// x-axis offset of the background rhombus
 	int y_off;	// y-axis offset of the background rhombus
 	int x_off2;	// used for testing
@@ -73,13 +73,13 @@ void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int
 
 // in water.c
 int water_count(map_data* map_d, int x, int y);
-size_t water_sel_1(map_data* map_d, int x, int y);
-size_t water_sel_2(map_data* map_d, int x, int y);
-size_t water_sel_3(map_data* map_d, int x, int y);
-size_t water_sel_4(map_data* map_d, int x, int y);
-size_t water_sel_5(map_data* map_d, int x, int y);
-size_t water_sel_6(map_data* map_d, int x, int y);
-size_t water_sel_7(map_data* map_d, int x, int y);
-size_t water_index(map_data* map_d, int x, int y);
+int water_sel_1(map_data* map_d, int x, int y);
+int water_sel_2(map_data* map_d, int x, int y);
+int water_sel_3(map_data* map_d, int x, int y);
+int water_sel_4(map_data* map_d, int x, int y);
+int water_sel_5(map_data* map_d, int x, int y);
+int water_sel_6(map_data* map_d, int x, int y);
+int water_sel_7(map_data* map_d, int x, int y);
+int water_index(map_data* map_d, int x, int y);
 
 #endif

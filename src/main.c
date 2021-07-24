@@ -112,14 +112,14 @@ void draw_bg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex
 
 // draws the foreground
 void draw_fg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d) {
-	for (int x = -2; x < (int) map_d->win_sz + 2; x++)
-		for (int y = -2; y < (int) map_d->win_sz + 2; y++)
+	for (int x = -2; x < map_d->win_sz + 2; x++)
+		for (int y = -2; y < map_d->win_sz + 2; y++)
 			draw_obj(rend, win_d, map_d, tex_d, cam_d, x, y);
 }
 
 // destroy textures
 void texture_free(SDL_Texture** tex, size_t size) {
-	for (size_t i = 0; i < size; i++)
+	for (int i = 0; i < size; i++)
 		SDL_DestroyTexture(tex[i]);
 }
 

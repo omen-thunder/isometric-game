@@ -32,7 +32,7 @@ int water_count(map_data* map_d, int x, int y) {
 	return water;
 }
 
-size_t water_sel_1(map_data* map_d, int x, int y) {
+int water_sel_1(map_data* map_d, int x, int y) {
 	// check up-right tile
 	if (map_d->tiles[x][y - 1] == 1)
 		return 1;
@@ -48,7 +48,7 @@ size_t water_sel_1(map_data* map_d, int x, int y) {
 
 	return 0;
 }
-size_t water_sel_2(map_data* map_d, int x, int y) {
+int water_sel_2(map_data* map_d, int x, int y) {
 	// check up-right tile
 	if (map_d->tiles[x][y - 1] == 1) {
 		// check up-left tile
@@ -77,7 +77,7 @@ size_t water_sel_2(map_data* map_d, int x, int y) {
 
 	return water_sel_1(map_d, x, y);
 }
-size_t water_sel_3(map_data* map_d, int x, int y) {
+int water_sel_3(map_data* map_d, int x, int y) {
 	// check right, up-right and down-right tiles
 	if (map_d->tiles[x + 1][y - 1] == 1 
 			&& map_d->tiles[x][y - 1] == 1 
@@ -121,7 +121,7 @@ size_t water_sel_3(map_data* map_d, int x, int y) {
 
 	return water_sel_2(map_d, x, y);
 }
-size_t water_sel_4(map_data* map_d, int x, int y) {
+int water_sel_4(map_data* map_d, int x, int y) {
 	// check right, up-right, up-left, down-right tiles
 	if (map_d->tiles[x + 1][y - 1] == 1
 			&& map_d->tiles[x][y - 1]
@@ -179,7 +179,7 @@ size_t water_sel_4(map_data* map_d, int x, int y) {
 	
 	return water_sel_3(map_d, x, y);
 }
-size_t water_sel_5(map_data* map_d, int x, int y) {
+int water_sel_5(map_data* map_d, int x, int y) {
 	// check up-left, left, down-left, down and down-right tiles
 	if (map_d->tiles[x - 1][y] == 1
 			&& map_d->tiles[x - 1][y + 1] == 1
@@ -231,7 +231,7 @@ size_t water_sel_5(map_data* map_d, int x, int y) {
 
 	return water_sel_4(map_d, x, y);
 }
-size_t water_sel_6(map_data* map_d, int x, int y) {
+int water_sel_6(map_data* map_d, int x, int y) {
 	// check right and up tiles
 	if (map_d->tiles[x + 1][y - 1] == 0 
 			&& map_d->tiles[x - 1][y - 1] == 0)
@@ -259,7 +259,7 @@ size_t water_sel_6(map_data* map_d, int x, int y) {
 
 	return water_sel_5(map_d, x, y);
 }
-size_t water_sel_7(map_data* map_d, int x, int y) {
+int water_sel_7(map_data* map_d, int x, int y) {
 	// check right tile
 	if (map_d->tiles[x + 1][y - 1] == 0)
 		return 42;
@@ -276,7 +276,7 @@ size_t water_sel_7(map_data* map_d, int x, int y) {
 	return water_sel_6(map_d, x, y);
 }
 
-size_t water_index(map_data* map_d, int x, int y) {
+int water_index(map_data* map_d, int x, int y) {
 	switch (water_count(map_d, x, y)) {
 		case 0:
 			return 0;
