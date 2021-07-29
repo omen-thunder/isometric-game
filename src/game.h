@@ -9,6 +9,7 @@
 #define TILE_H (64)
 #define NUM_TILES (48)
 #define NUM_OBJS (2)
+#define BOARDER (10)
 
 // contains window related variables
 typedef struct {
@@ -38,15 +39,10 @@ typedef struct {
 
 // contains camera related variables
 typedef struct {
-	int frame;	// frame counter
 	int rate;	// scroll rate when edge-panning
-	int x_dir;	// last x-axis edge-pan direction the mouse was in
-	int y_dir;	// last x-axis edge-pan direction the mouse was in
+	int iso_x;	// isometric x-axis offset for rendering when the camera is moving
+	int iso_y;	// isometric y-axis offset for rendering when the camera is moving
 } cam_data;
-
-// in main.c
-int iso_x(int x, int y);
-int iso_y(int x, int y);
 
 // in setup.c
 void closeSDL(SDL_Window* win, SDL_Renderer* rend, map_data* map_d, tex_data* tex_d);
@@ -58,17 +54,12 @@ int load_texture(SDL_Renderer* rend, SDL_Texture** tex, char* path);
 int map_init(win_data* win_d, map_data* map_d);
 int get_row(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y);
 int get_column(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y);
+void move_ur(map_data* map_d);
+void move_ul(map_data* map_d);
+void move_dl(map_data* map_d);
+void move_dr(map_data* map_d);
 
 // in camera.c
-void move_r(map_data* map_d, cam_data* cam_d);
-void move_ur(map_data* map_d, cam_data* cam_d);
-void move_u(map_data* map_d, cam_data* cam_d);
-void move_ul(map_data* map_d, cam_data* cam_d);
-void move_l(map_data* map_d, cam_data* cam_d);
-void move_dl(map_data* map_d, cam_data* cam_d);
-void move_d(map_data* map_d, cam_data* cam_d);
-void move_dr(map_data* map_d, cam_data* cam_d);
-int pan_dir(win_data* win_d, int mouse_x, int mouse_y);
 void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
 
 // in water.c

@@ -4,27 +4,14 @@
 enum tile_tex {GRASS = 47};
 enum obj_tex {NONE, TREE};
 
-
-// converts a cartesian vector to an isometric vector
-// and returns the x-axis component
-int iso_x(int x, int y) {
-	return -x + y;
-}
-
-// converts a cartesian vector to an isometric vector
-// and returns the y-axis component
-int iso_y(int x, int y) {
-	return (x + y) / -2;
-}
-
 // draws a single tile
 void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int x, int y) {
 	SDL_Rect rect;
 	rect.w = TILE_W;
 	rect.h = TILE_H;
 
-	rect.x = (x - y) * TILE_W / 2 + map_d->x_off + cam_d->frame * iso_x(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir);
-	rect.y = (y + x) * TILE_H / 2 + map_d->y_off + cam_d->frame * iso_y(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir);
+	rect.x = (x - y) * TILE_W / 2 + map_d->x_off - cam_d->iso_x + cam_d->iso_y;
+	rect.y = (y + x) * TILE_H / 2 + map_d->y_off - cam_d->iso_x / 2 - cam_d->iso_y / 2;
 
 	if (rect.x > -TILE_W && rect.x < win_d->win_w && rect.y > -TILE_H && rect.y < win_d->win_h) {
 		rect.x += map_d->x_off2;
@@ -47,9 +34,9 @@ void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 	rect.w /= 5;
 	rect.h /= 5;
 
-	rect.x = (x - y) * TILE_W / 2 + map_d->x_off + cam_d->frame * iso_x(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir) + 30;
-	rect.y = (y + x) * TILE_H / 2 + map_d->y_off + cam_d->frame * iso_y(cam_d->rate * cam_d->x_dir, cam_d->rate * cam_d->y_dir) - 85;
-
+	rect.x = (x - y) * TILE_W / 2 + map_d->x_off - cam_d->iso_x + cam_d->iso_y + 30;
+	rect.y = (y + x) * TILE_H / 2 + map_d->y_off - cam_d->iso_x / 2 - cam_d->iso_y / 2 + 85;
+	
 	switch ((x + map_d->x_cur + y + map_d->y_cur) % 5) {
 		case 0:
 			break;
@@ -87,33 +74,15 @@ void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 
 // draws the background
 void draw_bg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d) {
-	for (int x = 0; x < map_d->win_sz; x++)
-		for (int y = 0; y < map_d->win_sz; y++)
+	for (int x = -2; x < map_d->win_sz + 2; x++)
+		for (int y = -2; y < map_d->win_sz + 2; y++)
 			draw_tile(rend, win_d, map_d, tex_d, cam_d, x, y);
-
-	// if the camera is moving on the x-axis, draw an extra column
-	if (cam_d->x_dir == 1) {
-		for (int y = 0; y < map_d->win_sz; y++)
-			draw_tile(rend, win_d, map_d, tex_d, cam_d, map_d->win_sz, y);
-	} else if (cam_d->x_dir == -1) {
-		for (int y = 0; y < map_d->win_sz; y++)
-			draw_tile(rend, win_d, map_d, tex_d, cam_d, -1, y);
-	}
-
-	// if the camera is moving on the y-axis, draw an extra row 
-	if (cam_d->y_dir == -1) {
-		for (int x = 0; x < map_d->win_sz; x++)
-			draw_tile(rend, win_d, map_d, tex_d, cam_d, x, -1);
-	} else if (cam_d->y_dir == 1) {
-		for (int x = 0; x < map_d->win_sz; x++)
-			draw_tile(rend, win_d, map_d, tex_d, cam_d, x, map_d->win_sz);
-	}
 }
 
 // draws the foreground
 void draw_fg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d) {
-	for (int x = -2; x < map_d->win_sz + 2; x++)
-		for (int y = -2; y < map_d->win_sz + 2; y++)
+	for (int x = -4; x < map_d->win_sz + 4; x++)
+		for (int y = -4; y < map_d->win_sz + 4; y++)
 			draw_obj(rend, win_d, map_d, tex_d, cam_d, x, y);
 }
 
@@ -159,7 +128,7 @@ int event(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	
 	int col = get_column(map_d, cam_d, mouse_x, mouse_y);
 	int row = get_row(map_d, cam_d, mouse_x, mouse_y);
-	if (col > 10 && row > 10 && col < map_d->map_sz - 10 && row < map_d->map_sz - 10) {
+	if (col > BOARDER && row > BOARDER && col < map_d->map_sz - BOARDER && row < map_d->map_sz - BOARDER) {
 		if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
 			map_d->tiles[col][row] = 1;
 		else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
@@ -180,16 +149,20 @@ int event(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 			case SDL_KEYDOWN:
 				switch(event.key.keysym.sym) {
 					case SDLK_RIGHT:
-						move_r(map_d, cam_d);
+						move_ur(map_d);
+						move_dr(map_d);
 						break;
 					case SDLK_UP:
-						move_u(map_d, cam_d);
+						move_ur(map_d);
+						move_ul(map_d);
 						break;
 					case SDLK_LEFT:
-						move_l(map_d, cam_d);
+						move_ul(map_d);
+						move_dl(map_d);
 						break;
 					case SDLK_DOWN:
-						move_d(map_d, cam_d);
+						move_dl(map_d);
+						move_dr(map_d);
 						break;
 					case SDLK_w:
 						map_d->y_off2 += 5;
@@ -243,10 +216,9 @@ int main(void) {
 	tex_data tex_data;
 
 	cam_data cam_data = {
-		.frame = 0,
-		.rate = 8,	// should be a power of 2
-		.x_dir = 0,
-		.y_dir = 0
+		.rate = 4,	// should be a power of 2
+		.iso_x = 0,
+		.iso_y = 0,
 	};
 
 	// attempt to initialise graphics and timer system
