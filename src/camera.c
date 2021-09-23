@@ -25,61 +25,105 @@ int pan_dir(win_data* win_d, int mouse_x, int mouse_y) {
 	return 0;
 }
 
+// pans the camera right
+void pan_r(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4 && map_d->y_cur > 4) {
+		cam_d->iso_x += cam_d->rate / 2;
+		cam_d->iso_y -= cam_d->rate / 2;
+	} else if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4) {
+		cam_d->iso_x += cam_d->rate;
+	} else if (map_d->y_cur > 4) {
+		cam_d->iso_y -= cam_d->rate;
+	}
+}
+
+// pans the camera up and right
+void pan_ur(map_data* map_d, cam_data* cam_d) {
+	if (map_d->y_cur > 4)
+		cam_d->iso_y -= cam_d->rate;
+}
+
+// pans the camera up
+void pan_u(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur > 4)
+		cam_d->iso_x -= cam_d->rate;
+	if (map_d->y_cur > 4)
+		cam_d->iso_y -= cam_d->rate;
+}
+
+
+// pans the camera up and left
+void pan_ul(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur > 4)
+		cam_d->iso_x -= cam_d->rate;
+}
+
+// pans the camera left
+void pan_l(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur > 4 && map_d->y_cur < map_d->map_sz - map_d->win_sz - 4) {
+		cam_d->iso_x -= cam_d->rate / 2;
+		cam_d->iso_y += cam_d->rate / 2;
+	} else if (map_d->x_cur > 4) {
+		cam_d->iso_x -= cam_d->rate;
+	} else if (map_d->y_cur < map_d->map_sz - map_d->win_sz - 4) {
+		cam_d->iso_y += cam_d->rate;
+	}
+}
+
+// pans the camera down and left
+void pan_dl(map_data* map_d, cam_data* cam_d) {
+	if (map_d->y_cur < map_d->map_sz - map_d->win_sz - 4)
+		cam_d->iso_y += cam_d->rate;
+}
+
+// pans the camera down
+void pan_d(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4)
+		cam_d->iso_x += cam_d->rate;
+	if (map_d->y_cur < map_d->map_sz - map_d->win_sz - 4)
+		cam_d->iso_y += cam_d->rate;
+}
+
+// pans the camera down and right
+void pan_dr(map_data* map_d, cam_data* cam_d) {
+	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4)
+		cam_d->iso_x += cam_d->rate;
+}
+
 // edge-pans the camera
 void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y) {
+	// check if the mouse is on the edge of the screen and, if so, pan the camera
 	switch (pan_dir(win_d, mouse_x, mouse_y)) {
 		case 0:
 			break;
 		case 1:
-			if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4 && map_d->y_cur > 4) {
-				cam_d->iso_x += cam_d->rate / 2;
-				cam_d->iso_y -= cam_d->rate / 2;
-			} else if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4) {
-				cam_d->iso_x += cam_d->rate;
-			} else if (map_d->y_cur > 4) {
-				cam_d->iso_y -= cam_d->rate;
-			}
+			pan_r(map_d, cam_d);
 			break;
 		case 2:
-			if (map_d->y_cur > 4)
-				cam_d->iso_y -= cam_d->rate;
+			pan_ur(map_d, cam_d);
 			break;
 		case 3:
-			if (map_d->x_cur > 4)
-				cam_d->iso_x -= cam_d->rate;
-			if (map_d->y_cur > 4)
-				cam_d->iso_y -= cam_d->rate;
+			pan_u(map_d, cam_d);
 			break;
 		case 4:
-			if (map_d->x_cur > 4)
-				cam_d->iso_x -= cam_d->rate;
+			pan_ul(map_d, cam_d);
 			break;
 		case 5:
-			if (map_d->x_cur > 4 && map_d->y_cur < map_d->map_sz - map_d->win_sz - 4) {
-				cam_d->iso_x -= cam_d->rate / 2;
-				cam_d->iso_y += cam_d->rate / 2;
-			} else if (map_d->x_cur > 4) {
-				cam_d->iso_x -= cam_d->rate;
-			} else if (map_d->y_cur < map_d->map_sz - map_d->win_sz - 4) {
-				cam_d->iso_y += cam_d->rate;
-			}
+			pan_l(map_d, cam_d);
 			break;
 		case 6:
-			if (map_d->y_cur < map_d->map_sz - map_d->win_sz - 4)
-				cam_d->iso_y += cam_d->rate;
+			pan_dl(map_d, cam_d);
 			break;
 		case 7:
-			if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4)
-				cam_d->iso_x += cam_d->rate;
-			if (map_d->y_cur < map_d->map_sz - map_d->win_sz - 4)
-				cam_d->iso_y += cam_d->rate;
+			pan_d(map_d, cam_d);
 			break;
 		case 8:
-			if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4)
-				cam_d->iso_x += cam_d->rate;
+			pan_dr(map_d, cam_d);
 			break;
 	}
-
+	
+	// if the camera has panned a whole tile's width,
+	// reset the x offset and change the map cursor
 	if (cam_d->iso_x >= TILE_H) {
 		cam_d->iso_x -= TILE_H;
 		move_dr(map_d);
@@ -88,6 +132,8 @@ void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int
 		move_ul(map_d);
 	}
 
+	// if the camera has panned a whole tile's height,
+	// reset the y offset and change the map cursor
 	if (cam_d->iso_y >= TILE_H) {
 		cam_d->iso_y -= TILE_H;
 		move_dl(map_d);

@@ -52,8 +52,8 @@ int load_texture(SDL_Renderer* rend, SDL_Texture** tex, char* path);
 
 // in map.c
 int map_init(win_data* win_d, map_data* map_d);
-int get_row(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y);
-int get_column(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y);
+int get_row(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
+int get_column(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
 void move_ur(map_data* map_d);
 void move_ul(map_data* map_d);
 void move_dl(map_data* map_d);

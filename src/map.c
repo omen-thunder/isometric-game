@@ -24,7 +24,6 @@ int map_init(win_data* win_d, map_data* map_d) {
 		fprintf(stderr, "malloc() failed\n");
 		return -1;
 	}
-
 	for (int i = 0; i < map_d->map_sz; i++)
 		if (!(map_d->tiles[i] = malloc(map_d->map_sz * sizeof(int)))) {
 			for (int j = 0; j < i; j++)
@@ -47,7 +46,6 @@ int map_init(win_data* win_d, map_data* map_d) {
 		fprintf(stderr, "malloc() failed\n");
 		return -1;
 	}
-
 	for (int i = 0; i < map_d->map_sz; i++)
 		if (!(map_d->objs[i] = malloc(map_d->map_sz * sizeof(int)))) {
 			for (int j = 0; j < i; j++)
@@ -82,7 +80,7 @@ int map_init(win_data* win_d, map_data* map_d) {
 }
 
 // returns the row the given point is in
-int get_row(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y) {
+int get_row(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y) {
 	/* Derived from the cartesian equation y = x / 2 + b.
 	To find the row, solve for the y-intercept of the above line
 	using the mouse's x and y position and subtract the y-axis
@@ -96,7 +94,7 @@ int get_row(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y) {
 }
 
 // returns the column the given point is in
-int get_column(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y) {
+int get_column(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y) {
 	/* Derived from the cartesian equation y = -x / 2 + b.
 	To find the column, solve for the y-intercept of the above line
 	using the mouse's x and y position and subtract the y-axis
@@ -109,21 +107,25 @@ int get_column(map_data* map_d, cam_data* cam_d, float mouse_x, float mouse_y) {
 			TILE_H / 2.0) / (float) TILE_H) + map_d->x_cur;
 }
 
+// move the map cursor up and right
 void move_ur(map_data* map_d) {
 	if (map_d->y_cur > 4)
 		map_d->y_cur--;
 }
 
+// move the map cursor up and left
 void move_ul(map_data* map_d) {
 	if (map_d->x_cur > 4)
 		map_d->x_cur--;
 }
 
+// move the map cursor down and left
 void move_dl(map_data* map_d) {
 	if (map_d->y_cur < map_d->map_sz - map_d->win_sz - 4)
 		map_d->y_cur++;
 }
 
+// move the map cursor down and right
 void move_dr(map_data* map_d) {
 	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4)
 		map_d->x_cur++;

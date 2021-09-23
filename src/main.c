@@ -13,9 +13,13 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* t
 	rect.x = (x - y) * TILE_W / 2 + map_d->x_off - cam_d->iso_x + cam_d->iso_y;
 	rect.y = (y + x) * TILE_H / 2 + map_d->y_off - cam_d->iso_x / 2 - cam_d->iso_y / 2;
 
+	// checks if the tile is on the screen
 	if (rect.x > -TILE_W && rect.x < win_d->win_w && rect.y > -TILE_H && rect.y < win_d->win_h) {
+		// add the offset of the current camera position on the map
 		rect.x += map_d->x_off2;
 		rect.y += map_d->y_off2;
+
+		// check what type of tile is being drawn
 		switch (map_d->tiles[x + map_d->x_cur][y + map_d->y_cur]) {
 			case 0:
 				SDL_RenderCopy(rend, tex_d->tile_tex[GRASS], NULL, &rect);
@@ -27,7 +31,7 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* t
 	}
 }
 
-// draws and object
+// draws an object
 void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int x, int y) {
 	SDL_Rect rect;
 	SDL_QueryTexture(tex_d->obj_tex[TREE], NULL, NULL,  &rect.w, &rect.h);
@@ -37,6 +41,7 @@ void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 	rect.x = (x - y) * TILE_W / 2 + map_d->x_off - cam_d->iso_x + cam_d->iso_y + 30;
 	rect.y = (y + x) * TILE_H / 2 + map_d->y_off - cam_d->iso_x / 2 - cam_d->iso_y / 2 + 85;
 	
+	// pseudo-randomly adjust the x and y position
 	switch ((x + map_d->x_cur + y + map_d->y_cur) % 5) {
 		case 0:
 			break;
@@ -58,10 +63,13 @@ void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 			break;
 	}
 
+	// checks if the object is on the screen
 	if (rect.x > -rect.w && rect.x < win_d->win_w  && rect.y > -rect.h && rect.y < win_d->win_h) {
+		// add the offset of the current camera position on the map
 		rect.x += map_d->x_off2;
 		rect.y += map_d->y_off2;
 
+		// check what type of object is being drawn
 		switch (map_d->objs[x + map_d->x_cur][y + map_d->y_cur]) {
 			case 0:
 				break;
@@ -227,23 +235,27 @@ int main(void) {
 		return 1;
 	}
 
+	// initialise the window
 	SDL_Window* win;
 	if (make_window(&win, &win_data)) {
 		closeSDL(NULL, NULL, &map_data, NULL);
 		return 1;
 	}
 	
+	// initialise the renderer
 	SDL_Renderer* rend;
 	if (make_renderer(win, &rend)) {
 		closeSDL(win, NULL, &map_data, NULL);
 		return 1;
 	}
 
+	// initialise the textures
 	if (texture_init(rend, &tex_data)) {
 		closeSDL(win, rend, &map_data, NULL);
 		return 1;
 	}
 
+	// begin animation
 	animate(win, rend, &win_data, &map_data, &tex_data, &cam_data);
 
 	closeSDL(win, rend, &map_data, &tex_data);

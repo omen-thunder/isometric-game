@@ -32,6 +32,9 @@ int water_count(map_data* map_d, int x, int y) {
 	return water;
 }
 
+// returns the index of a water tile with 1 surrounding water tiles
+// if none are appropriate, returns the index of a water tile
+// with no surrounding water tiles
 int water_sel_1(map_data* map_d, int x, int y) {
 	// check up-right tile
 	if (map_d->tiles[x][y - 1] == 1)
@@ -48,6 +51,10 @@ int water_sel_1(map_data* map_d, int x, int y) {
 
 	return 0;
 }
+
+// returns the index of a water tile with 2 surrounding water tiles
+// if none are appropriate, calls the function for 1 surrounding
+// water tile
 int water_sel_2(map_data* map_d, int x, int y) {
 	// check up-right tile
 	if (map_d->tiles[x][y - 1] == 1) {
@@ -77,6 +84,10 @@ int water_sel_2(map_data* map_d, int x, int y) {
 
 	return water_sel_1(map_d, x, y);
 }
+
+// returns the index of a water tile with 3 surrounding water tiles
+// if none are appropriate, calls the function for 2 surrounding
+// water tiles
 int water_sel_3(map_data* map_d, int x, int y) {
 	// check right, up-right and down-right tiles
 	if (map_d->tiles[x + 1][y - 1] == 1 
@@ -121,6 +132,10 @@ int water_sel_3(map_data* map_d, int x, int y) {
 
 	return water_sel_2(map_d, x, y);
 }
+
+// returns the index of a water tile with 4 surrounding water tiles
+// if none are appropriate, calls the function for 3 surrounding
+// water tiles
 int water_sel_4(map_data* map_d, int x, int y) {
 	// check right, up-right, up-left, down-right tiles
 	if (map_d->tiles[x + 1][y - 1] == 1
@@ -179,6 +194,10 @@ int water_sel_4(map_data* map_d, int x, int y) {
 	
 	return water_sel_3(map_d, x, y);
 }
+
+// returns the index of a water tile with 5 surrounding water tiles
+// if none are appropriate, calls the function for 4 surrounding
+// water tiles
 int water_sel_5(map_data* map_d, int x, int y) {
 	// check up-left, left, down-left, down and down-right tiles
 	if (map_d->tiles[x - 1][y] == 1
@@ -231,6 +250,10 @@ int water_sel_5(map_data* map_d, int x, int y) {
 
 	return water_sel_4(map_d, x, y);
 }
+
+// returns the index of a water tile with 6 surrounding water tiles
+// if none are appropriate, calls the function for 5 surrounding
+// water tiles
 int water_sel_6(map_data* map_d, int x, int y) {
 	// check right and up tiles
 	if (map_d->tiles[x + 1][y - 1] == 0 
@@ -259,6 +282,10 @@ int water_sel_6(map_data* map_d, int x, int y) {
 
 	return water_sel_5(map_d, x, y);
 }
+
+// returns the index of a water tile with 7 surrounding water tiles
+// if none are appropriate, calls the function for 6 surrounding
+// water tiles
 int water_sel_7(map_data* map_d, int x, int y) {
 	// check right tile
 	if (map_d->tiles[x + 1][y - 1] == 0)
@@ -276,6 +303,7 @@ int water_sel_7(map_data* map_d, int x, int y) {
 	return water_sel_6(map_d, x, y);
 }
 
+// returns the index of a water tile based on its surrounding tiles
 int water_index(map_data* map_d, int x, int y) {
 	switch (water_count(map_d, x, y)) {
 		case 0:
