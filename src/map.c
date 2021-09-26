@@ -90,7 +90,7 @@ int get_row(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y) {
 	to get the row index */
 	return floor(Y_INTER((float) (-(map_d->x_off + cam_d->iso_x + cam_d->iso_y)),
 			Y_INTER(mouse_x, mouse_y, map_d->y_off + cam_d->iso_x / 2 - cam_d->iso_y / 2),
-			TILE_H / -2.0) / (float) TILE_H) + map_d->y_cur;
+			TILE_H / -2.0) / (float) TILE_H);
 }
 
 // returns the column the given point is in
@@ -102,9 +102,9 @@ int get_column(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y) {
 	offset of the background, solve for the y value in the original
 	equation for the line. Divide this y value by the tile height
 	to get the column index */
-	return floor(Y_INTER((float) (map_d->x_off + cam_d->iso_x + cam_d->iso_y),
-			Y_INTER(-mouse_x, mouse_y, map_d->y_off + cam_d->iso_x / 2 - cam_d->iso_y / 2),
-			TILE_H / 2.0) / (float) TILE_H) + map_d->x_cur;
+	return floor(Y_INTER((float) (map_d->x_off - cam_d->iso_x - cam_d->iso_y),
+			Y_INTER(-mouse_x, mouse_y, map_d->y_off - cam_d->iso_x / 2 + cam_d->iso_y / 2),
+			TILE_H / 2.0) / (float) TILE_H);
 }
 
 // move the map cursor up and right
@@ -129,4 +129,15 @@ void move_dl(map_data* map_d) {
 void move_dr(map_data* map_d) {
 	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4)
 		map_d->x_cur++;
+}
+
+// frees resources in the map_data struct
+void free_map(map_data* map_d) {
+	for (int i = 0; i < map_d->map_sz; i++)
+		free(map_d->tiles[i]);
+	free(map_d->tiles);
+
+	for (int i = 0; i < map_d->map_sz; i++)
+		free(map_d->objs[i]);
+	free(map_d->objs);
 }

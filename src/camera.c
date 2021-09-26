@@ -1,26 +1,26 @@
 #include "game.h"
 
 // returns the edge-pan direction based on the mouse position
-int pan_dir(win_data* win_d, int mouse_x, int mouse_y) {
-	if ((mouse_x > win_d->win_w * 9 / 10 && mouse_y < win_d->win_h / 5) 
-			|| (mouse_x > win_d->win_w * 8 / 10 && mouse_y < win_d->win_h / 10))
+int pan_dir(win_data* win_d) {
+	if ((win_d->mouse_x > win_d->win_w * 9 / 10 && win_d->mouse_y < win_d->win_h / 5) 
+			|| (win_d->mouse_x > win_d->win_w * 8 / 10 && win_d->mouse_y < win_d->win_h / 10))
 		return 2;
-	if ((mouse_x < win_d->win_w / 10 && mouse_y < win_d->win_h / 5) 
-			|| (mouse_x < win_d->win_w / 5 && mouse_y < win_d->win_h / 10))
+	if ((win_d->mouse_x < win_d->win_w / 10 && win_d->mouse_y < win_d->win_h / 5) 
+			|| (win_d->mouse_x < win_d->win_w / 5 && win_d->mouse_y < win_d->win_h / 10))
 		return 4;
-	if ((mouse_x < win_d->win_w / 10 && mouse_y > win_d->win_h * 8 / 10) 
-			|| (mouse_x < win_d->win_w / 5 && mouse_y > win_d->win_h * 9 / 10))
+	if ((win_d->mouse_x < win_d->win_w / 10 && win_d->mouse_y > win_d->win_h * 8 / 10) 
+			|| (win_d->mouse_x < win_d->win_w / 5 && win_d->mouse_y > win_d->win_h * 9 / 10))
 		return 6;
-	if ((mouse_x > win_d->win_w * 9 / 10 && mouse_y > win_d->win_h * 8 / 10) 
-			|| (mouse_x > win_d->win_w * 8 / 10 && mouse_y > win_d->win_h * 9 / 10))
+	if ((win_d->mouse_x > win_d->win_w * 9 / 10 && win_d->mouse_y > win_d->win_h * 8 / 10) 
+			|| (win_d->mouse_x > win_d->win_w * 8 / 10 && win_d->mouse_y > win_d->win_h * 9 / 10))
 		return 8;
-	if (mouse_x > win_d->win_w * 9 / 10)
+	if (win_d->mouse_x > win_d->win_w * 9 / 10)
 		return 1;
-	if (mouse_y < win_d->win_h / 10)
+	if (win_d->mouse_y < win_d->win_h / 10)
 		return 3;
-	if (mouse_x < win_d->win_w / 10)
+	if (win_d->mouse_x < win_d->win_w / 10)
 		return 5;
-	if (mouse_y > win_d->win_h * 9 / 10)
+	if (win_d->mouse_y > win_d->win_h * 9 / 10)
 		return 7;
 	return 0;
 }
@@ -91,9 +91,9 @@ void pan_dr(map_data* map_d, cam_data* cam_d) {
 }
 
 // edge-pans the camera
-void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y) {
+void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	// check if the mouse is on the edge of the screen and, if so, pan the camera
-	switch (pan_dir(win_d, mouse_x, mouse_y)) {
+	switch (pan_dir(win_d)) {
 		case 0:
 			break;
 		case 1:
