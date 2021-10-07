@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <math.h>
 
 #define TILE_W (128)
 #define TILE_H (64)
@@ -23,6 +24,9 @@ typedef struct {
 	int win_h;	// the window height
 	int mouse_x;	// the mouse's x position
 	int mouse_y;	// the mouse's y position
+	int fps;	// the number of frames displayed per second
+	Uint32 old_t;	// the number of milliseconds from SDL library initialization to the last frame
+	Uint32 pres_t;	// the number of milliseconds from SDL library initialization to the current frame
 } win_data;
 
 // containts map related variables
@@ -48,9 +52,11 @@ typedef struct {
 
 // contains camera related variables
 typedef struct {
-	int rate;	// scroll rate when edge-panning
+	float rate;	// scroll rate when edge-panning
 	int iso_x;	// isometric x-axis offset for rendering when the camera is moving
 	int iso_y;	// isometric y-axis offset for rendering when the camera is moving
+	float buf;	// buffer for the isometric offset
+	int prev_dir;	// the previous pan direction
 } cam_data;
 
 // in map.c

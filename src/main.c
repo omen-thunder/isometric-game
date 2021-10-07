@@ -25,10 +25,17 @@ int make_renderer(SDL_Window* win, SDL_Renderer** rend) {
 }
 
 int main(void) {
-	win_data win_data = {.win_w = 1280, .win_h = 720};
+
+	win_data win_data = {
+		.win_w = 1280,
+		.win_h = 720,
+		.fps = 60,
+		.old_t = 0,
+		.pres_t = 0
+	};
 
 	cam_data cam_data = {
-		.rate = 4,	// should be a power of 2
+		.rate = 0.2f,
 		.iso_x = 0,
 		.iso_y = 0,
 	};

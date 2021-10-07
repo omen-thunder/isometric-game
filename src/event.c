@@ -59,6 +59,10 @@ int event(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 					case SDLK_d:
 						map_d->x_off2 += 5;
 						break;
+					case SDLK_SPACE:
+						cam_d->iso_x = 0;
+						cam_d->iso_y = 0;
+						break;
 				}
 				break;
 		}

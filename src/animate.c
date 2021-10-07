@@ -120,6 +120,9 @@ void draw_menu(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* t
 // the main animation loop
 int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d) {
 	while (!event(win_d, map_d, cam_d)) {
+		win_d->old_t = win_d->pres_t;
+		win_d->pres_t = SDL_GetTicks();
+
 		// clear the window
 		SDL_RenderClear(rend);
 
@@ -135,10 +138,9 @@ int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_
 		// display the window
 		SDL_RenderPresent(rend);
 
-		// wait 1/60th of a second
-		SDL_Delay(1000/60);
-
-	}
+		// wait 1/fps of a second
+		SDL_Delay(1000 / win_d->fps);
+	};
 
 	return 0;
 }
