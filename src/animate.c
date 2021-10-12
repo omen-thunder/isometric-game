@@ -137,6 +137,8 @@ int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_
 
 		// display the window
 		SDL_RenderPresent(rend);
+		if (win_d->pres_t < SDL_GetTicks())
+			printf("FPS: %d\n", 1000 / (SDL_GetTicks() - win_d->pres_t));
 
 		// wait 1/fps of a second
 		//SDL_Delay(1000 / win_d->fps);

@@ -33,75 +33,55 @@ int pan_dir(win_data* win_d) {
 }
 
 float pan_speed_r(win_data* win_d, cam_data* cam_d) {
-	printf("%f\n", ((float) (win_d->mouse_x - SCREEN_R) * cam_d->accel / (float) (win_d->win_w - SCREEN_R - 1) + 1));
 	return cam_d->rate * ((float) (win_d->mouse_x - SCREEN_R) * cam_d->accel / (float) (win_d->win_w - SCREEN_R - 1) + 1) / 2;
 }
 
 float pan_speed_ur(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (win_d->mouse_x - SCREEN_R) * cam_d->accel / (float) (win_d->win_w - SCREEN_R - 1) + 1);
 	float y_rate = cam_d->rate * ((float) (SCREEN_U - win_d->mouse_y) * cam_d->accel / (float) SCREEN_U + 1);
-	if (x_rate > y_rate) {
-		printf("%f\n", x_rate);
+	if (x_rate > y_rate)
 		return x_rate;
-	}
-	else {
-		printf("%f\n", y_rate);
+	else
 		return y_rate;
-	}
 }
 
 float pan_speed_u(win_data* win_d, cam_data* cam_d) {
-	printf("%f\n", ((float) (SCREEN_U - win_d->mouse_y) * cam_d->accel / (float) SCREEN_U + 1));
 	return cam_d->rate * ((float) (SCREEN_U - win_d->mouse_y) * cam_d->accel / (float) SCREEN_U + 1);
 }
 
 float pan_speed_ul(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (SCREEN_L - win_d->mouse_x) * cam_d->accel / (float) SCREEN_L + 1);
 	float y_rate = cam_d->rate * ((float) (SCREEN_U - win_d->mouse_y) * cam_d->accel / (float) SCREEN_U + 1);
-	if (x_rate > y_rate) {
-		printf("%f\n", x_rate);
+	if (x_rate > y_rate)
 		return x_rate;
-	}
-	else {
-		printf("%f\n", y_rate);
+	else
 		return y_rate;
-	}
 }
 
 float pan_speed_l(win_data* win_d, cam_data* cam_d) {
-	printf("%f\n", ((float) (SCREEN_L - win_d->mouse_x) * cam_d->accel / (float) SCREEN_L + 1));
 	return cam_d->rate * ((float) (SCREEN_L - win_d->mouse_x) * cam_d->accel / (float) SCREEN_L + 1) / 2;
 }
 
 float pan_speed_dl(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (SCREEN_L - win_d->mouse_x) * cam_d->accel / (float) SCREEN_L + 1);
 	float y_rate = cam_d->rate * ((float) (win_d->mouse_y - SCREEN_D) * cam_d->accel / (float) (win_d->win_h - SCREEN_D - 1) + 1);
-	if (x_rate > y_rate) {
-		printf("%f\n", x_rate);
+	if (x_rate > y_rate)
 		return x_rate;
-	}
-	else {
-		printf("%f\n", y_rate);
+	else
 		return y_rate;
-	}
 }
 
 float pan_speed_d(win_data* win_d, cam_data* cam_d) {
-	printf("%f\n", (float) (win_d->mouse_y - SCREEN_D) * cam_d->accel / (float) (win_d->win_h - SCREEN_D - 1) + 1);
 	return cam_d->rate * ((float) (win_d->mouse_y - SCREEN_D) * cam_d->accel / (float) (win_d->win_h - SCREEN_D - 1) + 1);
 }
 
 float pan_speed_dr(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (win_d->mouse_x - SCREEN_R) * cam_d->accel / (float) (win_d->win_w - SCREEN_R - 1) + 1);
 	float y_rate = cam_d->rate * ((float) (win_d->mouse_y - SCREEN_D) * cam_d->accel / (float) (win_d->win_h - SCREEN_D - 1) + 1);
-	if (x_rate > y_rate) {
-		printf("%f\n", x_rate);
+	if (x_rate > y_rate)
 		return x_rate;
-	}
-	else {
-		printf("%f\n", y_rate);
+	else
 		return y_rate;
-	}
 }
 
 
