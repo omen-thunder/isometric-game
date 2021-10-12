@@ -139,7 +139,7 @@ int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_
 		SDL_RenderPresent(rend);
 
 		// wait 1/fps of a second
-		SDL_Delay(1000 / win_d->fps);
+		//SDL_Delay(1000 / win_d->fps);
 	};
 
 	return 0;

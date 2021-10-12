@@ -12,6 +12,7 @@
 #define NUM_OBJS (2)
 #define NUM_MENU (1)
 #define BOARDER (10)
+#define BUF_SZ (60)
 
 // enumerations for the texture arrays
 enum tile_tex {GRASS = 47};
@@ -33,6 +34,7 @@ typedef struct {
 typedef struct {
 	int** tiles;	// 2D array representing the background tiles
 	int** objs;	// 2D array representing the objects on the map
+	int** npcs;	// 2D array representing the npcs on the map
 	int win_sz;	// the number of tiles in one edge of the background rhombus
 	int map_sz;	// the number of tiles in one edge of the map
 	int x_off;	// x-axis offset of the background rhombus
@@ -52,10 +54,11 @@ typedef struct {
 
 // contains camera related variables
 typedef struct {
-	float rate;	// scroll rate when edge-panning
+	int rate;	// the base scroll rate when edge-panning
+	int accel;	// the acceleration of edge-panning
 	int iso_x;	// isometric x-axis offset for rendering when the camera is moving
 	int iso_y;	// isometric y-axis offset for rendering when the camera is moving
-	float buf;	// buffer for the isometric offset
+	int buf;	// buffer for the isometric offset
 	int prev_dir;	// the previous pan direction
 } cam_data;
 

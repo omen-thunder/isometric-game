@@ -15,7 +15,8 @@ int make_window(SDL_Window** win, win_data* win_d) {
 // creates a SDL renderer
 int make_renderer(SDL_Window* win, SDL_Renderer** rend) {
 	*rend = SDL_CreateRenderer(win, -1,
-			SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+			SDL_RENDERER_ACCELERATED
+			| SDL_RENDERER_PRESENTVSYNC);
 	if (!*rend) {
 		fprintf(stderr, "Error creating renderer: %s\n", SDL_GetError());
 		return -1;
@@ -29,15 +30,17 @@ int main(void) {
 	win_data win_data = {
 		.win_w = 1280,
 		.win_h = 720,
-		.fps = 60,
+		.fps = 240,
 		.old_t = 0,
 		.pres_t = 0
 	};
 
 	cam_data cam_data = {
-		.rate = 0.2f,
+		.rate = BUF_SZ / 4,
+		.accel = 2,
 		.iso_x = 0,
 		.iso_y = 0,
+		.buf = 0
 	};
 
 	// attempt to initialise graphics and timer system
