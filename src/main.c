@@ -3,7 +3,7 @@
 // creates an SDL window
 int make_window(SDL_Window** win, win_data* win_d) {
 	*win = SDL_CreateWindow("game", SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED, win_d->win_w, win_d->win_h, SDL_WINDOW_BORDERLESS);  
+			SDL_WINDOWPOS_CENTERED, win_d->win_w, win_d->win_h, 0);  
 	if (!*win) {
 		fprintf(stderr, "Error creating window: %s\n", SDL_GetError());
 		return -1;
@@ -26,10 +26,8 @@ int make_renderer(SDL_Window* win, SDL_Renderer** rend) {
 int main(void) {
 
 	win_data win_data = {
-		//.win_w = 1280,
-		.win_w = 1920,
-		.win_h = 1080,
-		//.win_h = 720,
+		.win_w = 1280,
+		.win_h = 720,
 		.fps = 240,
 		.old_t = 0,
 		.pres_t = 0

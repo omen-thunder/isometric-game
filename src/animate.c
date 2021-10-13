@@ -7,7 +7,7 @@ int screen_x(map_data* map_d, cam_data* cam_d, int x, int y) {
 
 // returns the on-screen y position
 int screen_y(map_data* map_d, cam_data* cam_d, int x, int y) {
-	return (y + x) * TILE_H / 2 + map_d->y_off - cam_d->iso_x / 2 - cam_d->iso_y / 2;
+	return (y + x) * TILE_H / 2 + map_d->y_off - (float) cam_d->iso_x / 2.0f - (float) cam_d->iso_y / 2.0f;
 }
 
 // draws the selector

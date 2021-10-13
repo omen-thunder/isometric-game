@@ -8,7 +8,7 @@
 enum directions {CENTRE, R, UR, U, UL, L, DL, D, DR};
 
 // returns the edge-pan direction based on the mouse position
-int pan_dir(win_data* win_d) {
+int direction(win_data* win_d) {
 	if ((win_d->mouse_x >= SCREEN_R && win_d->mouse_y <= SCREEN_U * 2) 
 			|| (win_d->mouse_x >= SCREEN_R - SCREEN_L && win_d->mouse_y <= SCREEN_U))
 		return UR;
@@ -32,11 +32,11 @@ int pan_dir(win_data* win_d) {
 	return CENTRE;
 }
 
-float pan_speed_r(win_data* win_d, cam_data* cam_d) {
+float speed_r(win_data* win_d, cam_data* cam_d) {
 	return cam_d->rate * ((float) (win_d->mouse_x - SCREEN_R) * cam_d->accel / (float) (win_d->win_w - SCREEN_R - 1) + 1) / 2;
 }
 
-float pan_speed_ur(win_data* win_d, cam_data* cam_d) {
+float speed_ur(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (win_d->mouse_x - SCREEN_R) * cam_d->accel / (float) (win_d->win_w - SCREEN_R - 1) + 1);
 	float y_rate = cam_d->rate * ((float) (SCREEN_U - win_d->mouse_y) * cam_d->accel / (float) SCREEN_U + 1);
 	if (x_rate > y_rate)
@@ -45,11 +45,11 @@ float pan_speed_ur(win_data* win_d, cam_data* cam_d) {
 		return y_rate;
 }
 
-float pan_speed_u(win_data* win_d, cam_data* cam_d) {
+float speed_u(win_data* win_d, cam_data* cam_d) {
 	return cam_d->rate * ((float) (SCREEN_U - win_d->mouse_y) * cam_d->accel / (float) SCREEN_U + 1);
 }
 
-float pan_speed_ul(win_data* win_d, cam_data* cam_d) {
+float speed_ul(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (SCREEN_L - win_d->mouse_x) * cam_d->accel / (float) SCREEN_L + 1);
 	float y_rate = cam_d->rate * ((float) (SCREEN_U - win_d->mouse_y) * cam_d->accel / (float) SCREEN_U + 1);
 	if (x_rate > y_rate)
@@ -58,11 +58,11 @@ float pan_speed_ul(win_data* win_d, cam_data* cam_d) {
 		return y_rate;
 }
 
-float pan_speed_l(win_data* win_d, cam_data* cam_d) {
+float speed_l(win_data* win_d, cam_data* cam_d) {
 	return cam_d->rate * ((float) (SCREEN_L - win_d->mouse_x) * cam_d->accel / (float) SCREEN_L + 1) / 2;
 }
 
-float pan_speed_dl(win_data* win_d, cam_data* cam_d) {
+float speed_dl(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (SCREEN_L - win_d->mouse_x) * cam_d->accel / (float) SCREEN_L + 1);
 	float y_rate = cam_d->rate * ((float) (win_d->mouse_y - SCREEN_D) * cam_d->accel / (float) (win_d->win_h - SCREEN_D - 1) + 1);
 	if (x_rate > y_rate)
@@ -71,11 +71,11 @@ float pan_speed_dl(win_data* win_d, cam_data* cam_d) {
 		return y_rate;
 }
 
-float pan_speed_d(win_data* win_d, cam_data* cam_d) {
+float speed_d(win_data* win_d, cam_data* cam_d) {
 	return cam_d->rate * ((float) (win_d->mouse_y - SCREEN_D) * cam_d->accel / (float) (win_d->win_h - SCREEN_D - 1) + 1);
 }
 
-float pan_speed_dr(win_data* win_d, cam_data* cam_d) {
+float speed_dr(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (win_d->mouse_x - SCREEN_R) * cam_d->accel / (float) (win_d->win_w - SCREEN_R - 1) + 1);
 	float y_rate = cam_d->rate * ((float) (win_d->mouse_y - SCREEN_D) * cam_d->accel / (float) (win_d->win_h - SCREEN_D - 1) + 1);
 	if (x_rate > y_rate)
@@ -88,7 +88,7 @@ float pan_speed_dr(win_data* win_d, cam_data* cam_d) {
 // pans the camera up and right
 void pan_ur(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	if (map_d->y_cur > 4)
-		cam_d->buf += (win_d->pres_t - win_d->old_t) * pan_speed_ur(win_d, cam_d);
+		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_ur(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
 		cam_d->iso_y -= cam_d->buf / BUF_SZ;
@@ -99,7 +99,7 @@ void pan_ur(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 // pans the camera up and left
 void pan_ul(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	if (map_d->x_cur > 4)
-		cam_d->buf += (win_d->pres_t - win_d->old_t) * pan_speed_ul(win_d, cam_d);
+		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_ul(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
 		cam_d->iso_x -= cam_d->buf / BUF_SZ;
@@ -110,7 +110,7 @@ void pan_ul(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 // pans the camera down and left
 void pan_dl(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	if (map_d->y_cur < map_d->map_sz - map_d->win_sz - 4)
-		cam_d->buf += (win_d->pres_t - win_d->old_t) * pan_speed_dl(win_d, cam_d);
+		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_dl(win_d, cam_d);
 	
 	if (cam_d->buf >= BUF_SZ) {
 		cam_d->iso_y += cam_d->buf / BUF_SZ;
@@ -121,7 +121,7 @@ void pan_dl(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 // pans the camera down and right
 void pan_dr(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4)
-		cam_d->buf += (win_d->pres_t - win_d->old_t) * pan_speed_dr(win_d, cam_d);
+		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_dr(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
 		cam_d->iso_x += cam_d->buf / BUF_SZ;
@@ -132,7 +132,7 @@ void pan_dr(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 // pans the camera right
 void pan_r(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4 && map_d->y_cur > 4) {
-		cam_d->buf += (win_d->pres_t - win_d->old_t) * pan_speed_r(win_d, cam_d);
+		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_r(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
 		// at the same time to avoid jittering
@@ -151,7 +151,7 @@ void pan_r(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 // pans the camera up
 void pan_u(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	if (map_d->x_cur > 4 && map_d->y_cur > 4) {
-		cam_d->buf += (win_d->pres_t - win_d->old_t) * pan_speed_u(win_d, cam_d);
+		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_u(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
 		// at the same time to avoid jittering
@@ -170,7 +170,7 @@ void pan_u(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 // pans the camera left
 void pan_l(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	if (map_d->x_cur > 4 && map_d->y_cur < map_d->map_sz - map_d->win_sz - 4) {
-		cam_d->buf += (win_d->pres_t - win_d->old_t) * pan_speed_l(win_d, cam_d);
+		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_l(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
 		// at the same time to avoid jittering
@@ -189,14 +189,14 @@ void pan_l(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 // pans the camera down
 void pan_d(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4 && map_d->y_cur < map_d->map_sz - map_d->win_sz - 4) {
-		cam_d->buf += (win_d->pres_t - win_d->old_t) * pan_speed_d(win_d, cam_d);
+		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_d(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
 		// at the same time to avoid jittering
 		if (cam_d->buf >= BUF_SZ) {
 			cam_d->iso_x += cam_d->buf / BUF_SZ;
 			cam_d->iso_y += cam_d->buf / BUF_SZ;
-			cam_d->buf -= cam_d->buf /  BUF_SZ * BUF_SZ;
+			cam_d->buf = 0;
 		}
 
 	} else {
@@ -241,10 +241,10 @@ void buf_clear(cam_data* cam_d, int dir) {
 // edge-pans the camera
 void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
-	buf_clear(cam_d, pan_dir(win_d));
+	buf_clear(cam_d, direction(win_d));
 
 	// check if the mouse is on the edge of the screen and, if so, pan the camera
-	switch (pan_dir(win_d)) {
+	switch (direction(win_d)) {
 		case CENTRE:
 			break;
 		case R:
@@ -273,7 +273,7 @@ void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 			break;
 	}
 
-	cam_d->prev_dir = pan_dir(win_d);
+	cam_d->prev_dir = direction(win_d);
 	map_shift_x(map_d, cam_d);
 	map_shift_y(map_d, cam_d);
 }
