@@ -11,7 +11,7 @@ int screen_y(map_data* map_d, cam_data* cam_d, int x, int y) {
 }
 
 // draws the selector
-void draw_selec(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int x, int y) {
+void draw_selec(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d, int x, int y) {
 	SDL_Rect rect;
 	rect.w = TILE_W;
 	rect.h = TILE_H;
@@ -19,10 +19,10 @@ void draw_selec(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* 
 	rect.x = screen_x(map_d, cam_d, x, y);
 	rect.y = screen_y(map_d, cam_d, x, y);
 
-	if (out_of_bounds(map_d, x + map_d->cur_x, y + map_d->cur_y))
-		SDL_RenderCopy(rend, tex_d->menu_tex[T_SELECTOR_R], NULL, &rect);
-	else
+	if (editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y))
 		SDL_RenderCopy(rend, tex_d->menu_tex[T_SELECTOR_W], NULL, &rect);
+	else
+		SDL_RenderCopy(rend, tex_d->menu_tex[T_SELECTOR_R], NULL, &rect);
 }
 
 // draws a single tile
@@ -126,7 +126,7 @@ void draw_fg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex
 // draws the menu
 void draw_menu(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d) {
 	if (menu_d->mode != U_DEFAULT)
-		draw_selec(rend, win_d, map_d, tex_d, cam_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
+		draw_selec(rend, win_d, map_d, tex_d, cam_d, menu_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
 }
 
 // the main animation loop

@@ -53,31 +53,34 @@ void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d)
 	button = SDL_GetMouseState(&win_d->mouse_x, &win_d->mouse_y);
 	
 	// find which tile the mouse is on
-	int col = get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
-	int row = get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
+	int x = get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
+	int y = get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
 
 	// check if the selected tile is in the boarder
-	if (!out_of_bounds(map_d, col, row))
+	if (editable(map_d, menu_d, x, y))
 		switch (menu_d->mode) {
 			case U_DEFAULT:
 				break;
 			case U_WATER:
 				if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
-					map_d->tiles[col][row] = WATER;
+					map_d->tiles[x][y] = WATER;
 				else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
-					map_d->tiles[col][row] = GRASS;
+					map_d->tiles[x][y] = GRASS;
+
 				break;
 			case U_TREE:
 				if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
-					map_d->objs[col][row] = TREE;
+					map_d->objs[x][y] = TREE;
 				else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
-					map_d->objs[col][row] = EMPTY;
+					map_d->objs[x][y] = EMPTY;
+
 				break;
 			case U_BASE:
 				if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
-					map_d->objs[col][row] = BASE;
+					map_d->objs[x][y] = BASE;
 				else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
-					map_d->objs[col][row] = EMPTY;
+					map_d->objs[x][y] = EMPTY;
+
 				break;
 		}
 }

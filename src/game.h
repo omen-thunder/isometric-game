@@ -79,6 +79,7 @@ typedef struct {
 // in map.c
 int map_init(win_data* win_d, map_data* map_d);
 int out_of_bounds(map_data* map_d, int x, int y);
+int editable(map_data* map_d, menu_data* menu_d, int x, int y);
 int get_row(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
 int get_column(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
 void move_ur(map_data* map_d);

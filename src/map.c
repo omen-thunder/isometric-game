@@ -15,6 +15,25 @@ int out_of_bounds(map_data* map_d, int x, int y) {
 		return 0;
 }
 
+// returns 1 if a tile is editable, 0 if it is not
+int editable(map_data* map_d, menu_data* menu_d, int x, int y) {
+	if (out_of_bounds(map_d, x, y))
+		return 0;
+
+	switch (menu_d->mode) {
+		case U_WATER:
+			if (map_d->objs[x][y] == EMPTY)
+				return 1;
+			else
+				return 0;
+		default:
+			if (map_d->tiles[x][y] == GRASS)
+				return 1;
+			else
+				return 0;
+	}
+}
+
 // initialises the map_data structure
 int map_init(win_data* win_d, map_data* map_d) {
 	map_d->boarder = 15;
