@@ -11,17 +11,23 @@
 #define NUM_TILES (1)
 #define NUM_WATER (47)
 #define NUM_OBJS (2)
-#define NUM_MENU (2)
+#define NUM_MENU (0)
+#define NUM_SELECTOR (18)
 #define BUF_SZ (60)
 
 // enumerations for the texture arrays
 enum tile_tex_enum {T_GRASS};
 enum obj_tex_enum {T_EMPTY = -1, T_TREE, T_BASE};
-enum menu_tex_enum {T_SELECTOR_W, T_SELECTOR_R};
+enum selector_tex_enum {
+	T_SELECTOR_W, T_SELECTOR_W_R, T_SELECTOR_W_UR, T_SELECTOR_W_U, T_SELECTOR_W_UL,
+	T_SELECTOR_W_L, T_SELECTOR_W_DL, T_SELECTOR_W_D, T_SELECTOR_W_DR,
+	T_SELECTOR_R, T_SELECTOR_R_R, T_SELECTOR_R_UR, T_SELECTOR_R_U, T_SELECTOR_R_UL,
+	T_SELECTOR_R_L, T_SELECTOR_R_DL, T_SELECTOR_R_D, T_SELECTOR_R_DR
+};
 
 // enumerations for the map arrays
 enum tile_map_enum {GRASS, WATER};
-enum obj_map_enum {EMPTY, TREE, BASE};
+enum obj_map_enum {EMPTY, TREE, BASE, OCCUPIED};
 
 // enumerations for the menu modes
 enum mode_enum {U_DEFAULT, U_WATER, U_TREE, U_BASE};
@@ -53,21 +59,22 @@ typedef struct {
 
 // contains textures
 typedef struct {
-	SDL_Texture* tile_tex[NUM_TILES];	// array of tile textures
-	SDL_Texture* water_tex[NUM_WATER];	// array of tile textures
-	SDL_Texture* obj_tex[NUM_OBJS];		// array of object textures
-	SDL_Texture* menu_tex[NUM_MENU];	// arrary of menu textures
+	SDL_Texture* tile_tex[NUM_TILES];		// array of tile textures
+	SDL_Texture* water_tex[NUM_WATER];		// array of tile textures
+	SDL_Texture* obj_tex[NUM_OBJS];			// array of object textures
+	SDL_Texture* menu_tex[NUM_MENU];		// array of menu textures
+	SDL_Texture* selector_tex[NUM_SELECTOR];	// array of selector textures
 } tex_data;
 
 // contains camera related variables
 typedef struct {
-	int rate;	// the base scroll rate when edge-panning
-	int accel;	// the acceleration of edge-panning
+	int rate;		// the base scroll rate when edge-panning
+	int accel;		// the acceleration of edge-panning
 	int sensitivity;	// the distance to the edge of the screen when edge-panning starts
-	int iso_x;	// isometric x-axis offset for rendering when the camera is moving
-	int iso_y;	// isometric y-axis offset for rendering when the camera is moving
-	int buf;	// buffer for the isometric offset
-	int prev_dir;	// the previous pan direction
+	int iso_x;		// isometric x-axis offset for rendering when the camera is moving
+	int iso_y;		// isometric y-axis offset for rendering when the camera is moving
+	int buf;		// buffer for the isometric offset
+	int prev_dir;		// the previous pan direction
 } cam_data;
 
 // contains menu related variables

@@ -10,19 +10,57 @@ int screen_y(map_data* map_d, cam_data* cam_d, int x, int y) {
 	return (y + x) * TILE_H / 2 + map_d->off_y - (float) cam_d->iso_x / 2.0f - (float) cam_d->iso_y / 2.0f;
 }
 
-// draws the selector
-void draw_selec(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d, int x, int y) {
+// draws a part of a selector
+void draw_selector_part(SDL_Renderer* rend, map_data* map_d, cam_data* cam_d, tex_data* tex_d, int tex_id, int x, int y) {
 	SDL_Rect rect;
 	rect.w = TILE_W;
 	rect.h = TILE_H;
-
 	rect.x = screen_x(map_d, cam_d, x, y);
 	rect.y = screen_y(map_d, cam_d, x, y);
+	SDL_RenderCopy(rend, tex_d->selector_tex[tex_id], NULL, &rect);
+}
 
-	if (editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y))
-		SDL_RenderCopy(rend, tex_d->menu_tex[T_SELECTOR_W], NULL, &rect);
-	else
-		SDL_RenderCopy(rend, tex_d->menu_tex[T_SELECTOR_R], NULL, &rect);
+// draws the selector
+void draw_selector(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d, int x, int y) {
+	switch (menu_d->mode) {
+		case U_BASE:
+			if (
+				editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y)
+				&& editable(map_d, menu_d, x + map_d->cur_x + 1, y + map_d->cur_y)
+				&& editable(map_d, menu_d, x + map_d->cur_x + 1, y + map_d->cur_y - 1)
+				&& editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y - 1)
+				&& editable(map_d, menu_d, x + map_d->cur_x - 1, y + map_d->cur_y - 1)
+				&& editable(map_d, menu_d, x + map_d->cur_x - 1, y + map_d->cur_y)
+				&& editable(map_d, menu_d, x + map_d->cur_x - 1, y + map_d->cur_y + 1)
+				&& editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y + 1)
+				&& editable(map_d, menu_d, x + map_d->cur_x + 1, y + map_d->cur_y + 1)
+			) {
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_R, x + 1, y - 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_UR, x, y - 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_U, x - 1, y - 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_UL, x - 1, y);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_L, x - 1, y + 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_DL, x, y + 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_D, x + 1, y + 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_DR, x + 1, y);
+			} else {
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_R, x + 1, y - 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_UR, x, y - 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_U, x - 1, y - 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_UL, x - 1, y);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_L, x - 1, y + 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_DL, x, y + 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_D, x + 1, y + 1);
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_DR, x + 1, y);
+			}
+			break;
+		default:
+			if (editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y))
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W, x, y);
+			else
+				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R, x, y);
+
+	}
 }
 
 // draws a single tile
@@ -87,8 +125,8 @@ int load_obj(map_data* map_d, tex_data* tex_d,  cam_data* cam_d, SDL_Rect* rect,
 			SDL_QueryTexture(tex_d->obj_tex[T_BASE], NULL, NULL,  &rect->w, &rect->h);
 			rect->h /= rect->w / TILE_W / 2;
 			rect->w = TILE_W * 2;
-			rect->x = screen_x(map_d, cam_d, x, y);
-			rect->y = screen_y(map_d, cam_d, x, y) - rect->h + TILE_H;
+			rect->x = screen_x(map_d, cam_d, x, y) - TILE_H;
+			rect->y = screen_y(map_d, cam_d, x, y) - rect->h + TILE_H * 1.75;
 			return T_BASE;
 		default:
 			return T_EMPTY;
@@ -126,7 +164,7 @@ void draw_fg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex
 // draws the menu
 void draw_menu(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d) {
 	if (menu_d->mode != U_DEFAULT)
-		draw_selec(rend, win_d, map_d, tex_d, cam_d, menu_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
+		draw_selector(rend, win_d, map_d, tex_d, cam_d, menu_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
 }
 
 // the main animation loop

@@ -21,13 +21,8 @@ int editable(map_data* map_d, menu_data* menu_d, int x, int y) {
 		return 0;
 
 	switch (menu_d->mode) {
-		case U_WATER:
-			if (map_d->objs[x][y] == EMPTY)
-				return 1;
-			else
-				return 0;
 		default:
-			if (map_d->tiles[x][y] == GRASS)
+			if (map_d->tiles[x][y] == GRASS && map_d->objs[x][y] == EMPTY)
 				return 1;
 			else
 				return 0;

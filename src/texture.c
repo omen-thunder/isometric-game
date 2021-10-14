@@ -24,7 +24,7 @@ int load_texture(SDL_Renderer* rend, SDL_Texture** tex, char* path) {
 int tile_init(SDL_Renderer* rend, tex_data* tex_d) {
 	// load the water textures
 	char path[50];
-	for (int i = 0; i < 47; i++) {
+	for (int i = 0; i < NUM_WATER; i++) {
 		sprintf(path, "./resources/tiles/water/water_%02d.png", i);
 		if (load_texture(rend, &tex_d->water_tex[i], path)) {
 			fprintf(stderr, "Failed to load water_%02d.png texture\n", i);
@@ -59,17 +59,17 @@ int obj_init(SDL_Renderer* rend, tex_data* tex_d) {
 
 // loads the menu textures
 int menu_init(SDL_Renderer* rend, tex_data* tex_d) {
-	if (load_texture(rend, &tex_d->menu_tex[T_SELECTOR_W], "./resources/menu/selector_white.png")) {
-		fprintf(stderr, "Failed to load SELECTOR_W texture\n");
-		return -1;
-	}
-	SDL_SetTextureBlendMode(tex_d->menu_tex[T_SELECTOR_W], SDL_BLENDMODE_BLEND);
+	// load the selector textures
+	char path[50];
+	for (int i = 0; i < NUM_SELECTOR; i++) {
+		sprintf(path, "./resources/menu/selector/selector_%02d.png", i);
+		if (load_texture(rend, &tex_d->selector_tex[i], path)) {
+			fprintf(stderr, "Failed to load selector_%02d.png texture\n", i);
+			return -1;
+		}
 
-	if (load_texture(rend, &tex_d->menu_tex[T_SELECTOR_R], "./resources/menu/selector_red.png")) {
-		fprintf(stderr, "Failed to load SELECTOR_R texture\n");
-		return -1;
+		SDL_SetTextureBlendMode(tex_d->selector_tex[i], SDL_BLENDMODE_BLEND);
 	}
-	SDL_SetTextureBlendMode(tex_d->menu_tex[T_SELECTOR_R], SDL_BLENDMODE_BLEND);
 
 	return 0;
 }
@@ -111,4 +111,9 @@ void texture_free(tex_data* tex_d) {
 	for (int i = 1; i < NUM_MENU; i++)
 		if (tex_d->menu_tex[i])
 			SDL_DestroyTexture(tex_d->menu_tex[i]);
+
+	// free the selector textures
+	for (int i = 1; i < NUM_SELECTOR; i++)
+		if (tex_d->selector_tex[i])
+			SDL_DestroyTexture(tex_d->selector_tex[i]);
 }
