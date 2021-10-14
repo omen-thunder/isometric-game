@@ -7,8 +7,18 @@ float dist(float x1, float y1, float x2, float y2) {
 	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
 
+// returns 1 if a tile is out of bounds, 0 if it is not
+int out_of_bounds(map_data* map_d, int x, int y) {
+	if (x <= map_d->boarder || y <= map_d->boarder || x >= map_d->map_sz - map_d->boarder || y >= map_d->map_sz - map_d->boarder)
+		return 1;
+	else
+		return 0;
+}
+
 // initialises the map_data structure
 int map_init(win_data* win_d, map_data* map_d) {
+	map_d->boarder = 15;
+
 	// calculate the size of each side of the background rhombus by
 	// finding its side length based on the window height and width
 	// and dividing it by the side length of one tile rhombus
@@ -64,7 +74,7 @@ int map_init(win_data* win_d, map_data* map_d) {
 	// initialise the object map
 	for (int x = 0; x < map_d->map_sz; x++)
 		for (int y = 0; y < map_d->map_sz; y++) {
-			if (x <= BOARDER || y <= BOARDER || x >= map_d->map_sz - BOARDER || y >= map_d->map_sz - BOARDER)
+			if (out_of_bounds(map_d, x, y))
 				map_d->objs[x][y] = TREE;
 			else
 				map_d->objs[x][y] = EMPTY;

@@ -8,16 +8,23 @@
 
 #define TILE_W (128)
 #define TILE_H (64)
-#define NUM_TILES (48)
+#define NUM_TILES (1)
+#define NUM_WATER (47)
 #define NUM_OBJS (2)
-#define NUM_MENU (1)
-#define BOARDER (10)
+#define NUM_MENU (2)
 #define BUF_SZ (60)
 
 // enumerations for the texture arrays
-enum tile_tex {GRASS = 47};
-enum obj_tex {EMPTY = -1, TREE, BASE};
-enum menu_tex {SELECTOR};
+enum tile_tex_enum {T_GRASS};
+enum obj_tex_enum {T_EMPTY = -1, T_TREE, T_BASE};
+enum menu_tex_enum {T_SELECTOR_W, T_SELECTOR_R};
+
+// enumerations for the map arrays
+enum tile_map_enum {GRASS, WATER};
+enum obj_map_enum {EMPTY, TREE, BASE};
+
+// enumerations for the menu modes
+enum mode_enum {U_DEFAULT, U_WATER, U_TREE, U_BASE};
 
 // contains window related variables
 typedef struct {
@@ -41,11 +48,13 @@ typedef struct {
 	int off_y;	// y-axis offset of the background rhombus
 	int cur_x;	// the x-axis cursor for the current camera location on the map
 	int cur_y;	// the x-axis cursor for the current camera location on the map
+	int boarder;	// the size of the boarder
 } map_data;
 
 // contains textures
 typedef struct {
 	SDL_Texture* tile_tex[NUM_TILES];	// array of tile textures
+	SDL_Texture* water_tex[NUM_WATER];	// array of tile textures
 	SDL_Texture* obj_tex[NUM_OBJS];		// array of object textures
 	SDL_Texture* menu_tex[NUM_MENU];	// arrary of menu textures
 } tex_data;
@@ -54,6 +63,7 @@ typedef struct {
 typedef struct {
 	int rate;	// the base scroll rate when edge-panning
 	int accel;	// the acceleration of edge-panning
+	int sensitivity;	// the distance to the edge of the screen when edge-panning starts
 	int iso_x;	// isometric x-axis offset for rendering when the camera is moving
 	int iso_y;	// isometric y-axis offset for rendering when the camera is moving
 	int buf;	// buffer for the isometric offset
@@ -62,11 +72,13 @@ typedef struct {
 
 // contains menu related variables
 typedef struct {
+	int mode;	// the current mode the menu is in
 
 } menu_data;
 
 // in map.c
 int map_init(win_data* win_d, map_data* map_d);
+int out_of_bounds(map_data* map_d, int x, int y);
 int get_row(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
 int get_column(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
 void move_ur(map_data* map_d);
@@ -86,9 +98,9 @@ int texture_init(SDL_Renderer* rend, tex_data* tex_d);
 void texture_free(tex_data* tex_d);
 
 // in animate.c
-int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d);
+int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d);
 
 // in event.c
-int event(win_data* win_d, map_data* map_d, cam_data* cam_d);
+int event(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d);
 
 #endif

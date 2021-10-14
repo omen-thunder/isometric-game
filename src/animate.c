@@ -19,7 +19,10 @@ void draw_selec(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* 
 	rect.x = screen_x(map_d, cam_d, x, y);
 	rect.y = screen_y(map_d, cam_d, x, y);
 
-	SDL_RenderCopy(rend, tex_d->menu_tex[SELECTOR], NULL, &rect);
+	if (out_of_bounds(map_d, x + map_d->cur_x, y + map_d->cur_y))
+		SDL_RenderCopy(rend, tex_d->menu_tex[T_SELECTOR_R], NULL, &rect);
+	else
+		SDL_RenderCopy(rend, tex_d->menu_tex[T_SELECTOR_W], NULL, &rect);
 }
 
 // draws a single tile
@@ -35,11 +38,11 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* t
 	if (rect.x > -TILE_W && rect.x < win_d->win_w && rect.y > -TILE_H && rect.y < win_d->win_h) {
 		// check what type of tile is being drawn
 		switch (map_d->tiles[x + map_d->cur_x][y + map_d->cur_y]) {
-			case 0:
-				SDL_RenderCopy(rend, tex_d->tile_tex[GRASS], NULL, &rect);
+			case GRASS:
+				SDL_RenderCopy(rend, tex_d->tile_tex[T_GRASS], NULL, &rect);
 				break;
-			case 1:
-				SDL_RenderCopy(rend, tex_d->tile_tex[water_index(map_d, x + map_d->cur_x, y + map_d->cur_y)], NULL, &rect);
+			case WATER:
+				SDL_RenderCopy(rend, tex_d->water_tex[water_index(map_d, x + map_d->cur_x, y + map_d->cur_y)], NULL, &rect);
 				break;
 		}
 	}
@@ -49,9 +52,9 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* t
 int load_obj(map_data* map_d, tex_data* tex_d,  cam_data* cam_d, SDL_Rect* rect, int x, int y) {
 	switch (map_d->objs[x + map_d->cur_x][y + map_d->cur_y]) {
 		case EMPTY:
-			return EMPTY;
+			return T_EMPTY;
 		case TREE:
-			SDL_QueryTexture(tex_d->obj_tex[TREE], NULL, NULL,  &rect->w, &rect->h);
+			SDL_QueryTexture(tex_d->obj_tex[T_TREE], NULL, NULL,  &rect->w, &rect->h);
 			rect->w /= 5;
 			rect->h /= 5;
 			rect->x = screen_x(map_d, cam_d, x, y) + 30;
@@ -79,16 +82,16 @@ int load_obj(map_data* map_d, tex_data* tex_d,  cam_data* cam_d, SDL_Rect* rect,
 					break;
 			}		
 
-			return TREE;
+			return T_TREE;
 		case BASE:
-			SDL_QueryTexture(tex_d->obj_tex[BASE], NULL, NULL,  &rect->w, &rect->h);
-			rect->h /= rect->w / TILE_W;
-			rect->w = TILE_W;
+			SDL_QueryTexture(tex_d->obj_tex[T_BASE], NULL, NULL,  &rect->w, &rect->h);
+			rect->h /= rect->w / TILE_W / 2;
+			rect->w = TILE_W * 2;
 			rect->x = screen_x(map_d, cam_d, x, y);
 			rect->y = screen_y(map_d, cam_d, x, y) - rect->h + TILE_H;
-			return BASE;
+			return T_BASE;
 		default:
-			return EMPTY;
+			return T_EMPTY;
 	}
 }
 
@@ -98,7 +101,7 @@ void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 	int tex_id = load_obj(map_d, tex_d, cam_d, &rect, x, y);
 
 	// check if the object is empty
-	if (tex_id == EMPTY)
+	if (tex_id == T_EMPTY)
 		return;
 
 	// checks if the object is on the screen
@@ -121,13 +124,14 @@ void draw_fg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex
 }
 
 // draws the menu
-void draw_menu(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d) {
-	draw_selec(rend, win_d, map_d, tex_d, cam_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
+void draw_menu(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d) {
+	if (menu_d->mode != U_DEFAULT)
+		draw_selec(rend, win_d, map_d, tex_d, cam_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
 }
 
 // the main animation loop
-int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d) {
-	while (!event(win_d, map_d, cam_d)) {
+int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d) {
+	while (event(win_d, map_d, cam_d, menu_d)) {
 		win_d->old_t = win_d->pres_t;
 		win_d->pres_t = SDL_GetTicks();
 
@@ -141,7 +145,7 @@ int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_
 		draw_fg(rend, win_d, map_d, tex_d, cam_d);
 
 		// render the menu
-		draw_menu(rend, win_d, map_d, tex_d, cam_d);
+		draw_menu(rend, win_d, map_d, tex_d, cam_d, menu_d);
 
 		// display the window
 		SDL_RenderPresent(rend);

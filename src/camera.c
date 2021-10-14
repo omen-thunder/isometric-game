@@ -1,15 +1,15 @@
 #include "game.h"
 
-#define SCREEN_R (win_d->win_w * 9 / 10)
-#define SCREEN_U (win_d->win_h / 10)
-#define SCREEN_L (win_d->win_w / 10)
-#define SCREEN_D (win_d->win_h * 9 / 10)
+#define SCREEN_L (win_d->win_w / cam_d->sensitivity)
+#define SCREEN_R (win_d->win_w - SCREEN_L)
+#define SCREEN_U (win_d->win_h / cam_d->sensitivity)
+#define SCREEN_D (win_d->win_h - SCREEN_U)
 
 // enumeration for the panning directions
 enum directions {CENTRE, R, UR, U, UL, L, DL, D, DR};
 
 // returns the edge-pan direction based on the mouse position
-int direction(win_data* win_d) {
+int direction(win_data* win_d, cam_data* cam_d) {
 	if ((win_d->mouse_x >= SCREEN_R && win_d->mouse_y <= SCREEN_U * 2) 
 			|| (win_d->mouse_x >= SCREEN_R - SCREEN_L && win_d->mouse_y <= SCREEN_U))
 		return UR;
@@ -250,10 +250,10 @@ void buf_clear(cam_data* cam_d, int dir) {
 // edge-pans the camera
 void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
-	buf_clear(cam_d, direction(win_d));
+	buf_clear(cam_d, direction(win_d, cam_d));
 
 	// check if the mouse is on the edge of the screen and, if so, pan the camera
-	switch (direction(win_d)) {
+	switch (direction(win_d, cam_d)) {
 		case CENTRE:
 			break;
 		case R:
@@ -282,7 +282,7 @@ void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 			break;
 	}
 
-	cam_d->prev_dir = direction(win_d);
+	cam_d->prev_dir = direction(win_d, cam_d);
 	map_shift_x(map_d, cam_d);
 	map_shift_y(map_d, cam_d);
 }

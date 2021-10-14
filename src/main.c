@@ -28,7 +28,7 @@ int main(void) {
 	win_data win_data = {
 		.win_w = 1920,
 		.win_h = 1080,
-		.fps = 240,
+		.fps = 60,
 		.old_t = 0,
 		.pres_t = 0
 	};
@@ -36,9 +36,14 @@ int main(void) {
 	cam_data cam_data = {
 		.rate = BUF_SZ / 4,
 		.accel = 2,
+		.sensitivity = 10,	// should not be smaller than 2
 		.iso_x = 0,
 		.iso_y = 0,
 		.buf = 0
+	};
+
+	menu_data menu_data = {
+		.mode = U_DEFAULT
 	};
 
 	// attempt to initialise graphics and timer system
@@ -79,7 +84,7 @@ int main(void) {
 	}
 
 	// begin animation
-	animate(win, rend, &win_data, &map_data, &tex_data, &cam_data);
+	animate(win, rend, &win_data, &map_data, &tex_data, &cam_data, &menu_data);
 
 	// free resources
 	map_free(&map_data);
