@@ -207,19 +207,19 @@ int water_sel_5(map_data* map_d, int x, int y) {
 			&& map_d->tiles[x + 1][y] == 1)
 		return 28;
 	// check right, up and left tiles
-	if (map_d->tiles[x + 1][y - 1] == 0 
-			&& map_d->tiles[x - 1][y - 1] == 0 
-			&& map_d->tiles[x - 1][y + 1] == 0)
+	if (map_d->tiles[x + 1][y - 1] != 1 
+			&& map_d->tiles[x - 1][y - 1] != 1 
+			&& map_d->tiles[x - 1][y + 1] != 1)
 		return 29;
 	// check right, up and down tiles
-	if (map_d->tiles[x + 1][y - 1] == 0 
-			&& map_d->tiles[x - 1][y - 1] == 0 
-			&& map_d->tiles[x + 1][y + 1] == 0)
+	if (map_d->tiles[x + 1][y - 1] != 1 
+			&& map_d->tiles[x - 1][y - 1] != 1 
+			&& map_d->tiles[x + 1][y + 1] != 1)
 		return 30;
 	// check right, left and down tiles
-	if (map_d->tiles[x + 1][y - 1] == 0 
-			&& map_d->tiles[x - 1][y + 1] == 0 
-			&& map_d->tiles[x + 1][y + 1] == 0)
+	if (map_d->tiles[x + 1][y - 1] != 1 
+			&& map_d->tiles[x - 1][y + 1] != 1 
+			&& map_d->tiles[x + 1][y + 1] != 1)
 		return 31;
 	// check up-right, up, up-left, left and down-left tiles
 	if (map_d->tiles[x][y - 1] == 1
@@ -236,9 +236,9 @@ int water_sel_5(map_data* map_d, int x, int y) {
 			&& map_d->tiles[x + 1][y] == 1)
 		return 33;
 	// check up, left and down tiles
-	if (map_d->tiles[x - 1][y - 1] == 0 
-			&& map_d->tiles[x - 1][y + 1] == 0 
-			&& map_d->tiles[x + 1][y + 1] == 0)
+	if (map_d->tiles[x - 1][y - 1] != 1 
+			&& map_d->tiles[x - 1][y + 1] != 1 
+			&& map_d->tiles[x + 1][y + 1] != 1)
 		return 34;
 	// check right, up-right, up, up-left and down-right tiles
 	if (map_d->tiles[x + 1][y - 1] == 1
@@ -256,28 +256,28 @@ int water_sel_5(map_data* map_d, int x, int y) {
 // water tiles
 int water_sel_6(map_data* map_d, int x, int y) {
 	// check right and up tiles
-	if (map_d->tiles[x + 1][y - 1] == 0 
-			&& map_d->tiles[x - 1][y - 1] == 0)
+	if (map_d->tiles[x + 1][y - 1] != 1 
+			&& map_d->tiles[x - 1][y - 1] != 1)
 		return 36;
 	// check right and left tiles
-	if (map_d->tiles[x + 1][y - 1] == 0 
-			&& map_d->tiles[x - 1][y + 1] == 0)
+	if (map_d->tiles[x + 1][y - 1] != 1 
+			&& map_d->tiles[x - 1][y + 1] != 1)
 		return 37;
 	// check right and down tiles
-	if (map_d->tiles[x + 1][y - 1] == 0 
-			&& map_d->tiles[x + 1][y + 1] == 0)
+	if (map_d->tiles[x + 1][y - 1] != 1 
+			&& map_d->tiles[x + 1][y + 1] != 1)
 		return 38;
 	// check up and left tiles
-	if (map_d->tiles[x - 1][y - 1] == 0 
-			&& map_d->tiles[x - 1][y + 1] == 0)
+	if (map_d->tiles[x - 1][y - 1] != 1 
+			&& map_d->tiles[x - 1][y + 1] != 1)
 		return 39;
 	// check up and down tiles
-	if (map_d->tiles[x - 1][y - 1] == 0 
-			&& map_d->tiles[x + 1][y + 1] == 0)
+	if (map_d->tiles[x - 1][y - 1] != 1 
+			&& map_d->tiles[x + 1][y + 1] != 1)
 		return 40;
 	// check left and down tiles
-	if (map_d->tiles[x - 1][y + 1] == 0 
-			&& map_d->tiles[x + 1][y + 1] == 0)
+	if (map_d->tiles[x - 1][y + 1] != 1 
+			&& map_d->tiles[x + 1][y + 1] != 1)
 		return 41;
 
 	return water_sel_5(map_d, x, y);
@@ -288,16 +288,16 @@ int water_sel_6(map_data* map_d, int x, int y) {
 // water tiles
 int water_sel_7(map_data* map_d, int x, int y) {
 	// check right tile
-	if (map_d->tiles[x + 1][y - 1] == 0)
+	if (map_d->tiles[x + 1][y - 1] != 1)
 		return 42;
 	// check up tile
-	if (map_d->tiles[x - 1][y - 1] == 0)
+	if (map_d->tiles[x - 1][y - 1] != 1)
 		return 43;
 	// check left tile
-	if (map_d->tiles[x - 1][y + 1] == 0)
+	if (map_d->tiles[x - 1][y + 1] != 1)
 		return 44;
 	// check down tile
-	if (map_d->tiles[x + 1][y + 1] == 0)
+	if (map_d->tiles[x + 1][y + 1] != 1)
 		return 45;
 
 	return water_sel_6(map_d, x, y);
@@ -324,7 +324,7 @@ int water_index(map_data* map_d, int x, int y) {
 			return water_sel_7(map_d, x, y);
 		case 8:
 			return 46;
+		default:
+			return 0;
 	}
-
-	return 46;
 }

@@ -5,6 +5,7 @@
 #define SCREEN_L (win_d->win_w / 10)
 #define SCREEN_D (win_d->win_h * 9 / 10)
 
+// enumeration for the panning directions
 enum directions {CENTRE, R, UR, U, UL, L, DL, D, DR};
 
 // returns the edge-pan direction based on the mouse position
@@ -32,10 +33,12 @@ int direction(win_data* win_d) {
 	return CENTRE;
 }
 
+// returns the panning speed for the right direction
 float speed_r(win_data* win_d, cam_data* cam_d) {
 	return cam_d->rate * ((float) (win_d->mouse_x - SCREEN_R) * cam_d->accel / (float) (win_d->win_w - SCREEN_R - 1) + 1) / 2;
 }
 
+// returns the panning speed for the up-right direction
 float speed_ur(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (win_d->mouse_x - SCREEN_R) * cam_d->accel / (float) (win_d->win_w - SCREEN_R - 1) + 1);
 	float y_rate = cam_d->rate * ((float) (SCREEN_U - win_d->mouse_y) * cam_d->accel / (float) SCREEN_U + 1);
@@ -45,10 +48,12 @@ float speed_ur(win_data* win_d, cam_data* cam_d) {
 		return y_rate;
 }
 
+// returns the panning speed for the up direction
 float speed_u(win_data* win_d, cam_data* cam_d) {
 	return cam_d->rate * ((float) (SCREEN_U - win_d->mouse_y) * cam_d->accel / (float) SCREEN_U + 1);
 }
 
+// returns the panning speed for the up-left direction
 float speed_ul(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (SCREEN_L - win_d->mouse_x) * cam_d->accel / (float) SCREEN_L + 1);
 	float y_rate = cam_d->rate * ((float) (SCREEN_U - win_d->mouse_y) * cam_d->accel / (float) SCREEN_U + 1);
@@ -58,10 +63,12 @@ float speed_ul(win_data* win_d, cam_data* cam_d) {
 		return y_rate;
 }
 
+// returns the panning speed for the left direction
 float speed_l(win_data* win_d, cam_data* cam_d) {
 	return cam_d->rate * ((float) (SCREEN_L - win_d->mouse_x) * cam_d->accel / (float) SCREEN_L + 1) / 2;
 }
 
+// returns the panning speed for the down-left direction
 float speed_dl(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (SCREEN_L - win_d->mouse_x) * cam_d->accel / (float) SCREEN_L + 1);
 	float y_rate = cam_d->rate * ((float) (win_d->mouse_y - SCREEN_D) * cam_d->accel / (float) (win_d->win_h - SCREEN_D - 1) + 1);
@@ -71,10 +78,12 @@ float speed_dl(win_data* win_d, cam_data* cam_d) {
 		return y_rate;
 }
 
+// returns the panning speed for the down direction
 float speed_d(win_data* win_d, cam_data* cam_d) {
 	return cam_d->rate * ((float) (win_d->mouse_y - SCREEN_D) * cam_d->accel / (float) (win_d->win_h - SCREEN_D - 1) + 1);
 }
 
+// returns the panning speed for the down-right direction
 float speed_dr(win_data* win_d, cam_data* cam_d) {
 	float x_rate = cam_d->rate * ((float) (win_d->mouse_x - SCREEN_R) * cam_d->accel / (float) (win_d->win_w - SCREEN_R - 1) + 1);
 	float y_rate = cam_d->rate * ((float) (win_d->mouse_y - SCREEN_D) * cam_d->accel / (float) (win_d->win_h - SCREEN_D - 1) + 1);
@@ -87,7 +96,7 @@ float speed_dr(win_data* win_d, cam_data* cam_d) {
 
 // pans the camera up and right
 void pan_ur(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->y_cur > 4)
+	if (map_d->cur_y > 4)
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_ur(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
@@ -98,7 +107,7 @@ void pan_ur(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera up and left
 void pan_ul(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur > 4)
+	if (map_d->cur_x > 4)
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_ul(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
@@ -109,7 +118,7 @@ void pan_ul(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera down and left
 void pan_dl(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->y_cur < map_d->map_sz - map_d->win_sz - 4)
+	if (map_d->cur_y < map_d->map_sz - map_d->win_sz - 4)
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_dl(win_d, cam_d);
 	
 	if (cam_d->buf >= BUF_SZ) {
@@ -120,7 +129,7 @@ void pan_dl(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera down and right
 void pan_dr(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4)
+	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - 4)
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_dr(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
@@ -131,7 +140,7 @@ void pan_dr(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera right
 void pan_r(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4 && map_d->y_cur > 4) {
+	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - 4 && map_d->cur_y > 4) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_r(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
@@ -150,7 +159,7 @@ void pan_r(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera up
 void pan_u(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur > 4 && map_d->y_cur > 4) {
+	if (map_d->cur_x > 4 && map_d->cur_y > 4) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_u(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
@@ -169,7 +178,7 @@ void pan_u(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera left
 void pan_l(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur > 4 && map_d->y_cur < map_d->map_sz - map_d->win_sz - 4) {
+	if (map_d->cur_x > 4 && map_d->cur_y < map_d->map_sz - map_d->win_sz - 4) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_l(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
@@ -188,7 +197,7 @@ void pan_l(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera down
 void pan_d(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->x_cur < map_d->map_sz - map_d->win_sz - 4 && map_d->y_cur < map_d->map_sz - map_d->win_sz - 4) {
+	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - 4 && map_d->cur_y < map_d->map_sz - map_d->win_sz - 4) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_d(win_d, cam_d);
 
 		// allows camera to move in both isometric axes

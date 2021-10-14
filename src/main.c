@@ -3,7 +3,7 @@
 // creates an SDL window
 int make_window(SDL_Window** win, win_data* win_d) {
 	*win = SDL_CreateWindow("game", SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED, win_d->win_w, win_d->win_h, 0);  
+			SDL_WINDOWPOS_CENTERED, win_d->win_w, win_d->win_h, SDL_WINDOW_FULLSCREEN);  
 	if (!*win) {
 		fprintf(stderr, "Error creating window: %s\n", SDL_GetError());
 		return -1;
@@ -26,8 +26,8 @@ int make_renderer(SDL_Window* win, SDL_Renderer** rend) {
 int main(void) {
 
 	win_data win_data = {
-		.win_w = 1280,
-		.win_h = 720,
+		.win_w = 1920,
+		.win_h = 1080,
 		.fps = 240,
 		.old_t = 0,
 		.pres_t = 0
@@ -65,7 +65,7 @@ int main(void) {
 	if (texture_init(rend, &tex_data)) {
 		SDL_DestroyWindow(win);
 		SDL_DestroyRenderer(rend);
-		free_tex(&tex_data);
+		texture_free(&tex_data);
 		return 1;
 	}
 
@@ -74,7 +74,7 @@ int main(void) {
 	if (map_init(&win_data, &map_data)) {
 		SDL_DestroyWindow(win);
 		SDL_DestroyRenderer(rend);
-		free_tex(&tex_data);
+		texture_free(&tex_data);
 		return 1;
 	}
 
@@ -82,8 +82,8 @@ int main(void) {
 	animate(win, rend, &win_data, &map_data, &tex_data, &cam_data);
 
 	// free resources
-	free_map(&map_data);
-	free_tex(&tex_data);
+	map_free(&map_data);
+	texture_free(&tex_data);
 	SDL_DestroyRenderer(rend);
 	SDL_DestroyWindow(win);
 	return 0;

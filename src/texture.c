@@ -47,8 +47,13 @@ int obj_init(SDL_Renderer* rend, tex_data* tex_d) {
 		fprintf(stderr, "Failed to load TREE texture\n");
 		return -1;
 	}
-
 	SDL_SetTextureBlendMode(tex_d->obj_tex[TREE], SDL_BLENDMODE_BLEND);
+
+	if (load_texture(rend, &tex_d->obj_tex[BASE], "./resources/objects/base.png")) {
+		fprintf(stderr, "Failed to load BASE texture\n");
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -80,7 +85,7 @@ int texture_init(SDL_Renderer* rend, tex_data* tex_d) {
 }
 
 // frees resources in the tex_data struct
-void free_tex(tex_data* tex_d) {
+void texture_free(tex_data* tex_d) {
 	// free the tile textures
 	for (int i = 0; i < NUM_TILES; i++)
 		if (tex_d->tile_tex[i])

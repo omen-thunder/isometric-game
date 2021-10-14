@@ -7,8 +7,8 @@ int event(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	button = SDL_GetMouseState(&win_d->mouse_x, &win_d->mouse_y);
 	
 	// edit the tiles on the map based on the mouse state
-	int col = get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->x_cur;
-	int row = get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->y_cur;
+	int col = get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
+	int row = get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
 
 	if (col > BOARDER && row > BOARDER && col < map_d->map_sz - BOARDER && row < map_d->map_sz - BOARDER) {
 		if (button == SDL_BUTTON(SDL_BUTTON_LEFT))
@@ -47,21 +47,14 @@ int event(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 						move_dl(map_d);
 						move_dr(map_d);
 						break;
-					case SDLK_w:
-						map_d->y_off2 += 5;
+					case SDLK_b:
+						map_d->objs[col][row] = 1;
 						break;
-					case SDLK_s:
-						map_d->y_off2 -= 5;
-						break;
-					case SDLK_a:
-						map_d->x_off2 -= 5;
-						break;
-					case SDLK_d:
-						map_d->x_off2 += 5;
+					case SDLK_t:
+						map_d->objs[col][row] = 0;
 						break;
 					case SDLK_SPACE:
-						cam_d->iso_x = 0;
-						cam_d->iso_y = 0;
+						map_d->objs[col][row] = -1;
 						break;
 				}
 				break;
