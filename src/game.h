@@ -13,6 +13,7 @@
 #define NUM_OBJS (2)
 #define NUM_MENU (0)
 #define NUM_SELECTOR (18)
+#define NUM_WALL (16)
 #define BUF_SZ (60)
 
 // enumerations for the texture arrays
@@ -27,10 +28,10 @@ enum selector_tex_enum {
 
 // enumerations for the map arrays
 enum tile_map_enum {GRASS, WATER};
-enum obj_map_enum {EMPTY, TREE, BASE, OCCUPIED};
+enum obj_map_enum {EMPTY, TREE, BASE, OCCUPIED, WALL};
 
 // enumerations for the menu modes
-enum mode_enum {U_DEFAULT, U_WATER, U_TREE, U_BASE};
+enum mode_enum {U_DEFAULT, U_WATER, U_TREE, U_BASE, U_WALL};
 
 // contains window related variables
 typedef struct {
@@ -60,10 +61,11 @@ typedef struct {
 // contains textures
 typedef struct {
 	SDL_Texture* tile_tex[NUM_TILES];		// array of tile textures
-	SDL_Texture* water_tex[NUM_WATER];		// array of tile textures
+	SDL_Texture* water_tex[NUM_WATER];		// array of water textures
 	SDL_Texture* obj_tex[NUM_OBJS];			// array of object textures
 	SDL_Texture* menu_tex[NUM_MENU];		// array of menu textures
 	SDL_Texture* selector_tex[NUM_SELECTOR];	// array of selector textures
+	SDL_Texture* wall_tex[NUM_WALL];		// array of wall textures
 } tex_data;
 
 // contains camera related variables
@@ -110,5 +112,8 @@ int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_
 
 // in event.c
 int event(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d);
+
+// in wall.c
+int wall_index(map_data* map_d, int x, int y);
 
 #endif

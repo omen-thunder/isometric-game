@@ -54,6 +54,16 @@ int obj_init(SDL_Renderer* rend, tex_data* tex_d) {
 		return -1;
 	}
 
+	// load the selector textures
+	char path[50];
+	for (int i = 0; i < NUM_WALL; i++) {
+		sprintf(path, "./resources/objects/walls/wall_%02d.png", i);
+		if (load_texture(rend, &tex_d->wall_tex[i], path)) {
+			fprintf(stderr, "Failed to load wall_%02d.png texture\n", i);
+			return -1;
+		}
+	}
+
 	return 0;
 }
 

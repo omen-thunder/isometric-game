@@ -35,6 +35,9 @@ int keyboard(map_data* map_d, menu_data* menu_d) {
 					case SDLK_w:
 						menu_d->mode = U_WATER;
 						break;
+					case SDLK_f:
+						menu_d->mode = U_WALL;
+						break;
 					case SDLK_SPACE:
 						menu_d->mode = U_DEFAULT;
 						break;
@@ -74,6 +77,13 @@ void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d)
 				map_d->objs[x][y] = EMPTY;
 
 			break;
+		case U_WALL:
+			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(map_d, menu_d, x, y))
+				map_d->objs[x][y] = WALL;
+			else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
+				map_d->objs[x][y] = EMPTY;
+
+			break;
 		case U_BASE:
 			if (button == SDL_BUTTON(SDL_BUTTON_LEFT)
 				&& editable(map_d, menu_d, x, y)
@@ -95,7 +105,7 @@ void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d)
 				map_d->objs[x - 1][y + 1] = OCCUPIED;
 				map_d->objs[x][y + 1] = OCCUPIED;
 				map_d->objs[x + 1][y + 1] = OCCUPIED;
-			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
+			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT) && map_d->objs[x][y] == BASE) {
 				map_d->objs[x][y] = EMPTY;
 				map_d->objs[x + 1][y] = EMPTY;
 				map_d->objs[x + 1][y - 1] = EMPTY;

@@ -3,7 +3,7 @@ CFLAGS = -g -O0 -Wall
 LDFLAGS = -lm
 
 DEPS = src/game.h
-_OBJ = main.o map.o camera.o water.o texture.o animate.o event.o
+_OBJ = main.o map.o camera.o water.o texture.o animate.o event.o wall.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 SDIR=src

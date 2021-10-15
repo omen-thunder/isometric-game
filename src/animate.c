@@ -128,6 +128,13 @@ int load_obj(map_data* map_d, tex_data* tex_d,  cam_data* cam_d, SDL_Rect* rect,
 			rect->x = screen_x(map_d, cam_d, x, y) - TILE_H;
 			rect->y = screen_y(map_d, cam_d, x, y) - rect->h + TILE_H * 1.75;
 			return T_BASE;
+		case WALL:
+			rect->w = 96; 
+			rect->h = 73;
+			rect->x = screen_x(map_d, cam_d, x, y) + 15;
+			rect->y = screen_y(map_d, cam_d, x, y) - 15;
+			return wall_index(map_d, x + map_d->cur_x, y + map_d->cur_y);
+			
 		default:
 			return T_EMPTY;
 	}
@@ -143,8 +150,12 @@ void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 		return;
 
 	// checks if the object is on the screen
-	if (rect.x > -rect.w && rect.x < win_d->win_w  && rect.y > -rect.h && rect.y < win_d->win_h)
-		SDL_RenderCopy(rend, tex_d->obj_tex[tex_id], NULL, &rect);
+	if (rect.x > -rect.w && rect.x < win_d->win_w  && rect.y > -rect.h && rect.y < win_d->win_h) {
+		if (map_d->objs[x + map_d->cur_x][y + map_d->cur_y] == WALL)
+			SDL_RenderCopy(rend, tex_d->wall_tex[tex_id], NULL, &rect);
+		else
+			SDL_RenderCopy(rend, tex_d->obj_tex[tex_id], NULL, &rect);
+	}
 }
 
 // draws the background
