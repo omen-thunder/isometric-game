@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <math.h>
+#include <stdint.h>
 
 #define TILE_W (128)
 #define TILE_H (64)
@@ -46,8 +47,8 @@ typedef struct {
 
 // containts map related variables
 typedef struct {
-	int** tiles;	// 2D array representing the background tiles
-	int** objs;	// 2D array representing the objects on the map
+	uint32_t** tiles;	// 2D array representing the background tiles
+	uint32_t** objs;	// 2D array representing the objects on the map
 	int** npcs;	// 2D array representing the npcs on the map
 	int win_sz;	// the number of tiles in one edge of the background rhombus
 	int map_sz;	// the number of tiles in one edge of the map
@@ -89,6 +90,14 @@ typedef struct {
 int map_init(win_data* win_d, map_data* map_d);
 int out_of_bounds(map_data* map_d, int x, int y);
 int editable(map_data* map_d, menu_data* menu_d, int x, int y);
+uint16_t get_tile_type(map_data* map_d, int x, int y);
+uint16_t get_tile_tex(map_data* map_d, int x, int y);
+void set_tile_type(map_data* map_d, int x, int y, uint16_t type);
+void set_tile_tex(map_data* map_d, int x, int y, uint16_t tex_id);
+uint16_t get_obj_type(map_data* map_d, int x, int y);
+uint16_t get_obj_tex(map_data* map_d, int x, int y);
+void set_obj_type(map_data* map_d, int x, int y, uint16_t type);
+void set_obj_tex(map_data* map_d, int x, int y, uint16_t tex_id);
 int get_row(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
 int get_column(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
 void move_ur(map_data* map_d);

@@ -64,26 +64,50 @@ void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d)
 		case U_DEFAULT:
 			break;
 		case U_WATER:
-			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(map_d, menu_d, x, y))
-				map_d->tiles[x][y] = WATER;
-			else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
-				map_d->tiles[x][y] = GRASS;
+			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(map_d, menu_d, x, y)) {
+				set_tile_type(map_d, x, y, WATER);
+				for (int i = x - 1; i <= x + 1; i++)
+					for (int j = y - 1; j <= y + 1; j++)
+						if (get_tile_type(map_d, i, j) == WATER)
+							set_tile_tex(map_d, i, j, water_index(map_d, i, j));
+			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
+				set_tile_type(map_d, x, y, GRASS);
+				set_tile_tex(map_d, x, y, T_GRASS);
+				for (int i = x - 1; i <= x + 1; i++)
+					for (int j = y - 1; j <= y + 1; j++)
+						if (get_tile_type(map_d, i, j) == WATER)
+							set_tile_tex(map_d, i, j, water_index(map_d, i, j));
+			}
 
 			break;
 		case U_TREE:
-			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(map_d, menu_d, x, y))
-				map_d->objs[x][y] = TREE;
-			else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
-				map_d->objs[x][y] = EMPTY;
+			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(map_d, menu_d, x, y)) {
+				set_obj_type(map_d, x, y, TREE);
+				set_obj_tex(map_d, x, y, T_TREE);
+			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
+				set_obj_type(map_d, x, y, EMPTY);
+				set_obj_tex(map_d, x, y, T_EMPTY);
+			}
 
 			break;
 		case U_WALL:
-			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(map_d, menu_d, x, y))
-				map_d->objs[x][y] = WALL;
-			else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT))
-				map_d->objs[x][y] = EMPTY;
+			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(map_d, menu_d, x, y)) {
+				set_obj_type(map_d, x, y, WALL);
+				for (int i = x - 1; i <= x + 1; i++)
+					for (int j = y - 1; j <= y + 1; j++)
+						if (get_obj_type(map_d, i, j) == WALL)
+							set_obj_tex(map_d, i, j, wall_index(map_d, i, j));
+			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
+				set_obj_type(map_d, x, y, EMPTY);
+				set_obj_tex(map_d, x, y, T_EMPTY);
+				for (int i = x - 1; i <= x + 1; i++)
+					for (int j = y - 1; j <= y + 1; j++)
+						if (get_obj_type(map_d, i, j) == WALL)
+							set_obj_tex(map_d, i, j, wall_index(map_d, i, j));
+			}
 
 			break;
+		/*
 		case U_BASE:
 			if (button == SDL_BUTTON(SDL_BUTTON_LEFT)
 				&& editable(map_d, menu_d, x, y)
@@ -118,6 +142,7 @@ void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d)
 			}
 
 			break;
+		*/
 	}
 }
 

@@ -22,11 +22,43 @@ int editable(map_data* map_d, menu_data* menu_d, int x, int y) {
 
 	switch (menu_d->mode) {
 		default:
-			if (map_d->tiles[x][y] == GRASS && map_d->objs[x][y] == EMPTY)
+			if (get_tile_type(map_d, x, y) == GRASS && get_obj_type(map_d, x, y) == EMPTY)
 				return 1;
 			else
 				return 0;
 	}
+}
+
+uint16_t get_tile_type(map_data* map_d, int x, int y) {
+	return ((uint16_t*) &map_d->tiles[x][y])[0];
+}
+
+uint16_t get_tile_tex(map_data* map_d, int x, int y) {
+	return ((uint16_t*) &map_d->tiles[x][y])[1];
+}
+
+void set_tile_type(map_data* map_d, int x, int y, uint16_t type) {
+	((uint16_t*) &map_d->tiles[x][y])[0] = type;
+}
+
+void set_tile_tex(map_data* map_d, int x, int y, uint16_t tex_id) {
+	((uint16_t*) &map_d->tiles[x][y])[1] = tex_id;
+}
+
+uint16_t get_obj_type(map_data* map_d, int x, int y) {
+	return ((uint16_t*) &map_d->objs[x][y])[0];
+}
+
+uint16_t get_obj_tex(map_data* map_d, int x, int y) {
+	return ((uint16_t*) &map_d->objs[x][y])[1];
+}
+
+void set_obj_type(map_data* map_d, int x, int y, uint16_t type) {
+	((uint16_t*) &map_d->objs[x][y])[0] = type;
+}
+
+void set_obj_tex(map_data* map_d, int x, int y, uint16_t tex_id) {
+	((uint16_t*) &map_d->objs[x][y])[1] = tex_id;
 }
 
 // initialises the map_data structure
@@ -60,8 +92,10 @@ int map_init(win_data* win_d, map_data* map_d) {
 
 	// initialise the tile map
 	for (int x = 0; x < map_d->map_sz; x++)
-		for (int y = 0; y < map_d->map_sz; y++)
-			map_d->tiles[x][y] = 0;
+		for (int y = 0; y < map_d->map_sz; y++) {
+			set_tile_type(map_d, x, y, GRASS);
+			set_tile_tex(map_d, x, y, T_GRASS);
+		}
 
 	// allocate memory for the object map
 	if (!(map_d->objs = malloc(map_d->map_sz * sizeof(int *)))) {
@@ -88,10 +122,13 @@ int map_init(win_data* win_d, map_data* map_d) {
 	// initialise the object map
 	for (int x = 0; x < map_d->map_sz; x++)
 		for (int y = 0; y < map_d->map_sz; y++) {
-			if (out_of_bounds(map_d, x, y))
-				map_d->objs[x][y] = TREE;
-			else
-				map_d->objs[x][y] = EMPTY;
+			if (out_of_bounds(map_d, x, y)) {
+				set_obj_type(map_d, x, y, TREE);
+				set_obj_tex(map_d, x, y, T_TREE);
+			} else {
+				set_obj_type(map_d, x, y, EMPTY);
+				set_obj_tex(map_d, x, y, T_EMPTY);
+			}
 		}
 
 	// offset for the background rhombus derived from the intercepts
