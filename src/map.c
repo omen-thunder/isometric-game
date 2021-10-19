@@ -29,6 +29,23 @@ int editable(map_data* map_d, menu_data* menu_d, int x, int y) {
 	}
 }
 
+int zoom_scale(int zoom, int base) {
+	switch (zoom) {
+		case -2:
+			return base / 4;
+		case -1:
+			return base / 2;
+		case 0:
+			return base;
+		case 1:
+			return base * 2;
+		case 2:
+			return base * 4;
+		default:
+			return base;
+	}
+}
+
 uint16_t get_tile_type(map_data* map_d, int x, int y) {
 	return ((uint16_t*) &map_d->tiles[x][y])[0];
 }
@@ -61,20 +78,24 @@ void set_obj_tex(map_data* map_d, int x, int y, uint16_t tex_id) {
 	((uint16_t*) &map_d->objs[x][y])[1] = tex_id;
 }
 
+// calculate the size of each side of the background rhombus by
+// finding its side length based on the window height and width
+// and dividing it by the side length of one tile rhombus
+int calc_win_sz(int win_h, int win_w, int tile_w, int tile_h) {
+	return ceil(dist(win_h * -1.0f, win_h / 2.0f, win_w / 2.0f, win_w / -4.0f)
+		/ dist(0.0f, tile_w / 2.0f, tile_h / 2.0f, 0.0f));
+}
+
 // initialises the map_data structure
 int map_init(win_data* win_d, map_data* map_d) {
-	map_d->boarder = 15;
+	map_d->tile_h = 64;
+	map_d->boarder = 50;
+	map_d->zoom = 0;
+	map_d->view = 0;
 
-	// calculate the size of each side of the background rhombus by
-	// finding its side length based on the window height and width
-	// and dividing it by the side length of one tile rhombus
-	map_d->win_sz  = (int) ceil(dist(win_d->win_h * -1.0,
-			win_d->win_h / 2.0,
-			win_d->win_w / 2.0,
-			win_d->win_w / -4.0)
-			/ dist(0, TILE_W / 2.0, TILE_H / 2.0, 0));
+	map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
 
-	map_d->map_sz = map_d->win_sz * 4;
+	map_d->map_sz = 500;
 
 	// allocate memory for the tile map
 	if (!(map_d->tiles = malloc(map_d->map_sz * sizeof(int *)))) {
@@ -130,7 +151,7 @@ int map_init(win_data* win_d, map_data* map_d) {
 				set_obj_tex(map_d, x, y, T_EMPTY);
 			}
 		}
-
+	
 	// offset for the background rhombus derived from the intercepts
 	// between the sides of the window rectangle and the sides of the
 	// background rhombus

@@ -22,19 +22,15 @@ void draw_selector_part(SDL_Renderer* rend, map_data* map_d, cam_data* cam_d, te
 
 // draws the selector
 void draw_selector(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d, int x, int y) {
+	int legal;
 	switch (menu_d->mode) {
 		case U_BASE:
-			if (
-				editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y)
-				&& editable(map_d, menu_d, x + map_d->cur_x + 1, y + map_d->cur_y)
-				&& editable(map_d, menu_d, x + map_d->cur_x + 1, y + map_d->cur_y - 1)
-				&& editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y - 1)
-				&& editable(map_d, menu_d, x + map_d->cur_x - 1, y + map_d->cur_y - 1)
-				&& editable(map_d, menu_d, x + map_d->cur_x - 1, y + map_d->cur_y)
-				&& editable(map_d, menu_d, x + map_d->cur_x - 1, y + map_d->cur_y + 1)
-				&& editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y + 1)
-				&& editable(map_d, menu_d, x + map_d->cur_x + 1, y + map_d->cur_y + 1)
-			) {
+			legal = 1;
+			for (int i = x - 1; i <= x + 1; i++)
+				for (int j = y - 1; j <= y + 1; j++)
+					if (!editable(map_d, menu_d, i + map_d->cur_x, j + map_d->cur_y))
+						legal = 0;
+			if (legal) {
 				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_R, x + 1, y - 1);
 				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_UR, x, y - 1);
 				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_U, x - 1, y - 1);
@@ -53,6 +49,7 @@ void draw_selector(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_dat
 				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_D, x + 1, y + 1);
 				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_DR, x + 1, y);
 			}
+
 			break;
 		default:
 			if (editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y))
@@ -65,6 +62,11 @@ void draw_selector(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_dat
 
 // draws a single tile
 void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int x, int y) {
+	// check if the object is within the map array
+	if (x + map_d->cur_x >= map_d->map_sz || x + map_d->cur_x < 0
+			|| y + map_d->cur_y >= map_d->map_sz || y + map_d->cur_y < 0)
+		return;
+
 	SDL_Rect rect;
 	rect.w = TILE_W;
 	rect.h = TILE_H;
@@ -72,7 +74,7 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* t
 	rect.x = screen_x(map_d, cam_d, x, y);
 	rect.y = screen_y(map_d, cam_d, x, y);
 
-	// checks if the tile is on the screen
+	// checks if the tile is on the screen and within the map array
 	if (rect.x > -TILE_W && rect.x < win_d->win_w && rect.y > -TILE_H && rect.y < win_d->win_h) {
 		// check what type of tile is being drawn
 		switch (get_tile_type(map_d, x + map_d->cur_x, y + map_d->cur_y)) {
@@ -89,59 +91,62 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* t
 void load_obj(map_data* map_d, tex_data* tex_d,  cam_data* cam_d, SDL_Rect* rect, int x, int y) {
 	switch (get_obj_type(map_d, x + map_d->cur_x, y + map_d->cur_y)) {
 		case TREE:
-			SDL_QueryTexture(tex_d->obj_tex[T_TREE], NULL, NULL,  &rect->w, &rect->h);
-			rect->w /= 5;
-			rect->h /= 5;
-			rect->x = screen_x(map_d, cam_d, x, y) + 30;
-			rect->y = screen_y(map_d, cam_d, x, y) - 90;
+			rect->w = zoom_scale(map_d->zoom, 350) / 5;
+			rect->h = zoom_scale(map_d->zoom, 720) / 5;
+			rect->x = screen_x(map_d, cam_d, x, y) + zoom_scale(map_d->zoom, 60);
+			rect->y = screen_y(map_d, cam_d, x, y) - zoom_scale(map_d->zoom, 90);
 
 			// pseudo-randomly adjust the x and y position
 			switch ((x + map_d->cur_x + y + map_d->cur_y) % 5) {
 				case 0:
 					break;
 				case 1:
-					rect->x -= 8;
-					rect->y -= 4;
+					rect->x -= zoom_scale(map_d->zoom, 8);
+					rect->y -= zoom_scale(map_d->zoom, 4);
 					break;
 				case 2:
-					rect->x += 8;
-					rect->y += 4;
+					rect->x += zoom_scale(map_d->zoom, 8);
+					rect->y += zoom_scale(map_d->zoom, 4);
 					break;
 				case 3:
-					rect->x -= 8;
-					rect->y += 4;
+					rect->x -= zoom_scale(map_d->zoom, 8);
+					rect->y += zoom_scale(map_d->zoom, 4);
 					break;
 				case 4:
-					rect->x += 8;
-					rect->y -= 4;
+					rect->x += zoom_scale(map_d->zoom, 8);
+					rect->y -= zoom_scale(map_d->zoom, 4);
 					break;
 			}		
 
 			break;
 		case BASE:
-			SDL_QueryTexture(tex_d->obj_tex[T_BASE], NULL, NULL,  &rect->w, &rect->h);
-			rect->h /= rect->w / TILE_W / 2;
-			rect->w = TILE_W * 2;
-			rect->x = screen_x(map_d, cam_d, x, y) - TILE_H;
-			rect->y = screen_y(map_d, cam_d, x, y) - rect->h + TILE_H * 1.75;
+			rect->w = zoom_scale(map_d->zoom, 549) / 2.25f;
+			rect->h = zoom_scale(map_d->zoom, 882) / 2.25f;
+			rect->x = screen_x(map_d, cam_d, x, y) - zoom_scale(map_d->zoom, 60);
+			rect->y = screen_y(map_d, cam_d, x, y) - zoom_scale(map_d->zoom, 300);
 			break;
 		case WALL:
-			rect->w = 96; 
-			rect->h = 73;
-			rect->x = screen_x(map_d, cam_d, x, y) + 15;
-			rect->y = screen_y(map_d, cam_d, x, y) - 15;
+			rect->w = zoom_scale(map_d->zoom, 96); 
+			rect->h = zoom_scale(map_d->zoom, 73); 
+			rect->x = screen_x(map_d, cam_d, x, y) + zoom_scale(map_d->zoom, 15);
+			rect->y = screen_y(map_d, cam_d, x, y) - zoom_scale(map_d->zoom, 15);
 			break;
 	}
 }
 
 // draws an object
 void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int x, int y) {
-	SDL_Rect rect;
-
-	// check if the object is empty
-	if (get_obj_type(map_d, x + map_d->cur_x, y + map_d->cur_y) == EMPTY)
+	// check if the object is within the map array
+	if (x + map_d->cur_x >= map_d->map_sz || x + map_d->cur_x < 0
+			|| y + map_d->cur_y >= map_d->map_sz || y + map_d->cur_y < 0)
 		return;
 
+	// check if the object is empty
+	if (get_obj_type(map_d, x + map_d->cur_x, y + map_d->cur_y) == EMPTY
+			|| get_obj_type(map_d, x + map_d->cur_x, y + map_d->cur_y) == OCCUPIED)
+		return;
+
+	SDL_Rect rect;
 	load_obj(map_d, tex_d, cam_d, &rect, x, y);
 
 	// checks if the object is on the screen

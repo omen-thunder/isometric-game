@@ -1,30 +1,37 @@
 #include "game.h"
 
 // processes keyboard events
-int keyboard(map_data* map_d, menu_data* menu_d) {
+int keyboard(win_data* win_d, map_data* map_d, menu_data* menu_d, int x, int y) {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 			case SDL_QUIT:
 				return 0;
-				break;
 			case SDL_KEYDOWN:
 				switch(event.key.keysym.sym) {
 					case SDLK_RIGHT:
-						move_ur(map_d);
-						move_dr(map_d);
 						break;
 					case SDLK_UP:
-						move_ur(map_d);
-						move_ul(map_d);
+						if (map_d->zoom < 2) {
+							map_d->zoom++;
+							int win_sz_old = map_d->win_sz;
+							map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
+							map_d->cur_x = map_d->cur_x + (win_sz_old - map_d->win_sz) / 2;
+							map_d->cur_y = map_d->cur_y + (win_sz_old - map_d->win_sz) / 2;
+						}
+
 						break;
 					case SDLK_LEFT:
-						move_ul(map_d);
-						move_dl(map_d);
 						break;
 					case SDLK_DOWN:
-						move_dl(map_d);
-						move_dr(map_d);
+						if (map_d->zoom > -2) {
+							map_d->zoom--;
+							int win_sz_old = map_d->win_sz;
+							map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
+							map_d->cur_x = map_d->cur_x + (win_sz_old - map_d->win_sz) / 2;
+							map_d->cur_y = map_d->cur_y + (win_sz_old - map_d->win_sz) / 2;
+						}
+
 						break;
 					case SDLK_b:
 						menu_d->mode = U_BASE;
@@ -42,6 +49,26 @@ int keyboard(map_data* map_d, menu_data* menu_d) {
 						menu_d->mode = U_DEFAULT;
 						break;
 				}
+
+				break;
+			case SDL_MOUSEWHEEL:
+				if (event.wheel.y > 0) {
+					if (map_d->zoom < 2) {
+						map_d->zoom++;
+						map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
+						map_d->cur_x = x - map_d->win_sz / 2;
+						map_d->cur_y = y - map_d->win_sz / 2;
+					}
+				} else if (event.wheel.y < 0) {
+					if (map_d->zoom > -2) {
+						map_d->zoom--;
+						int win_sz_old = map_d->win_sz;
+						map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
+						map_d->cur_x = map_d->cur_x + (win_sz_old - map_d->win_sz) / 2;
+						map_d->cur_y = map_d->cur_y + (win_sz_old - map_d->win_sz) / 2;
+					}
+				}
+
 				break;
 		}
 	}
@@ -50,16 +77,7 @@ int keyboard(map_data* map_d, menu_data* menu_d) {
 }
 
 // processes mouse events
-void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d) {
-	// get the current state of the mouse
-	int button;
-	button = SDL_GetMouseState(&win_d->mouse_x, &win_d->mouse_y);
-	
-	// find which tile the mouse is on
-	int x = get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
-	int y = get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
-
-	// check if the selected tile is in the boarder
+void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d, int button, int x, int y) {
 	switch (menu_d->mode) {
 		case U_DEFAULT:
 			break;
@@ -107,54 +125,48 @@ void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d)
 			}
 
 			break;
-		/*
 		case U_BASE:
-			if (button == SDL_BUTTON(SDL_BUTTON_LEFT)
-				&& editable(map_d, menu_d, x, y)
-				&& editable(map_d, menu_d, x + 1, y)
-				&& editable(map_d, menu_d, x + 1, y - 1)
-				&& editable(map_d, menu_d, x, y - 1)
-				&& editable(map_d, menu_d, x - 1, y - 1)
-				&& editable(map_d, menu_d, x - 1, y)
-				&& editable(map_d, menu_d, x - 1, y + 1)
-				&& editable(map_d, menu_d, x, y + 1)
-				&& editable(map_d, menu_d, x + 1, y + 1)
-			) {
-				map_d->objs[x][y] = BASE;
-				map_d->objs[x + 1][y] = OCCUPIED;
-				map_d->objs[x + 1][y - 1] = OCCUPIED;
-				map_d->objs[x][y - 1] = OCCUPIED;
-				map_d->objs[x - 1][y - 1] = OCCUPIED;
-				map_d->objs[x - 1][y] = OCCUPIED;
-				map_d->objs[x - 1][y + 1] = OCCUPIED;
-				map_d->objs[x][y + 1] = OCCUPIED;
-				map_d->objs[x + 1][y + 1] = OCCUPIED;
-			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT) && map_d->objs[x][y] == BASE) {
-				map_d->objs[x][y] = EMPTY;
-				map_d->objs[x + 1][y] = EMPTY;
-				map_d->objs[x + 1][y - 1] = EMPTY;
-				map_d->objs[x][y - 1] = EMPTY;
-				map_d->objs[x - 1][y - 1] = EMPTY;
-				map_d->objs[x - 1][y] = EMPTY;
-				map_d->objs[x - 1][y + 1] = EMPTY;
-				map_d->objs[x][y + 1] = EMPTY;
-				map_d->objs[x + 1][y + 1] = EMPTY;
+			if (button == SDL_BUTTON(SDL_BUTTON_LEFT)) {
+				for (int i = x - 1; i <= x + 1; i++)
+					for (int j = y - 1; j <= y + 1; j++)
+						if (!editable(map_d, menu_d, i, j))
+							return;
+
+				for (int i = x - 1; i <= x + 1; i++)
+					for (int j = y - 1; j <= y + 1; j++)
+						set_obj_type(map_d, i, j, OCCUPIED);
+				
+				set_obj_type(map_d, x, y, BASE);
+				set_obj_tex(map_d, x, y, T_BASE);
+			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT) && get_obj_type(map_d, x, y) == BASE) {
+				for (int i = x - 1; i <= x + 1; i++)
+					for (int j = y - 1; j <= y + 1; j++) {
+						set_obj_type(map_d, i, j, EMPTY);
+					}
+				
+				set_obj_tex(map_d, x, y, T_EMPTY);
 			}
 
 			break;
-		*/
 	}
 }
 
 // processes events
 int event(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d) {
+	// get the current state of the mouse
+	int button;
+	button = SDL_GetMouseState(&win_d->mouse_x, &win_d->mouse_y);
+	
+	// find which tile the mouse is on
+	int x = get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
+	int y = get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
 
 	// keyboard events
-	if (!keyboard(map_d, menu_d))
+	if (!keyboard(win_d, map_d, menu_d, x, y))
 		return 0;
 
 	// mouse events
-	mouse(win_d, map_d, cam_d, menu_d);
+	mouse(win_d, map_d, cam_d, menu_d, button, x, y);
 
 	// pans the camera
 	cam_pan(win_d, map_d, cam_d);

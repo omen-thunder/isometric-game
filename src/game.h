@@ -7,8 +7,8 @@
 #include <math.h>
 #include <stdint.h>
 
-#define TILE_W (128)
-#define TILE_H (64)
+#define TILE_W (zoom_scale(map_d->zoom, map_d->tile_h * 2))
+#define TILE_H (zoom_scale(map_d->zoom, map_d->tile_h))
 #define NUM_TILES (1)
 #define NUM_WATER (47)
 #define NUM_OBJS (2)
@@ -47,16 +47,19 @@ typedef struct {
 
 // containts map related variables
 typedef struct {
+	int tile_h;		// the tile's height
 	uint32_t** tiles;	// 2D array representing the background tiles
 	uint32_t** objs;	// 2D array representing the objects on the map
-	int** npcs;	// 2D array representing the npcs on the map
-	int win_sz;	// the number of tiles in one edge of the background rhombus
-	int map_sz;	// the number of tiles in one edge of the map
-	int off_x;	// x-axis offset of the background rhombus
-	int off_y;	// y-axis offset of the background rhombus
-	int cur_x;	// the x-axis cursor for the current camera location on the map
-	int cur_y;	// the x-axis cursor for the current camera location on the map
-	int boarder;	// the size of the boarder
+	int** npcs;		// 2D array representing the npcs on the map
+	int win_sz;		// the number of tiles in one edge of the background rhombus
+	int map_sz;		// the number of tiles in one edge of the map
+	int off_x;		// x-axis offset of the background rhombus
+	int off_y;		// y-axis offset of the background rhombus
+	int cur_x;		// the x-axis cursor for the current camera location on the map
+	int cur_y;		// the x-axis cursor for the current camera location on the map
+	int boarder;		// the size of the boarder
+	int zoom;		// the zoom state 
+	int view;		// the camera perspective
 } map_data;
 
 // contains textures
@@ -105,6 +108,8 @@ void move_ul(map_data* map_d);
 void move_dl(map_data* map_d);
 void move_dr(map_data* map_d);
 void map_free(map_data* map_d);
+int calc_win_sz(int win_h, int win_w, int tile_w, int tile_h);
+int zoom_scale(int zoom, int base);
 
 // in camera.c
 void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d);
