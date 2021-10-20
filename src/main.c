@@ -57,6 +57,8 @@ int main(void) {
 	if (make_window(&win, &win_data)) {
 		return 1;
 	}
+
+	SDL_SetWindowGrab(win, SDL_TRUE);
 	
 	// initialise the renderer
 	SDL_Renderer* rend;

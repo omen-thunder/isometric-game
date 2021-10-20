@@ -15,6 +15,7 @@
 #define NUM_MENU (0)
 #define NUM_SELECTOR (18)
 #define NUM_WALL (16)
+#define GAP (4)
 #define BUF_SZ (60)
 
 // enumerations for the texture arrays

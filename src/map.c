@@ -89,13 +89,13 @@ int calc_win_sz(int win_h, int win_w, int tile_w, int tile_h) {
 // initialises the map_data structure
 int map_init(win_data* win_d, map_data* map_d) {
 	map_d->tile_h = 64;
-	map_d->boarder = 50;
+	map_d->boarder = 10;
 	map_d->zoom = 0;
 	map_d->view = 0;
 
 	map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
 
-	map_d->map_sz = 500;
+	map_d->map_sz = 200;
 
 	// allocate memory for the tile map
 	if (!(map_d->tiles = malloc(map_d->map_sz * sizeof(int *)))) {
@@ -158,8 +158,8 @@ int map_init(win_data* win_d, map_data* map_d) {
 	map_d->off_x = win_d->win_w / 2 - TILE_W / 2;
 	map_d->off_y = -win_d->win_w / 4;
 
-	map_d->cur_x = 10;
-	map_d->cur_y = 10;
+	map_d->cur_x = map_d->map_sz / 2;
+	map_d->cur_y = map_d->map_sz / 2;
 	return 0;
 }
 
@@ -193,25 +193,25 @@ int get_column(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y) {
 
 // move the map cursor up and right
 void move_ur(map_data* map_d) {
-	if (map_d->cur_y > 4)
+	if (map_d->cur_y > GAP)
 		map_d->cur_y--;
 }
 
 // move the map cursor up and left
 void move_ul(map_data* map_d) {
-	if (map_d->cur_x > 4)
+	if (map_d->cur_x > GAP)
 		map_d->cur_x--;
 }
 
 // move the map cursor down and left
 void move_dl(map_data* map_d) {
-	if (map_d->cur_y < map_d->map_sz - map_d->win_sz - 4)
+	if (map_d->cur_y < map_d->map_sz - map_d->win_sz - GAP)
 		map_d->cur_y++;
 }
 
 // move the map cursor down and right
 void move_dr(map_data* map_d) {
-	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - 4)
+	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - GAP)
 		map_d->cur_x++;
 }
 

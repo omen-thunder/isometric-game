@@ -96,7 +96,7 @@ float speed_dr(win_data* win_d, cam_data* cam_d) {
 
 // pans the camera up and right
 void pan_ur(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_y > 4)
+	if (map_d->cur_y > GAP)
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_ur(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
@@ -107,7 +107,7 @@ void pan_ur(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera up and left
 void pan_ul(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x > 4)
+	if (map_d->cur_x > GAP)
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_ul(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
@@ -118,7 +118,7 @@ void pan_ul(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera down and left
 void pan_dl(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_y < map_d->map_sz - map_d->win_sz - 4)
+	if (map_d->cur_y < map_d->map_sz - map_d->win_sz - GAP)
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_dl(win_d, cam_d);
 	
 	if (cam_d->buf >= BUF_SZ) {
@@ -129,7 +129,7 @@ void pan_dl(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera down and right
 void pan_dr(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - 4)
+	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - GAP)
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_dr(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
@@ -140,7 +140,7 @@ void pan_dr(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera right
 void pan_r(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - 4 && map_d->cur_y > 4) {
+	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - GAP && map_d->cur_y > GAP) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_r(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
@@ -159,7 +159,7 @@ void pan_r(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera up
 void pan_u(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x > 4 && map_d->cur_y > 4) {
+	if (map_d->cur_x > GAP && map_d->cur_y > GAP) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_u(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
@@ -178,7 +178,7 @@ void pan_u(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera left
 void pan_l(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x > 4 && map_d->cur_y < map_d->map_sz - map_d->win_sz - 4) {
+	if (map_d->cur_x > GAP && map_d->cur_y < map_d->map_sz - map_d->win_sz - GAP) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_l(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
@@ -197,7 +197,7 @@ void pan_l(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera down
 void pan_d(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - 4 && map_d->cur_y < map_d->map_sz - map_d->win_sz - 4) {
+	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - GAP && map_d->cur_y < map_d->map_sz - map_d->win_sz - GAP) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_d(win_d, cam_d);
 
 		// allows camera to move in both isometric axes

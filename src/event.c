@@ -16,6 +16,7 @@ int keyboard(win_data* win_d, map_data* map_d, menu_data* menu_d, int x, int y) 
 							map_d->zoom++;
 							int win_sz_old = map_d->win_sz;
 							map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
+
 							map_d->cur_x = map_d->cur_x + (win_sz_old - map_d->win_sz) / 2;
 							map_d->cur_y = map_d->cur_y + (win_sz_old - map_d->win_sz) / 2;
 						}
@@ -28,8 +29,22 @@ int keyboard(win_data* win_d, map_data* map_d, menu_data* menu_d, int x, int y) 
 							map_d->zoom--;
 							int win_sz_old = map_d->win_sz;
 							map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
-							map_d->cur_x = map_d->cur_x + (win_sz_old - map_d->win_sz) / 2;
-							map_d->cur_y = map_d->cur_y + (win_sz_old - map_d->win_sz) / 2;
+
+							int new_x = map_d->cur_x + (win_sz_old - map_d->win_sz) / 2;
+							if (new_x >= GAP && new_x <= map_d->map_sz - map_d->win_sz - GAP)
+								map_d->cur_x = new_x;
+							else if (new_x < GAP)
+								map_d->cur_x = GAP;
+							else if (new_x > map_d->map_sz - map_d->win_sz - GAP)
+								map_d->cur_x = map_d->map_sz - map_d->win_sz - GAP;
+
+							int new_y = map_d->cur_y + (win_sz_old - map_d->win_sz) / 2;
+							if (new_y >= GAP && new_y <= map_d->map_sz - map_d->win_sz - GAP)
+								map_d->cur_y = new_y;
+							else if (new_y < GAP)
+								map_d->cur_y = GAP;
+							else if (new_y > map_d->map_sz - map_d->win_sz - GAP)
+								map_d->cur_y = map_d->map_sz - map_d->win_sz - GAP;
 						}
 
 						break;
@@ -56,16 +71,44 @@ int keyboard(win_data* win_d, map_data* map_d, menu_data* menu_d, int x, int y) 
 					if (map_d->zoom < 2) {
 						map_d->zoom++;
 						map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
-						map_d->cur_x = x - map_d->win_sz / 2;
-						map_d->cur_y = y - map_d->win_sz / 2;
+
+						int new_x = x - map_d->win_sz / 2;
+						if (new_x >= GAP && new_x <= map_d->map_sz - map_d->win_sz - GAP)
+							map_d->cur_x = new_x;
+						else if (new_x < GAP)
+							map_d->cur_x = GAP;
+						else if (new_x > map_d->map_sz - map_d->win_sz - GAP)
+							map_d->cur_x = map_d->map_sz - map_d->win_sz - GAP;
+
+						int new_y = y - map_d->win_sz / 2;
+						if (new_y >= GAP && new_y <= map_d->map_sz - map_d->win_sz - GAP)
+							map_d->cur_y = new_y;
+						else if (new_y < GAP)
+							map_d->cur_y = GAP;
+						else if (new_y > map_d->map_sz - map_d->win_sz - GAP)
+							map_d->cur_y = map_d->map_sz - map_d->win_sz - GAP;
 					}
 				} else if (event.wheel.y < 0) {
 					if (map_d->zoom > -2) {
 						map_d->zoom--;
-						int win_sz_old = map_d->win_sz;
-						map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
-						map_d->cur_x = map_d->cur_x + (win_sz_old - map_d->win_sz) / 2;
-						map_d->cur_y = map_d->cur_y + (win_sz_old - map_d->win_sz) / 2;
+							int win_sz_old = map_d->win_sz;
+							map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
+
+							int new_x = map_d->cur_x + (win_sz_old - map_d->win_sz) / 2;
+							if (new_x >= GAP && new_x <= map_d->map_sz - map_d->win_sz - GAP)
+								map_d->cur_x = new_x;
+							else if (new_x < GAP)
+								map_d->cur_x = GAP;
+							else if (new_x > map_d->map_sz - map_d->win_sz - GAP)
+								map_d->cur_x = map_d->map_sz - map_d->win_sz - GAP;
+
+							int new_y = map_d->cur_y + (win_sz_old - map_d->win_sz) / 2;
+							if (new_y >= GAP && new_y <= map_d->map_sz - map_d->win_sz - GAP)
+								map_d->cur_y = new_y;
+							else if (new_y < GAP)
+								map_d->cur_y = GAP;
+							else if (new_y > map_d->map_sz - map_d->win_sz - GAP)
+								map_d->cur_y = map_d->map_sz - map_d->win_sz - GAP;
 					}
 				}
 
