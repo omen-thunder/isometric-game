@@ -10,7 +10,7 @@
 #define TILE_W (zoom_scale(map_d->zoom, map_d->tile_h * 2))
 #define TILE_H (zoom_scale(map_d->zoom, map_d->tile_h))
 #define NUM_TILES (1)
-#define NUM_WATER (47)
+#define NUM_WATER (256)
 #define NUM_OBJS (2)
 #define NUM_MENU (0)
 #define NUM_SELECTOR (18)

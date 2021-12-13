@@ -210,8 +210,6 @@ int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_
 
 		// wait 1/fps of a second
 		//SDL_Delay(1000 / win_d->fps);
-
-		printf("cur_x: %d\tcur_y: %d\n", map_d->cur_x, map_d->cur_y);
 	}
 
 	return 0;

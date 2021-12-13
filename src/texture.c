@@ -25,9 +25,9 @@ int tile_init(SDL_Renderer* rend, tex_data* tex_d) {
 	// load the water textures
 	char path[50];
 	for (int i = 0; i < NUM_WATER; i++) {
-		sprintf(path, "./resources/tiles/water/water_%02d.png", i);
+		sprintf(path, "./resources/tiles/water/water_%03d.png", i);
 		if (load_texture(rend, &tex_d->water_tex[i], path)) {
-			fprintf(stderr, "Failed to load water_%02d.png texture\n", i);
+			fprintf(stderr, "Failed to load water_%03d.png texture\n", i);
 			return -1;
 		}
 	}

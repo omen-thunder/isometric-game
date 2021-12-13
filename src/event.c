@@ -204,6 +204,8 @@ int event(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d) 
 	int x = get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
 	int y = get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
 
+	printf("x: %d y: %d\n", x, y);
+
 	// keyboard events
 	if (!keyboard(win_d, map_d, menu_d, x, y))
 		return 0;
