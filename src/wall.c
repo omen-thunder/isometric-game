@@ -2,7 +2,7 @@
 
 // returns the index of a wall sprite based on its surrounding tiles
 int wall_index(map_data* map_d, int x, int y) {
-	uint8_t index = 0;
+	unsigned index = 0;
 
 	// check the up-right tile
 	if (get_obj_type(map_d, x, y - 1) == WALL)

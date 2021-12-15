@@ -7,8 +7,9 @@
 #include <math.h>
 #include <stdint.h>
 
-#define TILE_W (zoom_scale(map_d->zoom, map_d->tile_h * 2))
-#define TILE_H (zoom_scale(map_d->zoom, map_d->tile_h))
+#define ZOOM_SCALE(x) (x << map_d->zoom >> 2)
+#define TILE_W (ZOOM_SCALE(map_d->tile_h << 1))
+#define TILE_H (ZOOM_SCALE(map_d->tile_h))
 #define NUM_TILES (1)
 #define NUM_WATER (256)
 #define NUM_OBJS (2)
@@ -59,18 +60,18 @@ typedef struct {
 	int cur_x;		// the x-axis cursor for the current camera location on the map
 	int cur_y;		// the x-axis cursor for the current camera location on the map
 	int boarder;		// the size of the boarder
-	int zoom;		// the zoom state 
+	unsigned zoom;		// the zoom state, between 0 and 4
 	int view;		// the camera perspective
 } map_data;
 
 // contains textures
 typedef struct {
-	SDL_Texture* tile_tex[NUM_TILES];		// array of tile textures
-	SDL_Texture* water_tex[NUM_WATER];		// array of water textures
-	SDL_Texture* obj_tex[NUM_OBJS];			// array of object textures
-	SDL_Texture* menu_tex[NUM_MENU];		// array of menu textures
-	SDL_Texture* selector_tex[NUM_SELECTOR];	// array of selector textures
-	SDL_Texture* wall_tex[NUM_WALL];		// array of wall textures
+	SDL_Texture* tile_tex[NUM_TILES];		// array of tile texture pointers
+	SDL_Texture* water_tex[NUM_WATER];		// array of water texture pointers
+	SDL_Texture* obj_tex[NUM_OBJS];			// array of object texture pointers
+	SDL_Texture* menu_tex[NUM_MENU];		// array of menu texture pointers
+	SDL_Texture* selector_tex[NUM_SELECTOR];	// array of selector texture pointers
+	SDL_Texture* wall_tex[NUM_WALL];		// array of wall texture pointers
 } tex_data;
 
 // contains camera related variables
@@ -110,7 +111,6 @@ void move_dl(map_data* map_d);
 void move_dr(map_data* map_d);
 void map_free(map_data* map_d);
 int calc_win_sz(int win_h, int win_w, int tile_w, int tile_h);
-int zoom_scale(int zoom, int base);
 
 // in camera.c
 void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d);

@@ -20,16 +20,36 @@ int load_texture(SDL_Renderer* rend, SDL_Texture** tex, char* path) {
 	return 0;
 }
 
+int water_load(SDL_Renderer* rend, tex_data* tex_d, char* path,  unsigned i) {
+	unsigned dup = i;
+	if (!(i & 1) && (i & (1 << 1)) && (i & (1 << 7)))
+		dup |= 1;
+	if (!(i & (1 << 2)) && (i & (1 << 1)) && (i & (1 << 3)))
+		dup |= 1 << 2;
+	if (!(i & (1 << 4)) && (i & (1 << 3)) && (i & (1 << 5)))
+		dup |= 1 << 4;
+	if (!(i & (1 << 6)) && (i & (1 << 5)) && (i & (1 << 7)))
+		dup |= 1 << 6;
+
+	if (dup != i)
+		tex_d->water_tex[i] = tex_d->water_tex[dup];
+	else
+		if (load_texture(rend, &tex_d->water_tex[i], path)) {
+			fprintf(stderr, "Failed to load water_%03u.png texture\n", i);
+			return -1;
+		}
+
+	return 0;
+}
+
 // loads the tile textures
 int tile_init(SDL_Renderer* rend, tex_data* tex_d) {
 	// load the water textures
 	char path[50];
-	for (int i = 0; i < NUM_WATER; i++) {
+	for (int i = NUM_WATER - 1; i >= 0; i--) {
 		sprintf(path, "./resources/tiles/water/water_%03d.png", i);
-		if (load_texture(rend, &tex_d->water_tex[i], path)) {
-			fprintf(stderr, "Failed to load water_%03d.png texture\n", i);
+		if (water_load(rend, tex_d, path, i))
 			return -1;
-		}
 	}
 
 	// load the grass texture
@@ -43,12 +63,14 @@ int tile_init(SDL_Renderer* rend, tex_data* tex_d) {
 
 // loads the object textures
 int obj_init(SDL_Renderer* rend, tex_data* tex_d) {
+	// loads the tree texture
 	if (load_texture(rend, &tex_d->obj_tex[T_TREE], "./resources/objects/tree.png")) {
 		fprintf(stderr, "Failed to load TREE texture\n");
 		return -1;
 	}
 	SDL_SetTextureBlendMode(tex_d->obj_tex[T_TREE], SDL_BLENDMODE_BLEND);
 
+	// loads the base-building texture
 	if (load_texture(rend, &tex_d->obj_tex[T_BASE], "./resources/objects/base.png")) {
 		fprintf(stderr, "Failed to load BASE texture\n");
 		return -1;

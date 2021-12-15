@@ -29,23 +29,6 @@ int editable(map_data* map_d, menu_data* menu_d, int x, int y) {
 	}
 }
 
-int zoom_scale(int zoom, int base) {
-	switch (zoom) {
-		case -2:
-			return base / 4;
-		case -1:
-			return base / 2;
-		case 0:
-			return base;
-		case 1:
-			return base * 2;
-		case 2:
-			return base * 4;
-		default:
-			return base;
-	}
-}
-
 uint16_t get_tile_type(map_data* map_d, int x, int y) {
 	return ((uint16_t*) &map_d->tiles[x][y])[0];
 }
@@ -90,7 +73,7 @@ int calc_win_sz(int win_h, int win_w, int tile_w, int tile_h) {
 int map_init(win_data* win_d, map_data* map_d) {
 	map_d->tile_h = 64;
 	map_d->boarder = 10;
-	map_d->zoom = 0;
+	map_d->zoom = 2;
 	map_d->view = 0;
 
 	map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);

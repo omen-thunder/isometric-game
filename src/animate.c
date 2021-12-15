@@ -91,45 +91,45 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* t
 void load_obj(map_data* map_d, tex_data* tex_d,  cam_data* cam_d, SDL_Rect* rect, int x, int y) {
 	switch (get_obj_type(map_d, x + map_d->cur_x, y + map_d->cur_y)) {
 		case TREE:
-			rect->w = zoom_scale(map_d->zoom, 350) / 5;
-			rect->h = zoom_scale(map_d->zoom, 720) / 5;
-			rect->x = screen_x(map_d, cam_d, x, y) + zoom_scale(map_d->zoom, 60);
-			rect->y = screen_y(map_d, cam_d, x, y) - zoom_scale(map_d->zoom, 90);
+			rect->w = ZOOM_SCALE(350) / 5;
+			rect->h = ZOOM_SCALE(720) / 5;
+			rect->x = screen_x(map_d, cam_d, x, y) + ZOOM_SCALE(60);
+			rect->y = screen_y(map_d, cam_d, x, y) - ZOOM_SCALE(90);
 
 			// pseudo-randomly adjust the x and y position
 			switch ((x + map_d->cur_x + y + map_d->cur_y) % 5) {
 				case 0:
 					break;
 				case 1:
-					rect->x -= zoom_scale(map_d->zoom, 8);
-					rect->y -= zoom_scale(map_d->zoom, 4);
+					rect->x -= ZOOM_SCALE(8);
+					rect->y -= ZOOM_SCALE(4);
 					break;
 				case 2:
-					rect->x += zoom_scale(map_d->zoom, 8);
-					rect->y += zoom_scale(map_d->zoom, 4);
+					rect->x += ZOOM_SCALE(8);
+					rect->y += ZOOM_SCALE(4);
 					break;
 				case 3:
-					rect->x -= zoom_scale(map_d->zoom, 8);
-					rect->y += zoom_scale(map_d->zoom, 4);
+					rect->x -= ZOOM_SCALE(8);
+					rect->y += ZOOM_SCALE(4);
 					break;
 				case 4:
-					rect->x += zoom_scale(map_d->zoom, 8);
-					rect->y -= zoom_scale(map_d->zoom, 4);
+					rect->x += ZOOM_SCALE(8);
+					rect->y -= ZOOM_SCALE(4);
 					break;
 			}		
 
 			break;
 		case BASE:
-			rect->w = zoom_scale(map_d->zoom, 549) / 2.25f;
-			rect->h = zoom_scale(map_d->zoom, 882) / 2.25f;
-			rect->x = screen_x(map_d, cam_d, x, y) - zoom_scale(map_d->zoom, 60);
-			rect->y = screen_y(map_d, cam_d, x, y) - zoom_scale(map_d->zoom, 300);
+			rect->w = ZOOM_SCALE(549) / 2.25f;
+			rect->h = ZOOM_SCALE(882) / 2.25f;
+			rect->x = screen_x(map_d, cam_d, x, y) - ZOOM_SCALE(60);
+			rect->y = screen_y(map_d, cam_d, x, y) - ZOOM_SCALE(300);
 			break;
 		case WALL:
-			rect->w = zoom_scale(map_d->zoom, 96); 
-			rect->h = zoom_scale(map_d->zoom, 73); 
-			rect->x = screen_x(map_d, cam_d, x, y) + zoom_scale(map_d->zoom, 15);
-			rect->y = screen_y(map_d, cam_d, x, y) - zoom_scale(map_d->zoom, 15);
+			rect->w = ZOOM_SCALE(96); 
+			rect->h = ZOOM_SCALE(73); 
+			rect->x = screen_x(map_d, cam_d, x, y) + ZOOM_SCALE(15);
+			rect->y = screen_y(map_d, cam_d, x, y) - ZOOM_SCALE(15);
 			break;
 	}
 }

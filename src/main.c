@@ -24,7 +24,6 @@ int make_renderer(SDL_Window* win, SDL_Renderer** rend) {
 }
 
 int main(void) {
-
 	win_data win_data = {
 		.fps = 60,
 		.old_t = 0,
