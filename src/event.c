@@ -124,13 +124,16 @@ void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d,
 					for (int j = y - 1; j <= y + 1; j++)
 						if (get_tile_type(map_d, i, j) == WATER)
 							set_tile_tex(map_d, i, j, water_index(map_d, i, j));
+						else if (get_tile_type(map_d, i, j) == GRASS)
+							set_tile_tex(map_d, i, j, grass_index(map_d, i, j));
 			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
 				set_tile_type(map_d, x, y, GRASS);
-				set_tile_tex(map_d, x, y, T_GRASS);
 				for (int i = x - 1; i <= x + 1; i++)
 					for (int j = y - 1; j <= y + 1; j++)
 						if (get_tile_type(map_d, i, j) == WATER)
 							set_tile_tex(map_d, i, j, water_index(map_d, i, j));
+						else if (get_tile_type(map_d, i, j) == GRASS)
+							set_tile_tex(map_d, i, j, grass_index(map_d, i, j));
 			}
 
 			break;

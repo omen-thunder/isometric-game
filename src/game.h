@@ -10,12 +10,13 @@
 #define ZOOM_SCALE(x) (x << map_d->zoom >> 2)
 #define TILE_W (ZOOM_SCALE(map_d->tile_h << 1))
 #define TILE_H (ZOOM_SCALE(map_d->tile_h))
-#define NUM_TILES (1)
+#define NUM_TILES (0)
 #define NUM_WATER (256)
 #define NUM_OBJS (2)
 #define NUM_MENU (0)
 #define NUM_SELECTOR (18)
 #define NUM_WALL (16)
+#define NUM_GRASS (16)
 #define GAP (4)
 #define BUF_SZ (60)
 
@@ -72,6 +73,7 @@ typedef struct {
 	SDL_Texture* menu_tex[NUM_MENU];		// array of menu texture pointers
 	SDL_Texture* selector_tex[NUM_SELECTOR];	// array of selector texture pointers
 	SDL_Texture* wall_tex[NUM_WALL];		// array of wall texture pointers
+	SDL_Texture* grass_tex[NUM_GRASS];		// array of grass texture pointers
 } tex_data;
 
 // contains camera related variables
@@ -115,20 +117,17 @@ int calc_win_sz(int win_h, int win_w, int tile_w, int tile_h);
 // in camera.c
 void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d);
 
-// in water.c
-int water_index(map_data* map_d, int x, int y);
-
 // in texture.c
 int texture_init(SDL_Renderer* rend, tex_data* tex_d);
 void texture_free(tex_data* tex_d);
+int grass_index(map_data* map_d, int x, int y);
+int wall_index(map_data* map_d, int x, int y);
+int water_index(map_data* map_d, int x, int y);
 
 // in animate.c
 int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d);
 
 // in event.c
 int event(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d);
-
-// in wall.c
-int wall_index(map_data* map_d, int x, int y);
 
 #endif

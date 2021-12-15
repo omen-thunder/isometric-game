@@ -81,8 +81,9 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* t
 			case WATER:
 				SDL_RenderCopy(rend, tex_d->water_tex[get_tile_tex(map_d, x + map_d->cur_x, y + map_d->cur_y)], NULL, &rect);
 				break;
-			default:
-				SDL_RenderCopy(rend, tex_d->tile_tex[get_tile_tex(map_d, x + map_d->cur_x, y + map_d->cur_y)], NULL, &rect);
+			case GRASS:
+				SDL_RenderCopy(rend, tex_d->grass_tex[get_tile_tex(map_d, x + map_d->cur_x, y + map_d->cur_y)], NULL, &rect);
+				break;
 		}
 	}
 }
