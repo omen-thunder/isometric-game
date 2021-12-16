@@ -61,30 +61,73 @@ void draw_selector(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_dat
 }
 
 // draws a single tile
-void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int x, int y) {
+void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int pos_x, int pos_y) {
 	// check if the object is within the map array
-	if (x + map_d->cur_x >= map_d->map_sz || x + map_d->cur_x < 0
-			|| y + map_d->cur_y >= map_d->map_sz || y + map_d->cur_y < 0)
+	if (pos_x + map_d->cur_x >= map_d->map_sz || pos_x + map_d->cur_x < 0
+			|| pos_y + map_d->cur_y >= map_d->map_sz || pos_y + map_d->cur_y < 0)
 		return;
 
 	SDL_Rect rect;
 	rect.w = TILE_W;
 	rect.h = TILE_H;
 
-	rect.x = screen_x(map_d, cam_d, x, y);
-	rect.y = screen_y(map_d, cam_d, x, y);
+	rect.x = screen_x(map_d, cam_d, pos_x, pos_y);
+	rect.y = screen_y(map_d, cam_d, pos_x, pos_y);
 
 	// checks if the tile is on the screen and within the map array
 	if (rect.x > -TILE_W && rect.x < win_d->win_w && rect.y > -TILE_H && rect.y < win_d->win_h) {
-		// check what type of tile is being drawn
-		switch (get_tile_type(map_d, x + map_d->cur_x, y + map_d->cur_y)) {
-			case WATER:
-				SDL_RenderCopy(rend, tex_d->water_tex[get_tile_tex(map_d, x + map_d->cur_x, y + map_d->cur_y)], NULL, &rect);
+		// calculate the tile texture based on the current view
+		int tex_x = 0;
+		int tex_y = 0;
+		switch (map_d->view) {
+			case 0:
+				tex_x = pos_x + map_d->cur_x;
+				tex_y = pos_y + map_d->cur_y;
 				break;
-			case GRASS:
-				SDL_RenderCopy(rend, tex_d->grass_tex[get_tile_tex(map_d, x + map_d->cur_x, y + map_d->cur_y)], NULL, &rect);
+			case 90:
+				tex_x = map_d->win_sz - 1 - pos_y + map_d->cur_x;
+				tex_y = pos_x + map_d->cur_y;
+				break;
+			case 180:
+				tex_x = map_d->win_sz - 1 - pos_x + map_d->cur_x;
+				tex_y = map_d->win_sz - 1 - pos_y + map_d->cur_y;
+				break;
+				break;
+			case 270:
+				tex_x = pos_y + map_d->cur_x;
+				tex_y = map_d->win_sz - 1 - pos_x + map_d->cur_y;
 				break;
 		}
+
+		// get the texture array and texture index
+		SDL_Texture** tex_arr;
+		unsigned mask = 0;
+		int shift = 0;
+		switch (get_tile_type(map_d, tex_x, tex_y)) {
+			case WATER:
+				tex_arr = tex_d->water_tex;
+				mask = 0b11111111;
+				shift = 2;
+				break;
+			case GRASS:
+				tex_arr = tex_d->grass_tex;
+				mask = 0b00001111;
+				shift = 1;
+				break;
+		}
+
+		// get the tile texture
+		unsigned tex_index = get_tile_tex(map_d, tex_x, tex_y);
+		unsigned temp = tex_index;
+
+		// rotate the tile texture
+		tex_index <<= shift * map_d->view / 90;
+		temp >>= 8 - shift * map_d->view / 90;
+		tex_index |= temp;
+		tex_index &= mask;
+
+		// render the tile
+		SDL_RenderCopy(rend, tex_arr[tex_index], NULL, &rect);
 	}
 }
 

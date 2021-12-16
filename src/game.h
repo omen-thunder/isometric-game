@@ -62,7 +62,7 @@ typedef struct {
 	int cur_y;		// the x-axis cursor for the current camera location on the map
 	int boarder;		// the size of the boarder
 	unsigned zoom;		// the zoom state, between 0 and 4
-	int view;		// the camera perspective
+	int view;		// the camera perspective, between 0 and 270 
 } map_data;
 
 // contains textures
@@ -90,7 +90,6 @@ typedef struct {
 // contains menu related variables
 typedef struct {
 	int mode;	// the current mode the menu is in
-
 } menu_data;
 
 // in map.c

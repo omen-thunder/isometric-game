@@ -53,11 +53,13 @@ void zoom_out(win_data* win_d, map_data* map_d) {
 void key_press(win_data* win_d, map_data* map_d, menu_data* menu_d, int x, int y, SDL_Event* event) {
 	switch(event->key.keysym.sym) {
 		case SDLK_RIGHT:
+			map_d->view = (map_d->view + 90) % 360;
 			break;
 		case SDLK_UP:
 			zoom_in(win_d, map_d, x, y);
 			break;
 		case SDLK_LEFT:
+			map_d->view = ((map_d->view - 90) % 360 + 360) % 360;
 			break;
 		case SDLK_DOWN:
 			zoom_out(win_d, map_d);
