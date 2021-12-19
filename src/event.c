@@ -53,13 +53,13 @@ void zoom_out(win_data* win_d, map_data* map_d) {
 void key_press(win_data* win_d, map_data* map_d, menu_data* menu_d, int x, int y, SDL_Event* event) {
 	switch(event->key.keysym.sym) {
 		case SDLK_RIGHT:
-			map_d->view = (map_d->view + 90) % 360;
+			map_d->view = (map_d->view + 1) % 4;
 			break;
 		case SDLK_UP:
 			zoom_in(win_d, map_d, x, y);
 			break;
 		case SDLK_LEFT:
-			map_d->view = ((map_d->view - 90) % 360 + 360) % 360;
+			map_d->view = (map_d->view + 3) % 4;
 			break;
 		case SDLK_DOWN:
 			zoom_out(win_d, map_d);
@@ -104,6 +104,12 @@ int keyboard(win_data* win_d, map_data* map_d, menu_data* menu_d, int x, int y) 
 			case SDL_MOUSEWHEEL:
 				mouse_wheel(win_d, map_d, menu_d, x, y, &event);
 				break;
+			case SDL_MOUSEBUTTONDOWN:
+				if (event.button.button == SDL_BUTTON_X1)
+					map_d->view = (map_d->view + 1) % 4;
+				if (event.button.button == SDL_BUTTON_X2)
+					map_d->view = (map_d->view + 3) % 4;
+				break;
 		}
 	}
 
@@ -121,48 +127,48 @@ void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d,
 			break;
 		case U_WATER:
 			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(map_d, menu_d, x, y)) {
-				set_tile_type(map_d, x, y, WATER);
+				set_type(map_d->tiles, x, y, WATER);
 				for (int i = x - 1; i <= x + 1; i++)
 					for (int j = y - 1; j <= y + 1; j++)
-						if (get_tile_type(map_d, i, j) == WATER)
-							set_tile_tex(map_d, i, j, water_index(map_d, i, j));
-						else if (get_tile_type(map_d, i, j) == GRASS)
-							set_tile_tex(map_d, i, j, grass_index(map_d, i, j));
+						if (get_type(map_d->tiles, i, j) == WATER)
+							set_tex(map_d->tiles, i, j, water_index(map_d, i, j));
+						else if (get_type(map_d->tiles, i, j) == GRASS)
+							set_tex(map_d->tiles, i, j, grass_index(map_d, i, j));
 			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
-				set_tile_type(map_d, x, y, GRASS);
+				set_type(map_d->tiles, x, y, GRASS);
 				for (int i = x - 1; i <= x + 1; i++)
 					for (int j = y - 1; j <= y + 1; j++)
-						if (get_tile_type(map_d, i, j) == WATER)
-							set_tile_tex(map_d, i, j, water_index(map_d, i, j));
-						else if (get_tile_type(map_d, i, j) == GRASS)
-							set_tile_tex(map_d, i, j, grass_index(map_d, i, j));
+						if (get_type(map_d->tiles, i, j) == WATER)
+							set_tex(map_d->tiles, i, j, water_index(map_d, i, j));
+						else if (get_type(map_d->tiles, i, j) == GRASS)
+							set_tex(map_d->tiles, i, j, grass_index(map_d, i, j));
 			}
 
 			break;
 		case U_TREE:
 			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(map_d, menu_d, x, y)) {
-				set_obj_type(map_d, x, y, TREE);
-				set_obj_tex(map_d, x, y, T_TREE);
+				set_type(map_d->objs, x, y, TREE);
+				set_tex(map_d->objs, x, y, T_TREE);
 			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
-				set_obj_type(map_d, x, y, EMPTY);
-				set_obj_tex(map_d, x, y, T_EMPTY);
+				set_type(map_d->objs, x, y, EMPTY);
+				set_tex(map_d->objs, x, y, T_EMPTY);
 			}
 
 			break;
 		case U_WALL:
 			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(map_d, menu_d, x, y)) {
-				set_obj_type(map_d, x, y, WALL);
+				set_type(map_d->objs, x, y, WALL);
 				for (int i = x - 1; i <= x + 1; i++)
 					for (int j = y - 1; j <= y + 1; j++)
-						if (get_obj_type(map_d, i, j) == WALL)
-							set_obj_tex(map_d, i, j, wall_index(map_d, i, j));
+						if (get_type(map_d->objs, i, j) == WALL)
+							set_tex(map_d->objs, i, j, wall_index(map_d, i, j));
 			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
-				set_obj_type(map_d, x, y, EMPTY);
-				set_obj_tex(map_d, x, y, T_EMPTY);
+				set_type(map_d->objs, x, y, EMPTY);
+				set_tex(map_d->objs, x, y, T_EMPTY);
 				for (int i = x - 1; i <= x + 1; i++)
 					for (int j = y - 1; j <= y + 1; j++)
-						if (get_obj_type(map_d, i, j) == WALL)
-							set_obj_tex(map_d, i, j, wall_index(map_d, i, j));
+						if (get_type(map_d->objs, i, j) == WALL)
+							set_tex(map_d->objs, i, j, wall_index(map_d, i, j));
 			}
 
 			break;
@@ -175,17 +181,17 @@ void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d,
 
 				for (int i = x - 1; i <= x + 1; i++)
 					for (int j = y - 1; j <= y + 1; j++)
-						set_obj_type(map_d, i, j, OCCUPIED);
+						set_type(map_d->objs, i, j, OCCUPIED);
 				
-				set_obj_type(map_d, x, y, BASE);
-				set_obj_tex(map_d, x, y, T_BASE);
-			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT) && get_obj_type(map_d, x, y) == BASE) {
+				set_type(map_d->objs, x, y, BASE);
+				set_tex(map_d->objs, x, y, T_BASE);
+			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT) && get_type(map_d->objs, x, y) == BASE) {
 				for (int i = x - 1; i <= x + 1; i++)
 					for (int j = y - 1; j <= y + 1; j++) {
-						set_obj_type(map_d, i, j, EMPTY);
+						set_type(map_d->objs, i, j, EMPTY);
 					}
 				
-				set_obj_tex(map_d, x, y, T_EMPTY);
+				set_tex(map_d->objs, x, y, T_EMPTY);
 			}
 
 			break;
@@ -195,8 +201,26 @@ void mouse(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d,
 // processes events
 int event(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d) {
 	// find which tile the mouse is on
-	int x = get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
-	int y = get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
+	int x = 0;
+	int y = 0;
+	switch (map_d->view) {
+		case 0:
+			x = get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
+			y = get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
+			break;
+		case 1:
+			x = map_d->win_sz - 1 - get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
+			y = get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
+			break;
+		case 2:
+			x = map_d->win_sz - 1 - get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
+			y = map_d->win_sz - 1 - get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
+			break;
+		case 3:
+			x = get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_x;
+			y = map_d->win_sz - 1 - get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y) + map_d->cur_y;
+			break;
+	}
 
 	// keyboard events
 	if (!keyboard(win_d, map_d, menu_d, x, y))

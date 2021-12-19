@@ -62,7 +62,7 @@ void draw_selector(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_dat
 
 // draws a single tile
 void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int pos_x, int pos_y) {
-	// check if the object is within the map array
+	// check if the tile is within the map array
 	if (pos_x + map_d->cur_x >= map_d->map_sz || pos_x + map_d->cur_x < 0
 			|| pos_y + map_d->cur_y >= map_d->map_sz || pos_y + map_d->cur_y < 0)
 		return;
@@ -74,136 +74,178 @@ void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* t
 	rect.x = screen_x(map_d, cam_d, pos_x, pos_y);
 	rect.y = screen_y(map_d, cam_d, pos_x, pos_y);
 
-	// checks if the tile is on the screen and within the map array
-	if (rect.x > -TILE_W && rect.x < win_d->win_w && rect.y > -TILE_H && rect.y < win_d->win_h) {
-		// calculate the tile texture based on the current view
-		int tex_x = 0;
-		int tex_y = 0;
-		switch (map_d->view) {
-			case 0:
-				tex_x = pos_x + map_d->cur_x;
-				tex_y = pos_y + map_d->cur_y;
-				break;
-			case 90:
-				tex_x = map_d->win_sz - 1 - pos_y + map_d->cur_x;
-				tex_y = pos_x + map_d->cur_y;
-				break;
-			case 180:
-				tex_x = map_d->win_sz - 1 - pos_x + map_d->cur_x;
-				tex_y = map_d->win_sz - 1 - pos_y + map_d->cur_y;
-				break;
-				break;
-			case 270:
-				tex_x = pos_y + map_d->cur_x;
-				tex_y = map_d->win_sz - 1 - pos_x + map_d->cur_y;
-				break;
-		}
+	// checks if the tile is on the screen 
+	if (rect.x < -TILE_W || rect.x > win_d->win_w || rect.y < -TILE_H || rect.y > win_d->win_h)
+		return;
 
-		// get the texture array and texture index
-		SDL_Texture** tex_arr;
-		unsigned mask = 0;
-		int shift = 0;
-		switch (get_tile_type(map_d, tex_x, tex_y)) {
-			case WATER:
-				tex_arr = tex_d->water_tex;
-				mask = 0b11111111;
-				shift = 2;
-				break;
-			case GRASS:
-				tex_arr = tex_d->grass_tex;
-				mask = 0b00001111;
-				shift = 1;
-				break;
-		}
-
-		// get the tile texture
-		unsigned tex_index = get_tile_tex(map_d, tex_x, tex_y);
-		unsigned temp = tex_index;
-
-		// rotate the tile texture
-		tex_index <<= shift * map_d->view / 90;
-		temp >>= 8 - shift * map_d->view / 90;
-		tex_index |= temp;
-		tex_index &= mask;
-
-		// render the tile
-		SDL_RenderCopy(rend, tex_arr[tex_index], NULL, &rect);
+	// calculate the tile texture based on the current view
+	int tex_x = 0;
+	int tex_y = 0;
+	switch (map_d->view) {
+		case 0:
+			tex_x = pos_x + map_d->cur_x;
+			tex_y = pos_y + map_d->cur_y;
+			break;
+		case 1:
+			tex_x = map_d->win_sz - 1 - pos_y + map_d->cur_x;
+			tex_y = pos_x + map_d->cur_y;
+			break;
+		case 2:
+			tex_x = map_d->win_sz - 1 - pos_x + map_d->cur_x;
+			tex_y = map_d->win_sz - 1 - pos_y + map_d->cur_y;
+			break;
+		case 3:
+			tex_x = pos_y + map_d->cur_x;
+			tex_y = map_d->win_sz - 1 - pos_x + map_d->cur_y;
+			break;
 	}
+
+	// get the texture array and texture index
+	SDL_Texture** tex_arr;
+	unsigned mask = 0b11111111;
+	int shift = 0;
+	switch (get_type(map_d->tiles, tex_x, tex_y)) {
+		case WATER:
+			tex_arr = tex_d->water_tex;
+			shift = 2;
+			break;
+		case GRASS:
+			tex_arr = tex_d->grass_tex;
+			mask = 0b00001111;
+			shift = 1;
+			break;
+	}
+
+	// get the tile texture
+	unsigned tex_index = get_tex(map_d->tiles, tex_x, tex_y);
+	unsigned temp = tex_index;
+
+	// rotate the tile texture
+	tex_index <<= shift * map_d->view;
+	temp >>= shift * 4 - shift * map_d->view;
+	tex_index |= temp;
+	tex_index &= mask;
+
+	// render the tile
+	SDL_RenderCopy(rend, tex_arr[tex_index], NULL, &rect);
 }
 
 // get the correct rect width and height for an object
 void load_obj(map_data* map_d, tex_data* tex_d,  cam_data* cam_d, SDL_Rect* rect, int x, int y) {
-	switch (get_obj_type(map_d, x + map_d->cur_x, y + map_d->cur_y)) {
+	switch (get_type(map_d->objs, x + map_d->cur_x, y + map_d->cur_y)) {
 		case TREE:
-			rect->w = ZOOM_SCALE(350) / 5;
-			rect->h = ZOOM_SCALE(720) / 5;
-			rect->x = screen_x(map_d, cam_d, x, y) + ZOOM_SCALE(60);
-			rect->y = screen_y(map_d, cam_d, x, y) - ZOOM_SCALE(90);
-
-			// pseudo-randomly adjust the x and y position
-			switch ((x + map_d->cur_x + y + map_d->cur_y) % 5) {
-				case 0:
-					break;
-				case 1:
-					rect->x -= ZOOM_SCALE(8);
-					rect->y -= ZOOM_SCALE(4);
-					break;
-				case 2:
-					rect->x += ZOOM_SCALE(8);
-					rect->y += ZOOM_SCALE(4);
-					break;
-				case 3:
-					rect->x -= ZOOM_SCALE(8);
-					rect->y += ZOOM_SCALE(4);
-					break;
-				case 4:
-					rect->x += ZOOM_SCALE(8);
-					rect->y -= ZOOM_SCALE(4);
-					break;
-			}		
+				
 
 			break;
 		case BASE:
-			rect->w = ZOOM_SCALE(549) / 2.25f;
-			rect->h = ZOOM_SCALE(882) / 2.25f;
-			rect->x = screen_x(map_d, cam_d, x, y) - ZOOM_SCALE(60);
-			rect->y = screen_y(map_d, cam_d, x, y) - ZOOM_SCALE(300);
 			break;
 		case WALL:
-			rect->w = ZOOM_SCALE(96); 
-			rect->h = ZOOM_SCALE(73); 
-			rect->x = screen_x(map_d, cam_d, x, y) + ZOOM_SCALE(15);
-			rect->y = screen_y(map_d, cam_d, x, y) - ZOOM_SCALE(15);
 			break;
 	}
 }
 
 // draws an object
-void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int x, int y) {
+void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int pos_x, int pos_y) {
 	// check if the object is within the map array
-	if (x + map_d->cur_x >= map_d->map_sz || x + map_d->cur_x < 0
-			|| y + map_d->cur_y >= map_d->map_sz || y + map_d->cur_y < 0)
+	if (pos_x + map_d->cur_x >= map_d->map_sz || pos_x + map_d->cur_x < 0
+			|| pos_y + map_d->cur_y >= map_d->map_sz || pos_y + map_d->cur_y < 0)
 		return;
 
-	// check if the object is empty
-	if (get_obj_type(map_d, x + map_d->cur_x, y + map_d->cur_y) == EMPTY
-			|| get_obj_type(map_d, x + map_d->cur_x, y + map_d->cur_y) == OCCUPIED)
-		return;
+	// calculate the object texture coordinates based on the current view
+	int tex_x = 0;
+	int tex_y = 0;
+	switch (map_d->view) {
+		case 0:
+			tex_x = pos_x + map_d->cur_x;
+			tex_y = pos_y + map_d->cur_y;
+			break;
+		case 1:
+			tex_x = map_d->win_sz - 1 - pos_y + map_d->cur_x;
+			tex_y = pos_x + map_d->cur_y;
+			break;
+		case 2:
+			tex_x = map_d->win_sz - 1 - pos_x + map_d->cur_x;
+			tex_y = map_d->win_sz - 1 - pos_y + map_d->cur_y;
+			break;
+		case 3:
+			tex_x = pos_y + map_d->cur_x;
+			tex_y = map_d->win_sz - 1 - pos_x + map_d->cur_y;
+			break;
+	}
 
+	// get the texture array and texture index
 	SDL_Rect rect;
-	load_obj(map_d, tex_d, cam_d, &rect, x, y);
+	SDL_Texture** tex_arr = tex_d->obj_tex;
+	unsigned mask = 0b11111111;
+	int shift = 0;
+	switch (get_type(map_d->objs, tex_x, tex_y)) {
+		case EMPTY:
+			return;
+		case OCCUPIED:
+			return;
+		case WALL:
+			tex_arr = tex_d->wall_tex;
+			mask = 0b00001111;
+			shift = 1;
+
+			rect.w = ZOOM_SCALE(96); 
+			rect.h = ZOOM_SCALE(73); 
+			rect.x = screen_x(map_d, cam_d, pos_x, pos_y) + ZOOM_SCALE(15);
+			rect.y = screen_y(map_d, cam_d, pos_x, pos_y) - ZOOM_SCALE(15);
+			break;
+		case TREE:
+			rect.w = ZOOM_SCALE(350) / 5;
+			rect.h = ZOOM_SCALE(720) / 5;
+			rect.x = screen_x(map_d, cam_d, pos_x, pos_y) + ZOOM_SCALE(60);
+			rect.y = screen_y(map_d, cam_d, pos_x, pos_y) - ZOOM_SCALE(90);
+
+			// pseudo-randomly adjust the x and y position
+			switch ((tex_x + tex_y) % 5) {
+				case 0:
+					break;
+				case 1:
+					rect.x -= ZOOM_SCALE(8);
+					rect.y -= ZOOM_SCALE(4);
+					break;
+				case 2:
+					rect.x += ZOOM_SCALE(8);
+					rect.y += ZOOM_SCALE(4);
+					break;
+				case 3:
+					rect.x -= ZOOM_SCALE(8);
+					rect.y += ZOOM_SCALE(4);
+					break;
+				case 4:
+					rect.x += ZOOM_SCALE(8);
+					rect.y -= ZOOM_SCALE(4);
+					break;
+			}
+
+			break;
+		case BASE:
+			rect.w = ZOOM_SCALE(549) / 2.25f;
+			rect.h = ZOOM_SCALE(882) / 2.25f;
+			rect.x = screen_x(map_d, cam_d, pos_x, pos_y) - ZOOM_SCALE(60);
+			rect.y = screen_y(map_d, cam_d, pos_x, pos_y) - ZOOM_SCALE(300);
+			break;
+	}
 
 	// checks if the object is on the screen
-	if (rect.x > -rect.w && rect.x < win_d->win_w  && rect.y > -rect.h && rect.y < win_d->win_h) {
-		// check what type of object is being drawn
-		switch (get_obj_type(map_d, x + map_d->cur_x, y + map_d->cur_y)) {
-			case WALL:
-				SDL_RenderCopy(rend, tex_d->wall_tex[get_obj_tex(map_d, x + map_d->cur_x, y + map_d->cur_y)], NULL, &rect);
-				break;
-			default:
-				SDL_RenderCopy(rend, tex_d->obj_tex[get_obj_tex(map_d, x + map_d->cur_x, y + map_d->cur_y)], NULL, &rect);
-		}
-	}
+	if (rect.x < -rect.w || rect.x > win_d->win_w || rect.y < -rect.h || rect.y > win_d->win_h)
+		return;
+
+	// get the object texture
+	unsigned tex_index = get_tex(map_d->objs, tex_x, tex_y);
+	unsigned temp = tex_index;
+
+	// rotate the object texture
+	tex_index <<= shift * map_d->view;
+	temp >>= shift * 4 - shift * map_d->view;
+	tex_index |= temp;
+	tex_index &= mask;
+
+	// render the object
+	SDL_RenderCopy(rend, tex_arr[tex_index], NULL, &rect);
 }
 
 // draws the background

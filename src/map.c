@@ -22,43 +22,27 @@ int editable(map_data* map_d, menu_data* menu_d, int x, int y) {
 
 	switch (menu_d->mode) {
 		default:
-			if (get_tile_type(map_d, x, y) == GRASS && get_obj_type(map_d, x, y) == EMPTY)
+			if (get_type(map_d->tiles, x, y) == GRASS && get_type(map_d->objs, x, y) == EMPTY)
 				return 1;
 			else
 				return 0;
 	}
 }
 
-uint16_t get_tile_type(map_data* map_d, int x, int y) {
-	return ((uint16_t*) &map_d->tiles[x][y])[0];
+uint16_t get_type(uint32_t** arr, int x, int y) {
+	return ((uint16_t*) &arr[x][y])[0];
 }
 
-uint16_t get_tile_tex(map_data* map_d, int x, int y) {
-	return ((uint16_t*) &map_d->tiles[x][y])[1];
+uint16_t get_tex(uint32_t** arr, int x, int y) {
+	return ((uint16_t*) &arr[x][y])[1];
 }
 
-void set_tile_type(map_data* map_d, int x, int y, uint16_t type) {
-	((uint16_t*) &map_d->tiles[x][y])[0] = type;
+void set_type(uint32_t** arr, int x, int y, uint16_t type) {
+	((uint16_t*) &arr[x][y])[0] = type;
 }
 
-void set_tile_tex(map_data* map_d, int x, int y, uint16_t tex_id) {
-	((uint16_t*) &map_d->tiles[x][y])[1] = tex_id;
-}
-
-uint16_t get_obj_type(map_data* map_d, int x, int y) {
-	return ((uint16_t*) &map_d->objs[x][y])[0];
-}
-
-uint16_t get_obj_tex(map_data* map_d, int x, int y) {
-	return ((uint16_t*) &map_d->objs[x][y])[1];
-}
-
-void set_obj_type(map_data* map_d, int x, int y, uint16_t type) {
-	((uint16_t*) &map_d->objs[x][y])[0] = type;
-}
-
-void set_obj_tex(map_data* map_d, int x, int y, uint16_t tex_id) {
-	((uint16_t*) &map_d->objs[x][y])[1] = tex_id;
+void set_tex(uint32_t** arr, int x, int y, uint16_t tex_id) {
+	((uint16_t*) &arr[x][y])[1] = tex_id;
 }
 
 // calculate the size of each side of the background rhombus by
@@ -97,8 +81,8 @@ int map_init(win_data* win_d, map_data* map_d) {
 	// initialise the tile map
 	for (int x = 0; x < map_d->map_sz; x++)
 		for (int y = 0; y < map_d->map_sz; y++) {
-			set_tile_type(map_d, x, y, GRASS);
-			set_tile_tex(map_d, x, y, T_GRASS);
+			set_type(map_d->tiles, x, y, GRASS);
+			set_tex(map_d->tiles, x, y, T_GRASS);
 		}
 
 	// allocate memory for the object map
@@ -127,11 +111,11 @@ int map_init(win_data* win_d, map_data* map_d) {
 	for (int x = 0; x < map_d->map_sz; x++)
 		for (int y = 0; y < map_d->map_sz; y++) {
 			if (out_of_bounds(map_d, x, y)) {
-				set_obj_type(map_d, x, y, TREE);
-				set_obj_tex(map_d, x, y, T_TREE);
+				set_type(map_d->objs, x, y, TREE);
+				set_tex(map_d->objs, x, y, T_TREE);
 			} else {
-				set_obj_type(map_d, x, y, EMPTY);
-				set_obj_tex(map_d, x, y, T_EMPTY);
+				set_type(map_d->objs, x, y, EMPTY);
+				set_tex(map_d->objs, x, y, T_EMPTY);
 			}
 		}
 	
@@ -174,27 +158,21 @@ int get_column(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y) {
 			TILE_H / 2.0f) / (float) TILE_H);
 }
 
-// move the map cursor up and right
-void move_ur(map_data* map_d) {
-	if (map_d->cur_y > GAP)
+void map_move(map_data* map_d, int dir) {
+	// move the map cursor up and right
+	if (dir ==  0 && map_d->cur_y > GAP)
 		map_d->cur_y--;
-}
 
-// move the map cursor up and left
-void move_ul(map_data* map_d) {
-	if (map_d->cur_x > GAP)
+	// move the map cursor up and left
+	else if (dir == 1 && map_d->cur_x > GAP)
 		map_d->cur_x--;
-}
 
-// move the map cursor down and left
-void move_dl(map_data* map_d) {
-	if (map_d->cur_y < map_d->map_sz - map_d->win_sz - GAP)
+	// move the map cursor down and left
+	else if (dir == 2 && map_d->cur_y < map_d->map_sz - map_d->win_sz - GAP)
 		map_d->cur_y++;
-}
 
-// move the map cursor down and right
-void move_dr(map_data* map_d) {
-	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - GAP)
+	// move the map cursor down and right
+	else if (dir == 3 && map_d->cur_x < map_d->map_sz - map_d->win_sz - GAP)
 		map_d->cur_x++;
 }
 

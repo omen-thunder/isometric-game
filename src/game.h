@@ -62,7 +62,7 @@ typedef struct {
 	int cur_y;		// the x-axis cursor for the current camera location on the map
 	int boarder;		// the size of the boarder
 	unsigned zoom;		// the zoom state, between 0 and 4
-	int view;		// the camera perspective, between 0 and 270 
+	int view;		// the camera perspective, between 0 and 3
 } map_data;
 
 // contains textures
@@ -96,20 +96,13 @@ typedef struct {
 int map_init(win_data* win_d, map_data* map_d);
 int out_of_bounds(map_data* map_d, int x, int y);
 int editable(map_data* map_d, menu_data* menu_d, int x, int y);
-uint16_t get_tile_type(map_data* map_d, int x, int y);
-uint16_t get_tile_tex(map_data* map_d, int x, int y);
-void set_tile_type(map_data* map_d, int x, int y, uint16_t type);
-void set_tile_tex(map_data* map_d, int x, int y, uint16_t tex_id);
-uint16_t get_obj_type(map_data* map_d, int x, int y);
-uint16_t get_obj_tex(map_data* map_d, int x, int y);
-void set_obj_type(map_data* map_d, int x, int y, uint16_t type);
-void set_obj_tex(map_data* map_d, int x, int y, uint16_t tex_id);
+uint16_t get_type(uint32_t** arr, int x, int y);
+uint16_t get_tex(uint32_t** arr, int x, int y);
+void set_type(uint32_t** arr, int x, int y, uint16_t type);
+void set_tex(uint32_t** arr, int x, int y, uint16_t tex_id);
 int get_row(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
 int get_column(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
-void move_ur(map_data* map_d);
-void move_ul(map_data* map_d);
-void move_dl(map_data* map_d);
-void move_dr(map_data* map_d);
+void map_move(map_data* map_d, int dir);
 void map_free(map_data* map_d);
 int calc_win_sz(int win_h, int win_w, int tile_w, int tile_h);
 

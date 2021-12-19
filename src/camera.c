@@ -93,10 +93,27 @@ float speed_dr(win_data* win_d, cam_data* cam_d) {
 		return y_rate;
 }
 
+int pan_legal(map_data* map_d, int dir) {
+	// UR when view == 0
+	if (dir == 0 && map_d->cur_y > GAP)
+		return 1;
+	// UL when view == 0
+	if (dir == 1 && map_d->cur_x > GAP)
+		return 1;
+	// DL when view == 0
+	if (dir == 2 && map_d->cur_y < map_d->map_sz - map_d->win_sz - GAP)
+		return 1;
+	// DR when view == 0
+	if (dir == 3 && map_d->cur_x < map_d->map_sz - map_d->win_sz - GAP)
+		return 1;
+
+	return 0;
+}
+
 
 // pans the camera up and right
 void pan_ur(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_y > GAP)
+	if (pan_legal(map_d, (0 - map_d->view + 4) % 4))
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_ur(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
@@ -107,7 +124,7 @@ void pan_ur(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera up and left
 void pan_ul(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x > GAP)
+	if (pan_legal(map_d, (1 - map_d->view + 4) % 4))
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_ul(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
@@ -118,7 +135,7 @@ void pan_ul(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera down and left
 void pan_dl(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_y < map_d->map_sz - map_d->win_sz - GAP)
+	if (pan_legal(map_d, (2 - map_d->view + 4) % 4))
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_dl(win_d, cam_d);
 	
 	if (cam_d->buf >= BUF_SZ) {
@@ -129,7 +146,7 @@ void pan_dl(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera down and right
 void pan_dr(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - GAP)
+	if (pan_legal(map_d, (3 - map_d->view + 4) % 4))
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_dr(win_d, cam_d);
 
 	if (cam_d->buf >= BUF_SZ) {
@@ -140,7 +157,7 @@ void pan_dr(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera right
 void pan_r(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - GAP && map_d->cur_y > GAP) {
+	if (pan_legal(map_d, (0 - map_d->view + 4) % 4) && pan_legal(map_d, (3 - map_d->view + 4) % 4)) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_r(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
@@ -159,7 +176,7 @@ void pan_r(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera up
 void pan_u(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x > GAP && map_d->cur_y > GAP) {
+	if (pan_legal(map_d, (0 - map_d->view + 4) % 4) && pan_legal(map_d, (1 - map_d->view + 4) % 4)) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_u(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
@@ -178,7 +195,7 @@ void pan_u(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera left
 void pan_l(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x > GAP && map_d->cur_y < map_d->map_sz - map_d->win_sz - GAP) {
+	if (pan_legal(map_d, (1 - map_d->view + 4) % 4) && pan_legal(map_d, (2 - map_d->view + 4) % 4)) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_l(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
@@ -197,7 +214,7 @@ void pan_l(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 
 // pans the camera down
 void pan_d(win_data* win_d, map_data* map_d, cam_data* cam_d) {
-	if (map_d->cur_x < map_d->map_sz - map_d->win_sz - GAP && map_d->cur_y < map_d->map_sz - map_d->win_sz - GAP) {
+	if (pan_legal(map_d, (2 - map_d->view + 4) % 4) && pan_legal(map_d, (3 - map_d->view + 4) % 4)) {
 		cam_d->buf += (win_d->pres_t - win_d->old_t) * speed_d(win_d, cam_d);
 
 		// allows camera to move in both isometric axes
@@ -214,29 +231,24 @@ void pan_d(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	}
 }
 
-// moves the map cursor on the x-axis
-// if the camera has panned a whole tile's width,
-// reset the x offset and change the map cursor
-void map_shift_x(map_data* map_d, cam_data* cam_d) {
+// moves the map cursor on the x and y axes
+// if the camera has panned a whole tile's width or height,
+// reset the x or y offset and change the map cursor
+void map_shift(map_data* map_d, cam_data* cam_d) {
 	if (cam_d->iso_x >= TILE_H) {
 		cam_d->iso_x -= TILE_H;
-		move_dr(map_d);
+		map_move(map_d, (3 - map_d->view + 4) % 4);
 	} else if (cam_d->iso_x <= -TILE_H) {
 		cam_d->iso_x += TILE_H;
-		move_ul(map_d);
+		map_move(map_d, (1 - map_d->view + 4) % 4);
 	}
-}
 
-// moves the map cursor on the y-axis
-// if the camera has panned a whole tile's height,
-// reset the y offset and change the map cursor
-void map_shift_y(map_data* map_d, cam_data* cam_d) {
 	if (cam_d->iso_y >= TILE_H) {
 		cam_d->iso_y -= TILE_H;
-		move_dl(map_d);
+		map_move(map_d, (2 - map_d->view + 4) % 4);
 	} else if (cam_d->iso_y <= -TILE_H) {
 		cam_d->iso_y += TILE_H;
-		move_ur(map_d);
+		map_move(map_d, (0 - map_d->view + 4) % 4);
 	}
 }
 
@@ -283,6 +295,5 @@ void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d) {
 	}
 
 	cam_d->prev_dir = direction(win_d, cam_d);
-	map_shift_x(map_d, cam_d);
-	map_shift_y(map_d, cam_d);
+	map_shift(map_d, cam_d);
 }
