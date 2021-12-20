@@ -9,7 +9,7 @@ float dist(float x1, float y1, float x2, float y2) {
 
 // returns 1 if a tile is out of bounds, 0 if it is not
 int out_of_bounds(map_data* map_d, int x, int y) {
-	if (x <= map_d->boarder || y <= map_d->boarder || x >= map_d->map_sz - map_d->boarder || y >= map_d->map_sz - map_d->boarder)
+	if (x <= map_d->border || y <= map_d->border || x >= map_d->map_sz - map_d->border || y >= map_d->map_sz - map_d->border)
 		return 1;
 	else
 		return 0;
@@ -56,13 +56,10 @@ int calc_win_sz(int win_h, int win_w, int tile_w, int tile_h) {
 // initialises the map_data structure
 int map_init(win_data* win_d, map_data* map_d) {
 	map_d->tile_h = 64;
-	map_d->boarder = 10;
 	map_d->zoom = 2;
 	map_d->view = 0;
 
 	map_d->win_sz = calc_win_sz(win_d->win_h, win_d->win_w, TILE_W, TILE_H);
-
-	map_d->map_sz = 200;
 
 	// allocate memory for the tile map
 	if (!(map_d->tiles = malloc(map_d->map_sz * sizeof(int *)))) {

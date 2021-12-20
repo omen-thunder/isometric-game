@@ -46,6 +46,11 @@ typedef struct {
 	int fps;	// the number of frames displayed per second
 	Uint32 old_t;	// the number of milliseconds from SDL library initialization to the last frame
 	Uint32 pres_t;	// the number of milliseconds from SDL library initialization to the current frame
+	int fullscreen;
+	int borderless;
+	int grab;
+	int vsync;
+	Uint32 options; // the window options
 } win_data;
 
 // containts map related variables
@@ -60,7 +65,7 @@ typedef struct {
 	int off_y;		// y-axis offset of the background rhombus
 	int cur_x;		// the x-axis cursor for the current camera location on the map
 	int cur_y;		// the x-axis cursor for the current camera location on the map
-	int boarder;		// the size of the boarder
+	int border;		// the size of the border
 	unsigned zoom;		// the zoom state, between 0 and 4
 	int view;		// the camera perspective, between 0 and 3
 } map_data;
