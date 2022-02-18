@@ -4,25 +4,33 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_thread.h>
 #include <math.h>
 #include <stdint.h>
 
-#define ZOOM_SCALE(x) (x << map_d->zoom >> 2)
-#define TILE_W (ZOOM_SCALE(map_d->tile_h << 1))
-#define TILE_H (ZOOM_SCALE(map_d->tile_h))
+#define ZOOM_SCALE(x) (x << data_p->zoom >> 2)
+#define TILE_W (settings_p->tile_h * 2)
+#define TILE_H (settings_p->tile_h)
 #define NUM_TILES (0)
 #define NUM_WATER (256)
 #define NUM_OBJS (2)
 #define NUM_MENU (0)
 #define NUM_SELECTOR (18)
-#define NUM_WALL (16)
-#define NUM_GRASS (16)
+#define NUM_WALL (256)
+#define NUM_GRASS (256)
+#define NUM_PLEB (64)
+#define NUM_SPRITES (9)
 #define GAP (4)
 #define BUF_SZ (60)
+#define OFF_X (settings_p->win_w / 2 - ZOOM_SCALE(TILE_W) / 2)
+#define OFF_Y (-settings_p->win_w / 4)
+#define DIST(x1, y1, x2, y2) (sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2)))
+// calculate the size of each side of the background rhombus by
+// finding its side length based on the window height and width
+// and dividing it by the side length of one tile rhombus
+#define WIN_SZ (ceil(DIST(settings_p->win_h * -1.0, settings_p->win_h / 2.0, settings_p->win_w / 2.0, settings_p->win_w / -4.0) / DIST(0.0, ZOOM_SCALE(TILE_W) / 2.0, ZOOM_SCALE(TILE_H) / 2.0f, 0.0)))
+#define OUT_OF_BOUNDS(x, y) (x <= settings_p->border_sz || y <= settings_p->border_sz || x >= settings_p->map_sz - settings_p->border_sz || y >= settings_p->map_sz - settings_p->border_sz)
 
-// enumerations for the texture arrays
-enum tile_tex_enum {T_GRASS};
-enum obj_tex_enum {T_EMPTY = -1, T_TREE, T_BASE};
 enum selector_tex_enum {
 	T_SELECTOR_W, T_SELECTOR_W_R, T_SELECTOR_W_UR, T_SELECTOR_W_U, T_SELECTOR_W_UL,
 	T_SELECTOR_W_L, T_SELECTOR_W_DL, T_SELECTOR_W_D, T_SELECTOR_W_DR,
@@ -30,101 +38,110 @@ enum selector_tex_enum {
 	T_SELECTOR_R_L, T_SELECTOR_R_DL, T_SELECTOR_R_D, T_SELECTOR_R_DR
 };
 
-// enumerations for the map arrays
-enum tile_map_enum {GRASS, WATER};
-enum obj_map_enum {EMPTY, TREE, BASE, OCCUPIED, WALL};
+// enumerations for sprites
+enum type_enum {GRASS, WATER, EMPTY, OCCUPIED, TREE, WALL, BASE};
+enum tab_id_enum {L_EMPTY = -1, L_GRASS, L_WATER, L_TREE_0, L_TREE_1, L_TREE_2, L_TREE_3, L_TREE_4, L_WALL, L_BASE};
+enum obj_tex_enum {T_EMPTY = -1, T_TREE, T_BASE};
 
 // enumerations for the menu modes
-enum mode_enum {U_DEFAULT, U_WATER, U_TREE, U_BASE, U_WALL};
+enum mode_enum {U_DEFAULT, U_WATER, U_TREE, U_BASE, U_WALL, U_PLEB};
 
-// contains window related variables
+/*
+typedef struct npc_struct {
+	struct npc_struct* next;	// pointer to the next npc in the list
+	int x;				// the x-coordinate of the npc
+	int y;				// the y-coordinate of the npc
+} Npc;
+*/
+
 typedef struct {
-	int win_w;	// the window width
-	int win_h;	// the window height
-	int mouse_x;	// the mouse's x position
-	int mouse_y;	// the mouse's x position
-	int fps;	// the number of frames displayed per second
-	Uint32 old_t;	// the number of milliseconds from SDL library initialization to the last frame
-	Uint32 pres_t;	// the number of milliseconds from SDL library initialization to the current frame
+	int win_w;
+	int win_h;
 	int fullscreen;
 	int borderless;
 	int grab;
 	int vsync;
-	Uint32 options; // the window options
-} win_data;
+	int fps;
+	int tile_h;
+	int map_sz;
+	int border_sz;
+	int pan_rate;		// the base scroll rate when edge-panning
+	int pan_accel;		// the acceleration of edge-panning
+	int pan_sens;		// the distance to the edge of the screen when edge-panning starts
+} Settings;
 
-// containts map related variables
 typedef struct {
-	int tile_h;		// the tile's height
-	uint32_t** tiles;	// 2D array representing the background tiles
-	uint32_t** objs;	// 2D array representing the objects on the map
-	int** npcs;		// 2D array representing the npcs on the map
-	int win_sz;		// the number of tiles in one edge of the background rhombus
-	int map_sz;		// the number of tiles in one edge of the map
-	int off_x;		// x-axis offset of the background rhombus
-	int off_y;		// y-axis offset of the background rhombus
-	int cur_x;		// the x-axis cursor for the current camera location on the map
-	int cur_y;		// the x-axis cursor for the current camera location on the map
-	int border;		// the size of the border
-	unsigned zoom;		// the zoom state, between 0 and 4
-	int view;		// the camera perspective, between 0 and 3
-} map_data;
+	SDL_Texture* tile_tex[NUM_TILES];
+	SDL_Texture* water_tex[NUM_WATER];
+	SDL_Texture* obj_tex[NUM_OBJS];
+	SDL_Texture* menu_tex[NUM_MENU];
+	SDL_Texture* selector_tex[NUM_SELECTOR];
+	SDL_Texture* wall_tex[NUM_WALL];
+	SDL_Texture* grass_tex[NUM_GRASS];
+	SDL_Texture* pleb_tex[NUM_PLEB];
+} Textures;
 
-// contains textures
 typedef struct {
-	SDL_Texture* tile_tex[NUM_TILES];		// array of tile texture pointers
-	SDL_Texture* water_tex[NUM_WATER];		// array of water texture pointers
-	SDL_Texture* obj_tex[NUM_OBJS];			// array of object texture pointers
-	SDL_Texture* menu_tex[NUM_MENU];		// array of menu texture pointers
-	SDL_Texture* selector_tex[NUM_SELECTOR];	// array of selector texture pointers
-	SDL_Texture* wall_tex[NUM_WALL];		// array of wall texture pointers
-	SDL_Texture* grass_tex[NUM_GRASS];		// array of grass texture pointers
-} tex_data;
+	// mouse variables
+	int mouse_x;
+	int mouse_y;
+	int mouse_col;
+	int mouse_row;
+	int mouse_adj_col;
+	int mouse_adj_row;
+	int mouse_button;
 
-// contains camera related variables
+	// camera variables
+	Uint32 old_t;
+	Uint32 pres_t;
+	int iso_x;
+	int iso_y;
+	int buf;
+	int view;
+	int zoom;
+	int prev_dir;
+
+	// map variables
+	int cur_x;
+	int cur_y;
+	int mode;
+
+	int win_sz;
+
+	// lookup tables
+	SDL_Texture** tab_tex[NUM_SPRITES];
+	int tab_rect_w[NUM_SPRITES];
+	int tab_rect_h[NUM_SPRITES];
+	int tab_rect_x[NUM_SPRITES];
+	int tab_rect_y[NUM_SPRITES];
+} Data;
+
 typedef struct {
-	int rate;		// the base scroll rate when edge-panning
-	int accel;		// the acceleration of edge-panning
-	int sensitivity;	// the distance to the edge of the screen when edge-panning starts
-	int iso_x;		// isometric x-axis offset for rendering when the camera is moving
-	int iso_y;		// isometric y-axis offset for rendering when the camera is moving
-	int buf;		// buffer for the isometric offset
-	int prev_dir;		// the previous pan direction
-} cam_data;
+	int type;
+	int tab_id;
+	unsigned tex_index;
+} Sprite;
 
-// contains menu related variables
 typedef struct {
-	int mode;	// the current mode the menu is in
-} menu_data;
+	Sprite** tiles;	// 2D array representing the background tiles
+	Sprite** objs;	// 2D array representing the objects on the map
+	//npc* npc_head;		// the linked-list head for npcs
+} Maps;
 
-// in map.c
-int map_init(win_data* win_d, map_data* map_d);
-int out_of_bounds(map_data* map_d, int x, int y);
-int editable(map_data* map_d, menu_data* menu_d, int x, int y);
-uint16_t get_type(uint32_t** arr, int x, int y);
-uint16_t get_tex(uint32_t** arr, int x, int y);
-void set_type(uint32_t** arr, int x, int y, uint16_t type);
-void set_tex(uint32_t** arr, int x, int y, uint16_t tex_id);
-int get_row(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
-int get_column(map_data* map_d, cam_data* cam_d, int mouse_x, int mouse_y);
-void map_move(map_data* map_d, int dir);
-void map_free(map_data* map_d);
-int calc_win_sz(int win_h, int win_w, int tile_w, int tile_h);
+// in init.c
+int init(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures* textures_p, Maps* maps_p, Data* data_p);
+int deinit(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures* textures_p, Maps* maps_p, Data* data_p);
 
 // in camera.c
-void cam_pan(win_data* win_d, map_data* map_d, cam_data* cam_d);
-
-// in texture.c
-int texture_init(SDL_Renderer* rend, tex_data* tex_d);
-void texture_free(tex_data* tex_d);
-int grass_index(map_data* map_d, int x, int y);
-int wall_index(map_data* map_d, int x, int y);
-int water_index(map_data* map_d, int x, int y);
+void cam_pan(Settings* settings_p, Maps* maps_p, Data* data_p);
 
 // in animate.c
-int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d);
+int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures* textures_p, Maps* maps_p, Data* data_p);
 
 // in event.c
-int event(win_data* win_d, map_data* map_d, cam_data* cam_d, menu_data* menu_d);
+void mouse(Settings* settings_p, Maps* maps_p, Data* data_p);
+int event(Settings* settings_p, Data* data_p);
+
+// in npc.c
 
 #endif

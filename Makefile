@@ -1,9 +1,9 @@
 CC = gcc
-CFLAGS = -g -O0 -Wall  
+CFLAGS = -g -O0 -Wall -std=gnu11 -fsanitize=address
 LDFLAGS = -lm
 
 DEPS = src/game.h
-_OBJ = main.o map.o camera.o texture.o animate.o event.o
+_OBJ = animate.o camera.o event.o init.o main.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 SDIR=src
@@ -15,10 +15,10 @@ override CFLAGS += $(SDL_CFLAGS)
 override LDFLAGS += $(SDL_LDFLAGS)
 
 $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS) $(LDFLAGS) 
+	$(CC) -c -o $@ $< $(CFLAGS) $(LDFLAGS)
 
 exec: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS) 
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 .PHONY: clean
 

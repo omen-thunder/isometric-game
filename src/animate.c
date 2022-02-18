@@ -1,16 +1,11 @@
 #include "game.h"
 
-// returns the on-screen x position
-int screen_x(map_data* map_d, cam_data* cam_d, int x, int y) {
-	return (x - y) * TILE_W / 2 + map_d->off_x - cam_d->iso_x + cam_d->iso_y;
-}
-
-// returns the on-screen y position
-int screen_y(map_data* map_d, cam_data* cam_d, int x, int y) {
-	return (y + x) * TILE_H / 2 + map_d->off_y - (float) cam_d->iso_x / 2.0f - (float) cam_d->iso_y / 2.0f;
-}
+#define Y_INTER(x, y, off) ((y) - ((x) / 2) - (off))
+#define SCREEN_X(x, y) ((x - y) * ZOOM_SCALE(TILE_W) / 2 + OFF_X - data_p->iso_x + data_p->iso_y)
+#define SCREEN_Y(x, y) ((y + x) * ZOOM_SCALE(TILE_H) / 2 + OFF_Y - (float) data_p->iso_x / 2.0f - (float) data_p->iso_y / 2.0f)
 
 // draws a part of a selector
+/*
 void draw_selector_part(SDL_Renderer* rend, map_data* map_d, cam_data* cam_d, tex_data* tex_d, int tex_id, int x, int y) {
 	SDL_Rect rect;
 	rect.w = TILE_W;
@@ -59,243 +54,186 @@ void draw_selector(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_dat
 
 	}
 }
+*/
 
-// draws a single tile
-void draw_tile(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int pos_x, int pos_y) {
-	// check if the tile is within the map array
-	if (pos_x + map_d->cur_x >= map_d->map_sz || pos_x + map_d->cur_x < 0
-			|| pos_y + map_d->cur_y >= map_d->map_sz || pos_y + map_d->cur_y < 0)
-		return;
-
-	SDL_Rect rect;
-	rect.w = TILE_W;
-	rect.h = TILE_H;
-
-	rect.x = screen_x(map_d, cam_d, pos_x, pos_y);
-	rect.y = screen_y(map_d, cam_d, pos_x, pos_y);
-
-	// checks if the tile is on the screen 
-	if (rect.x < -TILE_W || rect.x > win_d->win_w || rect.y < -TILE_H || rect.y > win_d->win_h)
-		return;
-
-	// calculate the tile texture based on the current view
-	int tex_x = 0;
-	int tex_y = 0;
+/*
+void draw_npc(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, npc* npcp) {
+	// calculate the npc texture coordinates based on the current view
+	int pos_x = 0;
+	int pos_y = 0;
 	switch (map_d->view) {
 		case 0:
-			tex_x = pos_x + map_d->cur_x;
-			tex_y = pos_y + map_d->cur_y;
+			pos_x = npcp->x + map_d->cur_x;
+			pos_y = npcp->y + map_d->cur_y;
 			break;
 		case 1:
-			tex_x = map_d->win_sz - 1 - pos_y + map_d->cur_x;
-			tex_y = pos_x + map_d->cur_y;
+			pos_x = npcp->y + map_d->cur_x;
+			pos_y = map_d->win_sz - 1 - npcp->x + map_d->cur_y;
 			break;
 		case 2:
-			tex_x = map_d->win_sz - 1 - pos_x + map_d->cur_x;
-			tex_y = map_d->win_sz - 1 - pos_y + map_d->cur_y;
+			pos_x = map_d->win_sz - 1 - npcp->x + map_d->cur_x;
+			pos_y = map_d->win_sz - 1 - npcp->y + map_d->cur_y;
 			break;
 		case 3:
-			tex_x = pos_y + map_d->cur_x;
-			tex_y = map_d->win_sz - 1 - pos_x + map_d->cur_y;
-			break;
-	}
-
-	// get the texture array and texture index
-	SDL_Texture** tex_arr;
-	unsigned mask = 0b11111111;
-	int shift = 0;
-	switch (get_type(map_d->tiles, tex_x, tex_y)) {
-		case WATER:
-			tex_arr = tex_d->water_tex;
-			shift = 2;
-			break;
-		case GRASS:
-			tex_arr = tex_d->grass_tex;
-			mask = 0b00001111;
-			shift = 1;
-			break;
-	}
-
-	// get the tile texture
-	unsigned tex_index = get_tex(map_d->tiles, tex_x, tex_y);
-	unsigned temp = tex_index;
-
-	// rotate the tile texture
-	tex_index <<= shift * map_d->view;
-	temp >>= shift * 4 - shift * map_d->view;
-	tex_index |= temp;
-	tex_index &= mask;
-
-	// render the tile
-	SDL_RenderCopy(rend, tex_arr[tex_index], NULL, &rect);
-}
-
-// get the correct rect width and height for an object
-void load_obj(map_data* map_d, tex_data* tex_d,  cam_data* cam_d, SDL_Rect* rect, int x, int y) {
-	switch (get_type(map_d->objs, x + map_d->cur_x, y + map_d->cur_y)) {
-		case TREE:
-				
-
-			break;
-		case BASE:
-			break;
-		case WALL:
-			break;
-	}
-}
-
-// draws an object
-void draw_obj(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, int pos_x, int pos_y) {
-	// check if the object is within the map array
-	if (pos_x + map_d->cur_x >= map_d->map_sz || pos_x + map_d->cur_x < 0
-			|| pos_y + map_d->cur_y >= map_d->map_sz || pos_y + map_d->cur_y < 0)
-		return;
-
-	// calculate the object texture coordinates based on the current view
-	int tex_x = 0;
-	int tex_y = 0;
-	switch (map_d->view) {
-		case 0:
-			tex_x = pos_x + map_d->cur_x;
-			tex_y = pos_y + map_d->cur_y;
-			break;
-		case 1:
-			tex_x = map_d->win_sz - 1 - pos_y + map_d->cur_x;
-			tex_y = pos_x + map_d->cur_y;
-			break;
-		case 2:
-			tex_x = map_d->win_sz - 1 - pos_x + map_d->cur_x;
-			tex_y = map_d->win_sz - 1 - pos_y + map_d->cur_y;
-			break;
-		case 3:
-			tex_x = pos_y + map_d->cur_x;
-			tex_y = map_d->win_sz - 1 - pos_x + map_d->cur_y;
+			pos_x = map_d->win_sz - 1 - npcp->y + map_d->cur_x;
+			pos_y = npcp->x + map_d->cur_y;
 			break;
 	}
 
 	// get the texture array and texture index
 	SDL_Rect rect;
-	SDL_Texture** tex_arr = tex_d->obj_tex;
-	unsigned mask = 0b11111111;
-	int shift = 0;
-	switch (get_type(map_d->objs, tex_x, tex_y)) {
-		case EMPTY:
-			return;
-		case OCCUPIED:
-			return;
-		case WALL:
-			tex_arr = tex_d->wall_tex;
-			mask = 0b00001111;
-			shift = 1;
-
-			rect.w = ZOOM_SCALE(96); 
-			rect.h = ZOOM_SCALE(73); 
-			rect.x = screen_x(map_d, cam_d, pos_x, pos_y) + ZOOM_SCALE(15);
-			rect.y = screen_y(map_d, cam_d, pos_x, pos_y) - ZOOM_SCALE(15);
-			break;
-		case TREE:
-			rect.w = ZOOM_SCALE(350) / 5;
-			rect.h = ZOOM_SCALE(720) / 5;
-			rect.x = screen_x(map_d, cam_d, pos_x, pos_y) + ZOOM_SCALE(60);
-			rect.y = screen_y(map_d, cam_d, pos_x, pos_y) - ZOOM_SCALE(90);
-
-			// pseudo-randomly adjust the x and y position
-			switch ((tex_x + tex_y) % 5) {
-				case 0:
-					break;
-				case 1:
-					rect.x -= ZOOM_SCALE(8);
-					rect.y -= ZOOM_SCALE(4);
-					break;
-				case 2:
-					rect.x += ZOOM_SCALE(8);
-					rect.y += ZOOM_SCALE(4);
-					break;
-				case 3:
-					rect.x -= ZOOM_SCALE(8);
-					rect.y += ZOOM_SCALE(4);
-					break;
-				case 4:
-					rect.x += ZOOM_SCALE(8);
-					rect.y -= ZOOM_SCALE(4);
-					break;
-			}
-
-			break;
-		case BASE:
-			rect.w = ZOOM_SCALE(549) / 2.25f;
-			rect.h = ZOOM_SCALE(882) / 2.25f;
-			rect.x = screen_x(map_d, cam_d, pos_x, pos_y) - ZOOM_SCALE(60);
-			rect.y = screen_y(map_d, cam_d, pos_x, pos_y) - ZOOM_SCALE(300);
-			break;
-	}
+	rect.w = ZOOM_SCALE(96);
+	rect.h = ZOOM_SCALE(73);
+	rect.x = screen_x(map_d, cam_d, pos_x, pos_y) + ZOOM_SCALE(15);
+	rect.y = screen_y(map_d, cam_d, pos_x, pos_y) - ZOOM_SCALE(15);
 
 	// checks if the object is on the screen
 	if (rect.x < -rect.w || rect.x > win_d->win_w || rect.y < -rect.h || rect.y > win_d->win_h)
 		return;
 
-	// get the object texture
-	unsigned tex_index = get_tex(map_d->objs, tex_x, tex_y);
-	unsigned temp = tex_index;
+	// render the object
+	SDL_RenderCopy(rend, tex_d->pleb_tex[0], NULL, &rect);
+}
+*/
 
-	// rotate the object texture
-	tex_index <<= shift * map_d->view;
-	temp >>= shift * 4 - shift * map_d->view;
+void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, Sprite* sprite_p, int col, int row) {
+	if (sprite_p->tab_id == L_EMPTY)
+		return;
+
+	SDL_Rect rect;
+	rect.w = data_p->tab_rect_w[sprite_p->tab_id];
+	rect.h = data_p->tab_rect_h[sprite_p->tab_id];
+	switch (data_p->view) {
+		case 0:
+			rect.x = SCREEN_X(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_x[sprite_p->tab_id];
+			rect.y = SCREEN_Y(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_y[sprite_p->tab_id];
+			break;
+		case 1:
+			rect.x = SCREEN_X(row + data_p->cur_x, data_p->win_sz - 1 - col + data_p->cur_y) + data_p->tab_rect_y[sprite_p->tab_id];
+			rect.y = SCREEN_Y(row + data_p->cur_x, data_p->win_sz - 1 - col + data_p->cur_y) - data_p->tab_rect_x[sprite_p->tab_id];
+			break;
+		case 2:
+			rect.x = SCREEN_X(data_p->win_sz - 1 - col + data_p->cur_x, data_p->win_sz - 1 - row + data_p->cur_y) - data_p->tab_rect_x[sprite_p->tab_id];
+			rect.y = SCREEN_Y(data_p->win_sz - 1 - col + data_p->cur_x, data_p->win_sz - 1 - row + data_p->cur_y) - data_p->tab_rect_y[sprite_p->tab_id];
+			break;
+		case 3:
+			rect.x = SCREEN_X(data_p->win_sz - 1 - row + data_p->cur_x, col + data_p->cur_y) - data_p->tab_rect_y[sprite_p->tab_id];
+			rect.y = SCREEN_Y(data_p->win_sz - 1 - row + data_p->cur_x, col + data_p->cur_y) + data_p->tab_rect_x[sprite_p->tab_id];
+			break;
+		default:
+			rect.x = SCREEN_X(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_x[sprite_p->tab_id];
+			rect.y = SCREEN_Y(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_y[sprite_p->tab_id];
+	}
+
+	// checks if the object is on the screen
+	if (rect.x < -rect.w || rect.x > settings_p->win_w || rect.y < -rect.h || rect.y > settings_p->win_h)
+		return;
+
+	// rotate the texture
+	unsigned mask = 0b11111111;
+	unsigned tex_index = sprite_p->tex_index;
+	unsigned temp = tex_index;
+	tex_index >>= 2 * data_p->view;
+	temp <<= 2 * (4 - data_p->view);
 	tex_index |= temp;
 	tex_index &= mask;
 
-	// render the object
-	SDL_RenderCopy(rend, tex_arr[tex_index], NULL, &rect);
+	SDL_RenderCopy(rend, data_p->tab_tex[sprite_p->tab_id][sprite_p->tex_index], NULL, &rect);
 }
 
-// draws the background
-void draw_bg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d) {
-	for (int x = -2; x < map_d->win_sz + 2; x++)
-		for (int y = -2; y < map_d->win_sz + 2; y++)
-			draw_tile(rend, win_d, map_d, tex_d, cam_d, x, y);
+// returns the row the given point is in
+int get_row(Settings* settings_p, Data* data_p, int x, int y) {
+	/* Derived from the cartesian equation y = x / 2 + b.
+	To find the row, solve for the y-intercept of the above line
+	using the mouse's x and y position and subtract the y-axis
+	offset of the background. Using this y-intercept and the x-axis
+	offset of the background, solve for the y value in the original
+	equation for the line. Divide this y value by the tile height
+	to get the row index */
+	return floor(Y_INTER((float) (-(OFF_X + data_p->iso_x + data_p->iso_y)),
+			Y_INTER(x, y, OFF_Y + data_p->iso_x / 2 - data_p->iso_y / 2),
+			ZOOM_SCALE(TILE_H) / -2.0f) / (float) ZOOM_SCALE(TILE_H));
 }
 
-// draws the foreground
-void draw_fg(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d) {
-	for (int x = -4; x < map_d->win_sz + 4; x++)
-		for (int y = -4; y < map_d->win_sz + 4; y++)
-			draw_obj(rend, win_d, map_d, tex_d, cam_d, x, y);
+// returns the column the given point is in
+int get_column(Settings* settings_p, Data* data_p, int x, int y) {
+	/* Derived from the cartesian equation y = -x / 2 + b.
+	To find the column, solve for the y-intercept of the above line
+	using the mouse's x and y position and subtract the y-axis
+	offset of the background. Using this y-intercept and the x-axis
+	offset of the background, solve for the y value in the original
+	equation for the line. Divide this y value by the tile height
+	to get the column index */
+	return floor(Y_INTER((float) (OFF_X - data_p->iso_x - data_p->iso_y),
+			Y_INTER(-x, y, OFF_Y - data_p->iso_x / 2 + data_p->iso_y / 2),
+			ZOOM_SCALE(TILE_H) / 2.0f) / (float) ZOOM_SCALE(TILE_H));
 }
 
-// draws the menu
-void draw_menu(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d) {
-	if (menu_d->mode != U_DEFAULT)
-		draw_selector(rend, win_d, map_d, tex_d, cam_d, menu_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
-}
+int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures* textures_p, Maps* maps_p, Data* data_p) {
+	while (event(settings_p, data_p)) {
+		data_p->old_t = data_p->pres_t;
+		data_p->pres_t = SDL_GetTicks();
+		data_p->mouse_button = SDL_GetMouseState(&data_p->mouse_x, &data_p->mouse_y);
+		data_p->mouse_col = get_column(settings_p, data_p, data_p->mouse_x, data_p->mouse_y);
+		data_p->mouse_row = get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y);
+		switch (data_p->view) {
+			case 0:
+				data_p->mouse_adj_col = get_column(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_x;
+				data_p->mouse_adj_row = get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_y;
+				break;
+			case 1:
+				data_p->mouse_adj_col = get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_x;
+				data_p->mouse_adj_row = data_p->win_sz - 1 - get_column(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_y;
+				break;
+			case 2:
+				data_p->mouse_adj_col = data_p->win_sz - 1 - get_column(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_x;
+				data_p->mouse_adj_row = data_p->win_sz - 1 - get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_y;
+				break;
+			case 3:
+				data_p->mouse_adj_col = data_p->win_sz - 1 - get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_x;
+				data_p->mouse_adj_row = get_column(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_y;
+				break;
+		}
 
-// the main animation loop
-int animate(SDL_Window* win, SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d) {
-	while (event(win_d, map_d, cam_d, menu_d)) {
-		win_d->old_t = win_d->pres_t;
-		win_d->pres_t = SDL_GetTicks();
-
-		// clear the window
 		SDL_RenderClear(rend);
 
 		// render the background
-		draw_bg(rend, win_d, map_d, tex_d, cam_d);
+		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
+			for (int j = -GAP; j < data_p->win_sz + GAP; j++)
+				rend_sprite(rend, settings_p, data_p, &maps_p->tiles[i][j], i, j);
 
 		// render the foreground
-		draw_fg(rend, win_d, map_d, tex_d, cam_d);
+		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
+			for (int j = -GAP; j < data_p->win_sz + GAP; j++)
+				rend_sprite(rend, settings_p, data_p, &maps_p->objs[i][j], i, j);
+
+		// draws the menu
+		if (data_p->mode != U_DEFAULT)
+//			draw_selector(rend, win_d, map_d, tex_d, cam_d, menu_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
+
+		// render the npcs
+		/*
+		npc* npcp = map_d->npc_head;
+		while (npcp) {
+			printf("npc!\n");
+			draw_npc(rend, win_d, map_d, tex_d, cam_d, npcp);
+			npcp = npcp->next;
+		}
+		*/
 
 		// render the menu
-		draw_menu(rend, win_d, map_d, tex_d, cam_d, menu_d);
 
-		// display the window
 		SDL_RenderPresent(rend);
-		
+
 		/*
 		if (win_d->pres_t < SDL_GetTicks())
 			printf("FPS: %d\n", 1000 / (SDL_GetTicks() - win_d->pres_t));
 		*/
 
-		// wait 1/fps of a second
 		//SDL_Delay(1000 / win_d->fps);
+
+		mouse(settings_p, maps_p, data_p);
+		cam_pan(settings_p, maps_p, data_p);
 	}
 
 	return 0;
