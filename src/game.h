@@ -128,10 +128,6 @@ typedef struct {
 	//npc* npc_head;		// the linked-list head for npcs
 } Maps;
 
-// in init.c
-int init(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures* textures_p, Maps* maps_p, Data* data_p);
-int deinit(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures* textures_p, Maps* maps_p, Data* data_p);
-
 // in camera.c
 void cam_pan(Settings* settings_p, Maps* maps_p, Data* data_p);
 

@@ -1,9 +1,9 @@
 Resolution width=1920
 Resolution height=1080
-Fullscreen=0
+Fullscreen=2
 Borderless window=0
 Input grab=1
-VSync=1
+VSync=0
 FPS=60
 Camera base velocity=15
 Camera acceleration=2

@@ -96,34 +96,40 @@ void draw_npc(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 }
 */
 
-void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, Sprite* sprite_p, int col, int row) {
-	if (sprite_p->tab_id == L_EMPTY)
+void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, Sprite** sprite_arr, int col, int row) {
+	Sprite sprite = sprite_arr[col][row];
+	if (sprite.tab_id == L_EMPTY)
 		return;
 
 	SDL_Rect rect;
-	rect.w = data_p->tab_rect_w[sprite_p->tab_id];
-	rect.h = data_p->tab_rect_h[sprite_p->tab_id];
+	rect.w = data_p->tab_rect_w[sprite.tab_id];
+	rect.h = data_p->tab_rect_h[sprite.tab_id];
 	switch (data_p->view) {
 		case 0:
-			rect.x = SCREEN_X(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_x[sprite_p->tab_id];
-			rect.y = SCREEN_Y(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_y[sprite_p->tab_id];
+			rect.x = SCREEN_X(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_x[sprite.tab_id];
+			rect.y = SCREEN_Y(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_y[sprite.tab_id];
 			break;
 		case 1:
-			rect.x = SCREEN_X(row + data_p->cur_x, data_p->win_sz - 1 - col + data_p->cur_y) + data_p->tab_rect_y[sprite_p->tab_id];
-			rect.y = SCREEN_Y(row + data_p->cur_x, data_p->win_sz - 1 - col + data_p->cur_y) - data_p->tab_rect_x[sprite_p->tab_id];
+			rect.x = SCREEN_X(row + data_p->cur_x, data_p->win_sz - 1 - col + data_p->cur_y) + data_p->tab_rect_y[sprite.tab_id];
+			rect.y = SCREEN_Y(row + data_p->cur_x, data_p->win_sz - 1 - col + data_p->cur_y) - data_p->tab_rect_x[sprite.tab_id];
 			break;
 		case 2:
-			rect.x = SCREEN_X(data_p->win_sz - 1 - col + data_p->cur_x, data_p->win_sz - 1 - row + data_p->cur_y) - data_p->tab_rect_x[sprite_p->tab_id];
-			rect.y = SCREEN_Y(data_p->win_sz - 1 - col + data_p->cur_x, data_p->win_sz - 1 - row + data_p->cur_y) - data_p->tab_rect_y[sprite_p->tab_id];
+			rect.x = SCREEN_X(data_p->win_sz - 1 - col + data_p->cur_x, data_p->win_sz - 1 - row + data_p->cur_y) - data_p->tab_rect_x[sprite.tab_id];
+			rect.y = SCREEN_Y(data_p->win_sz - 1 - col + data_p->cur_x, data_p->win_sz - 1 - row + data_p->cur_y) - data_p->tab_rect_y[sprite.tab_id];
 			break;
 		case 3:
-			rect.x = SCREEN_X(data_p->win_sz - 1 - row + data_p->cur_x, col + data_p->cur_y) - data_p->tab_rect_y[sprite_p->tab_id];
-			rect.y = SCREEN_Y(data_p->win_sz - 1 - row + data_p->cur_x, col + data_p->cur_y) + data_p->tab_rect_x[sprite_p->tab_id];
+			rect.x = SCREEN_X(data_p->win_sz - 1 - row + data_p->cur_x, col + data_p->cur_y) - data_p->tab_rect_y[sprite.tab_id];
+			rect.y = SCREEN_Y(data_p->win_sz - 1 - row + data_p->cur_x, col + data_p->cur_y) + data_p->tab_rect_x[sprite.tab_id];
 			break;
 		default:
-			rect.x = SCREEN_X(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_x[sprite_p->tab_id];
-			rect.y = SCREEN_Y(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_y[sprite_p->tab_id];
+			rect.x = SCREEN_X(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_x[sprite.tab_id];
+			rect.y = SCREEN_Y(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_y[sprite.tab_id];
 	}
+
+	/*
+	if (sprite.type == GRASS)
+		printf("tab_id %d, index %u, w %d, h %d, x %d, y% d\n", sprite.tab_id, sprite.tex_index, rect.w, rect.h, rect.x, rect.y);
+	*/
 
 	// checks if the object is on the screen
 	if (rect.x < -rect.w || rect.x > settings_p->win_w || rect.y < -rect.h || rect.y > settings_p->win_h)
@@ -131,14 +137,14 @@ void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, Sprite*
 
 	// rotate the texture
 	unsigned mask = 0b11111111;
-	unsigned tex_index = sprite_p->tex_index;
+	unsigned tex_index = sprite.tex_index;
 	unsigned temp = tex_index;
 	tex_index >>= 2 * data_p->view;
 	temp <<= 2 * (4 - data_p->view);
 	tex_index |= temp;
 	tex_index &= mask;
 
-	SDL_RenderCopy(rend, data_p->tab_tex[sprite_p->tab_id][sprite_p->tex_index], NULL, &rect);
+	SDL_RenderCopy(rend, data_p->tab_tex[sprite.tab_id][tex_index], NULL, &rect);
 }
 
 // returns the row the given point is in
@@ -200,16 +206,18 @@ int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures*
 		// render the background
 		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
 			for (int j = -GAP; j < data_p->win_sz + GAP; j++)
-				rend_sprite(rend, settings_p, data_p, &maps_p->tiles[i][j], i, j);
+				rend_sprite(rend, settings_p, data_p, maps_p->tiles, i + data_p->cur_x, j + data_p->cur_y);
 
 		// render the foreground
 		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
 			for (int j = -GAP; j < data_p->win_sz + GAP; j++)
-				rend_sprite(rend, settings_p, data_p, &maps_p->objs[i][j], i, j);
+				rend_sprite(rend, settings_p, data_p, maps_p->objs, i + data_p->cur_x, j + data_p->cur_y);
 
 		// draws the menu
+		/*
 		if (data_p->mode != U_DEFAULT)
-//			draw_selector(rend, win_d, map_d, tex_d, cam_d, menu_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
+			draw_selector(rend, win_d, map_d, tex_d, cam_d, menu_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
+		*/
 
 		// render the npcs
 		/*
