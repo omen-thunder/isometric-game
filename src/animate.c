@@ -2,7 +2,7 @@
 
 #define Y_INTER(x, y, off) ((y) - ((x) / 2) - (off))
 #define SCREEN_X(x, y) ((x - y) * ZOOM_SCALE(TILE_W) / 2 + OFF_X - data_p->iso_x + data_p->iso_y)
-#define SCREEN_Y(x, y) ((y + x) * ZOOM_SCALE(TILE_H) / 2 + OFF_Y - (float) data_p->iso_x / 2.0f - (float) data_p->iso_y / 2.0f)
+#define SCREEN_Y(x, y) ((y + x) * ZOOM_SCALE(TILE_H) / 2 + OFF_Y - data_p->iso_x / 2 - data_p->iso_y / 2)
 
 // draws a part of a selector
 /*
@@ -97,39 +97,32 @@ void draw_npc(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 */
 
 void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, Sprite** sprite_arr, int col, int row) {
-	Sprite sprite = sprite_arr[col][row];
+	Sprite sprite;
+	switch (data_p->view) {
+		case 0:
+			sprite = sprite_arr[col + data_p->cur_x][row + data_p->cur_y];
+			break;
+		case 1:
+			sprite = sprite_arr[row + data_p->cur_x][data_p->win_sz - 1 - col + data_p->cur_y];
+			break;
+		case 2:
+			sprite = sprite_arr[data_p->win_sz - 1 - col + data_p->cur_x][data_p->win_sz - 1 - row + data_p->cur_y];
+			break;
+		case 3:
+			sprite = sprite_arr[data_p->win_sz - 1 - row + data_p->cur_x][col + data_p->cur_y];
+			break;
+		default:
+			sprite = sprite_arr[col + data_p->cur_x][row + data_p->cur_y];
+	}
+
 	if (sprite.tab_id == L_EMPTY)
 		return;
 
 	SDL_Rect rect;
-	rect.w = data_p->tab_rect_w[sprite.tab_id];
-	rect.h = data_p->tab_rect_h[sprite.tab_id];
-	switch (data_p->view) {
-		case 0:
-			rect.x = SCREEN_X(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_x[sprite.tab_id];
-			rect.y = SCREEN_Y(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_y[sprite.tab_id];
-			break;
-		case 1:
-			rect.x = SCREEN_X(row + data_p->cur_x, data_p->win_sz - 1 - col + data_p->cur_y) + data_p->tab_rect_y[sprite.tab_id];
-			rect.y = SCREEN_Y(row + data_p->cur_x, data_p->win_sz - 1 - col + data_p->cur_y) - data_p->tab_rect_x[sprite.tab_id];
-			break;
-		case 2:
-			rect.x = SCREEN_X(data_p->win_sz - 1 - col + data_p->cur_x, data_p->win_sz - 1 - row + data_p->cur_y) - data_p->tab_rect_x[sprite.tab_id];
-			rect.y = SCREEN_Y(data_p->win_sz - 1 - col + data_p->cur_x, data_p->win_sz - 1 - row + data_p->cur_y) - data_p->tab_rect_y[sprite.tab_id];
-			break;
-		case 3:
-			rect.x = SCREEN_X(data_p->win_sz - 1 - row + data_p->cur_x, col + data_p->cur_y) - data_p->tab_rect_y[sprite.tab_id];
-			rect.y = SCREEN_Y(data_p->win_sz - 1 - row + data_p->cur_x, col + data_p->cur_y) + data_p->tab_rect_x[sprite.tab_id];
-			break;
-		default:
-			rect.x = SCREEN_X(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_x[sprite.tab_id];
-			rect.y = SCREEN_Y(col + data_p->cur_x, row + data_p->cur_y) + data_p->tab_rect_y[sprite.tab_id];
-	}
-
-	/*
-	if (sprite.type == GRASS)
-		printf("tab_id %d, index %u, w %d, h %d, x %d, y% d\n", sprite.tab_id, sprite.tex_index, rect.w, rect.h, rect.x, rect.y);
-	*/
+	rect.w = ZOOM_SCALE(data_p->tab_rect_w[sprite.tab_id]);
+	rect.h = ZOOM_SCALE(data_p->tab_rect_h[sprite.tab_id]);
+	rect.x = SCREEN_X(col, row) + ZOOM_SCALE(data_p->tab_rect_x[sprite.tab_id]);
+	rect.y = SCREEN_Y(col, row) + ZOOM_SCALE(data_p->tab_rect_y[sprite.tab_id]);
 
 	// checks if the object is on the screen
 	if (rect.x < -rect.w || rect.x > settings_p->win_w || rect.y < -rect.h || rect.y > settings_p->win_h)
@@ -140,7 +133,7 @@ void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, Sprite*
 	unsigned tex_index = sprite.tex_index;
 	unsigned temp = tex_index;
 	tex_index >>= 2 * data_p->view;
-	temp <<= 2 * (4 - data_p->view);
+	temp <<= 8 - 2 * data_p->view;
 	tex_index |= temp;
 	tex_index &= mask;
 
@@ -184,20 +177,20 @@ int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures*
 		data_p->mouse_row = get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y);
 		switch (data_p->view) {
 			case 0:
-				data_p->mouse_adj_col = get_column(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_x;
-				data_p->mouse_adj_row = get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_y;
+				data_p->mouse_adj_col = data_p->mouse_col + data_p->cur_x;
+				data_p->mouse_adj_row = data_p->mouse_row + data_p->cur_y;
 				break;
 			case 1:
-				data_p->mouse_adj_col = get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_x;
-				data_p->mouse_adj_row = data_p->win_sz - 1 - get_column(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_y;
+				data_p->mouse_adj_col = data_p->mouse_row + data_p->cur_x;
+				data_p->mouse_adj_row = data_p->win_sz - 1 - data_p->mouse_col + data_p->cur_y;
 				break;
 			case 2:
-				data_p->mouse_adj_col = data_p->win_sz - 1 - get_column(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_x;
-				data_p->mouse_adj_row = data_p->win_sz - 1 - get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_y;
+				data_p->mouse_adj_col = data_p->win_sz - 1 - data_p->mouse_col + data_p->cur_x;
+				data_p->mouse_adj_row = data_p->win_sz - 1 - data_p->mouse_row + data_p->cur_y;
 				break;
 			case 3:
-				data_p->mouse_adj_col = data_p->win_sz - 1 - get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_x;
-				data_p->mouse_adj_row = get_column(settings_p, data_p, data_p->mouse_x, data_p->mouse_y) + data_p->cur_y;
+				data_p->mouse_adj_col = data_p->win_sz - 1 - data_p->mouse_row + data_p->cur_x;
+				data_p->mouse_adj_row = data_p->mouse_col + data_p->cur_y;
 				break;
 		}
 
@@ -206,12 +199,12 @@ int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures*
 		// render the background
 		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
 			for (int j = -GAP; j < data_p->win_sz + GAP; j++)
-				rend_sprite(rend, settings_p, data_p, maps_p->tiles, i + data_p->cur_x, j + data_p->cur_y);
+				rend_sprite(rend, settings_p, data_p, maps_p->tiles, i, j);
 
 		// render the foreground
 		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
 			for (int j = -GAP; j < data_p->win_sz + GAP; j++)
-				rend_sprite(rend, settings_p, data_p, maps_p->objs, i + data_p->cur_x, j + data_p->cur_y);
+				rend_sprite(rend, settings_p, data_p, maps_p->objs, i, j);
 
 		// draws the menu
 		/*

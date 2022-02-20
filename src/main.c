@@ -83,10 +83,12 @@ int load_texture(SDL_Renderer* rend, char* path, SDL_Texture** tex, SDL_BlendMod
 		return -1;
 	}
 
+	/*
 	if (SDL_SetTextureBlendMode(*tex, blend_mode)) {
 		fprintf(stderr, "Error setting blend mode: %s\n", SDL_GetError());
 		return -1;
 	}
+	*/
 
 	SDL_FreeSurface(surface);
 	return 0;
@@ -326,7 +328,7 @@ int main(void) {
 		for (int y = 0; y < settings_p->map_sz; y++) {
 			if (OUT_OF_BOUNDS(x, y)) {
 				maps_p->objs[x][y].type = TREE;
-				switch (SDL_GetTicks() % 5) {
+				switch ((x + y) % 5) {
 					case 0:
 						maps_p->objs[x][y].tab_id = L_TREE_0;
 						break;

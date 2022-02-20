@@ -112,7 +112,7 @@ int pan_legal(Settings* settings_p, Data* data_p, int dir) {
 
 // pans the camera up and right
 void pan_ur(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (0 - data_p->view + 4) % 4))
+	if (pan_legal(settings_p, data_p, (0 + data_p->view) % 4))
 		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_ur(settings_p, data_p);
 
 	if (data_p->buf >= BUF_SZ) {
@@ -123,7 +123,7 @@ void pan_ur(Settings* settings_p, Maps* maps_p, Data* data_p) {
 
 // pans the camera up and left
 void pan_ul(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (1 - data_p->view + 4) % 4))
+	if (pan_legal(settings_p, data_p, (1 + data_p->view) % 4))
 		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_ul(settings_p, data_p);
 
 	if (data_p->buf >= BUF_SZ) {
@@ -134,7 +134,7 @@ void pan_ul(Settings* settings_p, Maps* maps_p, Data* data_p) {
 
 // pans the camera down and left
 void pan_dl(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (2 - data_p->view + 4) % 4))
+	if (pan_legal(settings_p, data_p, (2 + data_p->view) % 4))
 		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_dl(settings_p, data_p);
 
 	if (data_p->buf >= BUF_SZ) {
@@ -145,7 +145,7 @@ void pan_dl(Settings* settings_p, Maps* maps_p, Data* data_p) {
 
 // pans the camera down and right
 void pan_dr(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (3 - data_p->view + 4) % 4))
+	if (pan_legal(settings_p, data_p, (3 + data_p->view) % 4))
 		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_dr(settings_p, data_p);
 
 	if (data_p->buf >= BUF_SZ) {
@@ -156,7 +156,7 @@ void pan_dr(Settings* settings_p, Maps* maps_p, Data* data_p) {
 
 // pans the camera right
 void pan_r(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (0 - data_p->view + 4) % 4) && pan_legal(settings_p, data_p, (3 - data_p->view + 4) % 4)) {
+	if (pan_legal(settings_p, data_p, (0 + data_p->view) % 4) && pan_legal(settings_p, data_p, (3 + data_p->view) % 4)) {
 		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_r(settings_p, data_p);
 
 		// allows camera to move in both isometric axes
@@ -175,7 +175,7 @@ void pan_r(Settings* settings_p, Maps* maps_p, Data* data_p) {
 
 // pans the camera up
 void pan_u(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (0 - data_p->view + 4) % 4) && pan_legal(settings_p, data_p, (1 - data_p->view + 4) % 4)) {
+	if (pan_legal(settings_p, data_p, (0 + data_p->view) % 4) && pan_legal(settings_p, data_p, (1 + data_p->view) % 4)) {
 		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_u(settings_p, data_p);
 
 		// allows camera to move in both isometric axes
@@ -194,7 +194,7 @@ void pan_u(Settings* settings_p, Maps* maps_p, Data* data_p) {
 
 // pans the camera left
 void pan_l(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (1 - data_p->view + 4) % 4) && pan_legal(settings_p, data_p, (2 - data_p->view + 4) % 4)) {
+	if (pan_legal(settings_p, data_p, (1 + data_p->view) % 4) && pan_legal(settings_p, data_p, (2 + data_p->view) % 4)) {
 		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_l(settings_p, data_p);
 
 		// allows camera to move in both isometric axes
@@ -213,7 +213,7 @@ void pan_l(Settings* settings_p, Maps* maps_p, Data* data_p) {
 
 // pans the camera down
 void pan_d(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (2 - data_p->view + 4) % 4) && pan_legal(settings_p, data_p, (3 - data_p->view + 4) % 4)) {
+	if (pan_legal(settings_p, data_p, (2 + data_p->view) % 4) && pan_legal(settings_p, data_p, (3 + data_p->view) % 4)) {
 		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_d(settings_p, data_p);
 
 		// allows camera to move in both isometric axes
@@ -290,18 +290,18 @@ void cam_pan(Settings* settings_p, Maps* maps_p, Data* data_p) {
 	// reset the x or y offset and change the map cursor
 	if (data_p->iso_x >= ZOOM_SCALE(TILE_H)) {
 		data_p->iso_x -= ZOOM_SCALE(TILE_H);
-		map_move(settings_p, data_p, (3 - data_p->view + 4) % 4);
+		map_move(settings_p, data_p, (3 + data_p->view) % 4);
 	} else if (data_p->iso_x <= -TILE_H) {
 		data_p->iso_x += ZOOM_SCALE(TILE_H);
-		map_move(settings_p, data_p, (1 - data_p->view + 4) % 4);
+		map_move(settings_p, data_p, (1 + data_p->view) % 4);
 	}
 
 	if (data_p->iso_y >= ZOOM_SCALE(TILE_H)) {
 		data_p->iso_y -= ZOOM_SCALE(TILE_H);
-		map_move(settings_p, data_p, (2 - data_p->view + 4) % 4);
+		map_move(settings_p, data_p, (2 + data_p->view) % 4);
 	} else if (data_p->iso_y <= -ZOOM_SCALE(TILE_H)) {
 		data_p->iso_y += ZOOM_SCALE(TILE_H);
-		map_move(settings_p, data_p, (0 - data_p->view + 4) % 4);
+		map_move(settings_p, data_p, (0 + data_p->view) % 4);
 	}
 
 	data_p->prev_dir = cur_dir;
