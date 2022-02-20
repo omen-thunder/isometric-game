@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #define ZOOM_SCALE(x) (x << data_p->zoom >> 2)
-#define TILE_W (settings_p->tile_h * 2)
+#define TILE_W (settings_p->tile_h << 1)
 #define TILE_H (settings_p->tile_h)
 #define NUM_TILES (0)
 #define NUM_WATER (256)
@@ -23,12 +23,12 @@
 #define GAP (4)
 #define BUF_SZ (60)
 #define OFF_X (settings_p->win_w / 2 - ZOOM_SCALE(TILE_W) / 2)
-#define OFF_Y (-settings_p->win_w / 4)
+#define OFF_Y (settings_p->win_h / 2 - WIN_SZ * ZOOM_SCALE(TILE_H) / 2)
 #define DIST(x1, y1, x2, y2) (sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2)))
 // calculate the size of each side of the background rhombus by
 // finding its side length based on the window height and width
 // and dividing it by the side length of one tile rhombus
-#define WIN_SZ (ceil(DIST(settings_p->win_h * -1.0, settings_p->win_h / 2.0, settings_p->win_w / 2.0, settings_p->win_w / -4.0) / DIST(0.0, ZOOM_SCALE(TILE_W) / 2.0, ZOOM_SCALE(TILE_H) / 2.0f, 0.0)))
+#define WIN_SZ (ceil(DIST(settings_p->win_h * -1.0, settings_p->win_h / 2.0, settings_p->win_w / 2.0, settings_p->win_w / -4.0) / DIST(0.0, ZOOM_SCALE(TILE_W) / 2.0, ZOOM_SCALE(TILE_H) / 2.0, 0.0)))
 #define OUT_OF_BOUNDS(x, y) (x <= settings_p->border_sz || y <= settings_p->border_sz || x >= settings_p->map_sz - settings_p->border_sz || y >= settings_p->map_sz - settings_p->border_sz)
 
 enum selector_tex_enum {
@@ -40,7 +40,7 @@ enum selector_tex_enum {
 
 // enumerations for sprites
 enum type_enum {GRASS, WATER, EMPTY, OCCUPIED, TREE, WALL, BASE};
-enum tab_id_enum {L_EMPTY = -1, L_GRASS, L_WATER, L_TREE_0, L_TREE_1, L_TREE_2, L_TREE_3, L_TREE_4, L_WALL, L_BASE};
+enum tab_id_enum {L_EMPTY = -1, L_GRASS, L_WATER, L_TREE, L_WALL, L_BASE};
 enum obj_tex_enum {T_EMPTY = -1, T_TREE, T_BASE};
 
 // enumerations for the menu modes

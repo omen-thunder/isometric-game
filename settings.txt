@@ -1,6 +1,6 @@
 Resolution width=1920
 Resolution height=1080
-Fullscreen=2
+Fullscreen=1
 Borderless window=0
 Input grab=1
 VSync=0

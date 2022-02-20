@@ -2,10 +2,12 @@
 
 #define Y_INTER(x, y, off) ((y) - ((x) / 2) - (off))
 #define SCREEN_X(x, y) ((x - y) * ZOOM_SCALE(TILE_W) / 2 + OFF_X - data_p->iso_x + data_p->iso_y)
-#define SCREEN_Y(x, y) ((y + x) * ZOOM_SCALE(TILE_H) / 2 + OFF_Y - data_p->iso_x / 2 - data_p->iso_y / 2)
+#define SCREEN_Y(x, y) ((y + x) * ZOOM_SCALE(TILE_H) / 2 + OFF_Y - data_p->iso_x / 2.0f - data_p->iso_y / 2.0f)
+#define RANDOM_X(x, y) (((17 * x +  23 * y + 84) ^ 1734859) % 3 - 1)
+#define RANDOM_Y(x, y) (((19 * x + 27 * y + 55) ^ 8234594) % 3 - 1)
 
-// draws a part of a selector
 /*
+// draws a part of a selector
 void draw_selector_part(SDL_Renderer* rend, map_data* map_d, cam_data* cam_d, tex_data* tex_d, int tex_id, int x, int y) {
 	SDL_Rect rect;
 	rect.w = TILE_W;
@@ -98,44 +100,78 @@ void draw_npc(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 
 void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, Sprite** sprite_arr, int col, int row) {
 	Sprite sprite;
+	SDL_Rect rect = {0, 0, 0, 0};
+
+	int col_adj = 0;
+	int row_adj = 0;
 	switch (data_p->view) {
 		case 0:
-			sprite = sprite_arr[col + data_p->cur_x][row + data_p->cur_y];
+			col_adj = col + data_p->cur_x;
+			row_adj = row + data_p->cur_y;
+			sprite = sprite_arr[col_adj][row_adj];
+			if (sprite.type == TREE) {
+				rect.x += RANDOM_X(col_adj, row_adj) * ZOOM_SCALE(8);
+				rect.y += RANDOM_Y(col_adj, row_adj) * ZOOM_SCALE(8);
+			}
 			break;
 		case 1:
-			sprite = sprite_arr[row + data_p->cur_x][data_p->win_sz - 1 - col + data_p->cur_y];
+			col_adj = row + data_p->cur_x;
+			row_adj = data_p->win_sz - 1 - col + data_p->cur_y;
+			sprite = sprite_arr[col_adj][row_adj];
+			if (sprite.type == TREE) {
+				rect.x += RANDOM_Y(col_adj, row_adj) * ZOOM_SCALE(8);
+				rect.y -= RANDOM_X(col_adj, row_adj) * ZOOM_SCALE(8);
+			}
 			break;
 		case 2:
 			sprite = sprite_arr[data_p->win_sz - 1 - col + data_p->cur_x][data_p->win_sz - 1 - row + data_p->cur_y];
+			col_adj = data_p->win_sz - 1 - col + data_p->cur_x;
+			row_adj = data_p->win_sz - 1 - row + data_p->cur_y;
+			sprite = sprite_arr[col_adj][row_adj];
+			if (sprite.type == TREE) {
+				rect.x -= RANDOM_X(col_adj, row_adj) * ZOOM_SCALE(8);
+				rect.y -= RANDOM_Y(col_adj, row_adj) * ZOOM_SCALE(8);
+			}
 			break;
 		case 3:
 			sprite = sprite_arr[data_p->win_sz - 1 - row + data_p->cur_x][col + data_p->cur_y];
+			col_adj = data_p->win_sz - 1 - row + data_p->cur_x;
+			row_adj = col + data_p->cur_y;
+			if (sprite.type == TREE) {
+				rect.x -= RANDOM_Y(col_adj, row_adj) * ZOOM_SCALE(8);
+				rect.y += RANDOM_X(col_adj, row_adj) * ZOOM_SCALE(8);
+			}
 			break;
 		default:
 			sprite = sprite_arr[col + data_p->cur_x][row + data_p->cur_y];
+			if (sprite.type == TREE) {
+				rect.x += RANDOM_X(col_adj, row_adj) * ZOOM_SCALE(8);
+				rect.y += RANDOM_Y(col_adj, row_adj) * ZOOM_SCALE(8);
+			}
 	}
 
 	if (sprite.tab_id == L_EMPTY)
 		return;
 
-	SDL_Rect rect;
 	rect.w = ZOOM_SCALE(data_p->tab_rect_w[sprite.tab_id]);
 	rect.h = ZOOM_SCALE(data_p->tab_rect_h[sprite.tab_id]);
-	rect.x = SCREEN_X(col, row) + ZOOM_SCALE(data_p->tab_rect_x[sprite.tab_id]);
-	rect.y = SCREEN_Y(col, row) + ZOOM_SCALE(data_p->tab_rect_y[sprite.tab_id]);
+	rect.x += SCREEN_X(col, row) + ZOOM_SCALE(data_p->tab_rect_x[sprite.tab_id]);
+	rect.y += SCREEN_Y(col, row) + ZOOM_SCALE(data_p->tab_rect_y[sprite.tab_id]);
 
 	// checks if the object is on the screen
 	if (rect.x < -rect.w || rect.x > settings_p->win_w || rect.y < -rect.h || rect.y > settings_p->win_h)
 		return;
 
 	// rotate the texture
-	unsigned mask = 0b11111111;
 	unsigned tex_index = sprite.tex_index;
-	unsigned temp = tex_index;
-	tex_index >>= 2 * data_p->view;
-	temp <<= 8 - 2 * data_p->view;
-	tex_index |= temp;
-	tex_index &= mask;
+	if (sprite.type == WATER || sprite.type == GRASS || sprite.type == WALL) {
+		unsigned mask = 0b11111111;
+		unsigned temp = tex_index;
+		tex_index >>= 2 * data_p->view;
+		temp <<= 8 - 2 * data_p->view;
+		tex_index |= temp;
+		tex_index &= mask;
+	}
 
 	SDL_RenderCopy(rend, data_p->tab_tex[sprite.tab_id][tex_index], NULL, &rect);
 }
@@ -170,6 +206,7 @@ int get_column(Settings* settings_p, Data* data_p, int x, int y) {
 
 int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures* textures_p, Maps* maps_p, Data* data_p) {
 	while (event(settings_p, data_p)) {
+		printf("iso x: %d iso y: %d\n", data_p->iso_x, data_p->iso_y);
 		data_p->old_t = data_p->pres_t;
 		data_p->pres_t = SDL_GetTicks();
 		data_p->mouse_button = SDL_GetMouseState(&data_p->mouse_x, &data_p->mouse_y);

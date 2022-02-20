@@ -231,21 +231,25 @@ void pan_d(Settings* settings_p, Maps* maps_p, Data* data_p) {
 }
 
 void map_move(Settings* settings_p, Data* data_p, int dir) {
-	// move the map cursor up and right
-	if (dir ==  0 && data_p->cur_y > GAP)
-		data_p->cur_y--;
-
-	// move the map cursor up and left
-	else if (dir == 1 && data_p->cur_x > GAP)
-		data_p->cur_x--;
-
-	// move the map cursor down and left
-	else if (dir == 2 && data_p->cur_y < settings_p->map_sz - data_p->win_sz - GAP)
-		data_p->cur_y++;
-
-	// move the map cursor down and right
-	else if (dir == 3 && data_p->cur_x < settings_p->map_sz - data_p->win_sz - GAP)
-		data_p->cur_x++;
+	if (pan_legal(settings_p, data_p, dir))
+		switch (dir) {
+			case 0:
+				// move the map cursor up and right
+				data_p->cur_y--;
+				break;
+			case 1:
+				// move the map cursor up and left
+				data_p->cur_x--;
+				break;
+			case 2:
+				// move the map cursor down and left
+				data_p->cur_y++;
+				break;
+			case 3:
+				// move the map cursor down and right
+				data_p->cur_x++;
+				break;
+		}
 }
 
 void cam_pan(Settings* settings_p, Maps* maps_p, Data* data_p) {
@@ -291,7 +295,7 @@ void cam_pan(Settings* settings_p, Maps* maps_p, Data* data_p) {
 	if (data_p->iso_x >= ZOOM_SCALE(TILE_H)) {
 		data_p->iso_x -= ZOOM_SCALE(TILE_H);
 		map_move(settings_p, data_p, (3 + data_p->view) % 4);
-	} else if (data_p->iso_x <= -TILE_H) {
+	} else if (data_p->iso_x <= -ZOOM_SCALE(TILE_H)) {
 		data_p->iso_x += ZOOM_SCALE(TILE_H);
 		map_move(settings_p, data_p, (1 + data_p->view) % 4);
 	}

@@ -263,7 +263,7 @@ int main(void) {
 	if (settings_p->grab)
 		options |= SDL_WINDOW_INPUT_GRABBED;
 	win = SDL_CreateWindow("game", SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED, settings_p->win_w, settings_p->win_h, SDL_WINDOW_FULLSCREEN_DESKTOP);
+			SDL_WINDOWPOS_CENTERED, settings_p->win_w, settings_p->win_h, options);
 	if (!win) {
 		fprintf(stderr, "Error creating window: %s\n", SDL_GetError());
 		return -1;
@@ -328,25 +328,7 @@ int main(void) {
 		for (int y = 0; y < settings_p->map_sz; y++) {
 			if (OUT_OF_BOUNDS(x, y)) {
 				maps_p->objs[x][y].type = TREE;
-				switch ((x + y) % 5) {
-					case 0:
-						maps_p->objs[x][y].tab_id = L_TREE_0;
-						break;
-					case 1:
-						maps_p->objs[x][y].tab_id = L_TREE_1;
-						break;
-					case 2:
-						maps_p->objs[x][y].tab_id = L_TREE_2;
-						break;
-					case 3:
-						maps_p->objs[x][y].tab_id = L_TREE_3;
-						break;
-					case 4:
-						maps_p->objs[x][y].tab_id = L_TREE_4;
-						break;
-					default:
-						maps_p->objs[x][y].tab_id = L_TREE_0;
-				}
+				maps_p->objs[x][y].tab_id = L_TREE;
 				maps_p->objs[x][y].tex_index = T_TREE;
 			} else {
 				maps_p->objs[x][y].type = EMPTY;
@@ -359,55 +341,35 @@ int main(void) {
 	// initalise lookup tables
 	data_p->tab_tex[L_GRASS] = textures_p->grass_tex;
 	data_p->tab_tex[L_WATER] = textures_p->water_tex;
-	data_p->tab_tex[L_TREE_0] = textures_p->obj_tex;
-	data_p->tab_tex[L_TREE_1] = textures_p->obj_tex;
-	data_p->tab_tex[L_TREE_2] = textures_p->obj_tex;
-	data_p->tab_tex[L_TREE_3] = textures_p->obj_tex;
-	data_p->tab_tex[L_TREE_4] = textures_p->obj_tex;
+	data_p->tab_tex[L_TREE] = textures_p->obj_tex;
 	data_p->tab_tex[L_WALL] = textures_p->wall_tex;
 	data_p->tab_tex[L_BASE] = textures_p->obj_tex;
 	printf("Texture table initialised\n");
 
 	data_p->tab_rect_w[L_GRASS] = TILE_W;
 	data_p->tab_rect_w[L_WATER] = TILE_W;
-	data_p->tab_rect_w[L_TREE_0] = 70;
-	data_p->tab_rect_w[L_TREE_1] = 70;
-	data_p->tab_rect_w[L_TREE_2] = 70;
-	data_p->tab_rect_w[L_TREE_3] = 70;
-	data_p->tab_rect_w[L_TREE_4] = 70;
+	data_p->tab_rect_w[L_TREE] = 70;
 	data_p->tab_rect_w[L_WALL] = 96;
 	data_p->tab_rect_w[L_BASE] = 244;
 	printf("Rect width table initialised\n");
 
 	data_p->tab_rect_h[L_GRASS] = TILE_H;
 	data_p->tab_rect_h[L_WATER] = TILE_H;
-	data_p->tab_rect_h[L_TREE_0] = 144;
-	data_p->tab_rect_h[L_TREE_1] = 144;
-	data_p->tab_rect_h[L_TREE_2] = 144;
-	data_p->tab_rect_h[L_TREE_3] = 144;
-	data_p->tab_rect_h[L_TREE_4] = 144;
+	data_p->tab_rect_h[L_TREE] = 144;
 	data_p->tab_rect_h[L_WALL] = 73;
 	data_p->tab_rect_h[L_BASE] = 392;
 	printf("Rect height table initialised\n");
 
 	data_p->tab_rect_x[L_GRASS] = 0;
 	data_p->tab_rect_x[L_WATER] = 0;
-	data_p->tab_rect_x[L_TREE_0] = 60;
-	data_p->tab_rect_x[L_TREE_1] = 60-8;
-	data_p->tab_rect_x[L_TREE_2] = 60+8;
-	data_p->tab_rect_x[L_TREE_3] = 60-8;
-	data_p->tab_rect_x[L_TREE_4] = 60+8;
+	data_p->tab_rect_x[L_TREE] = 60;
 	data_p->tab_rect_x[L_WALL] = 15;
 	data_p->tab_rect_x[L_BASE] = -60;
 	printf("Rect x-coordinate table initialised\n");
 
 	data_p->tab_rect_y[L_GRASS] = 0;
 	data_p->tab_rect_y[L_WATER] = 0;
-	data_p->tab_rect_y[L_TREE_0] = -90;
-	data_p->tab_rect_y[L_TREE_1] = -90-4;
-	data_p->tab_rect_y[L_TREE_2] = -90+4;
-	data_p->tab_rect_y[L_TREE_3] = -90+4;
-	data_p->tab_rect_y[L_TREE_4] = -90-4;
+	data_p->tab_rect_y[L_TREE] = -90;
 	data_p->tab_rect_y[L_WALL] = -15;
 	data_p->tab_rect_y[L_BASE] = -300;
 	printf("Rect y-coordinate table initialised\n");

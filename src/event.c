@@ -26,25 +26,25 @@ void zoom_in(Settings* settings_p, Data* data_p) {
 void zoom_out(Settings* settings_p, Data* data_p) {
 	if (data_p->zoom > 0) {
 		data_p->zoom--;
-			int win_sz_old = data_p->win_sz;
-			data_p->win_sz = WIN_SZ;
+		int win_sz_old = data_p->win_sz;
+		data_p->win_sz = WIN_SZ;
 
-			int new_x = data_p->cur_x + (win_sz_old - data_p->win_sz) / 2;
-			if (new_x >= GAP && new_x <= settings_p->map_sz - data_p->win_sz - GAP)
-				data_p->cur_x = new_x;
-			else if (new_x < GAP)
-				data_p->cur_x = GAP;
-			else if (new_x > settings_p->map_sz - data_p->win_sz - GAP)
-				data_p->cur_x = settings_p->map_sz - data_p->win_sz - GAP;
+		int new_x = data_p->cur_x + (win_sz_old - data_p->win_sz) / 2;
+		if (new_x >= GAP && new_x <= settings_p->map_sz - data_p->win_sz - GAP)
+			data_p->cur_x = new_x;
+		else if (new_x < GAP)
+			data_p->cur_x = GAP;
+		else if (new_x > settings_p->map_sz - data_p->win_sz - GAP)
+			data_p->cur_x = settings_p->map_sz - data_p->win_sz - GAP;
 
-			int new_y = data_p->cur_y + (win_sz_old - data_p->win_sz) / 2;
-			if (new_y >= GAP && new_y <= settings_p->map_sz - data_p->win_sz - GAP)
-				data_p->cur_y = new_y;
-			else if (new_y < GAP)
-				data_p->cur_y = GAP;
-			else if (new_y > settings_p->map_sz - data_p->win_sz - GAP)
-				data_p->cur_y = settings_p->map_sz - data_p->win_sz - GAP;
-	}
+		int new_y = data_p->cur_y + (win_sz_old - data_p->win_sz) / 2;
+		if (new_y >= GAP && new_y <= settings_p->map_sz - data_p->win_sz - GAP)
+			data_p->cur_y = new_y;
+		else if (new_y < GAP)
+			data_p->cur_y = GAP;
+		else if (new_y > settings_p->map_sz - data_p->win_sz - GAP)
+			data_p->cur_y = settings_p->map_sz - data_p->win_sz - GAP;
+		}
 }
 
 int event(Settings* settings_p, Data* data_p) {
@@ -99,7 +99,6 @@ int event(Settings* settings_p, Data* data_p) {
 					data_p->view = (data_p->view + 1) % 4;
 				if (event.button.button == SDL_BUTTON_X2)
 					data_p->view = (data_p->view + 3) % 4;
-				printf("view %d\n", data_p->view);
 				break;
 		}
 	}
@@ -222,25 +221,7 @@ void mouse(Settings* settings_p, Maps* maps_p, Data* data_p) {
 		case U_TREE:
 			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(settings_p, maps_p, x, y)) {
 				maps_p->objs[x][y].type = TREE;
-				switch (data_p->pres_t % 5) {
-					case 0:
-						maps_p->objs[x][y].tab_id = L_TREE_0;
-						break;
-					case 1:
-						maps_p->objs[x][y].tab_id = L_TREE_1;
-						break;
-					case 2:
-						maps_p->objs[x][y].tab_id = L_TREE_2;
-						break;
-					case 3:
-						maps_p->objs[x][y].tab_id = L_TREE_3;
-						break;
-					case 4:
-						maps_p->objs[x][y].tab_id = L_TREE_4;
-						break;
-					default:
-						maps_p->objs[x][y].tab_id = L_TREE_0;
-				}
+				maps_p->objs[x][y].tab_id = L_TREE;
 				maps_p->objs[x][y].tex_index = T_TREE;
 			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
 				if (maps_p->objs[x][y].type == TREE) {
