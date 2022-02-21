@@ -7,58 +7,6 @@
 #define RANDOM_Y(x, y) (((19 * x + 27 * y + 55) ^ 8234594) % 3 - 1)
 
 /*
-// draws a part of a selector
-void draw_selector_part(SDL_Renderer* rend, map_data* map_d, cam_data* cam_d, tex_data* tex_d, int tex_id, int x, int y) {
-	SDL_Rect rect;
-	rect.w = TILE_W;
-	rect.h = TILE_H;
-	rect.x = screen_x(map_d, cam_d, x, y);
-	rect.y = screen_y(map_d, cam_d, x, y);
-	SDL_RenderCopy(rend, tex_d->selector_tex[tex_id], NULL, &rect);
-}
-
-// draws the selector
-void draw_selector(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, menu_data* menu_d, int x, int y) {
-	int legal;
-	switch (menu_d->mode) {
-		case U_BASE:
-			legal = 1;
-			for (int i = x - 1; i <= x + 1; i++)
-				for (int j = y - 1; j <= y + 1; j++)
-					if (!editable(map_d, menu_d, i + map_d->cur_x, j + map_d->cur_y))
-						legal = 0;
-			if (legal) {
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_R, x + 1, y - 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_UR, x, y - 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_U, x - 1, y - 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_UL, x - 1, y);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_L, x - 1, y + 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_DL, x, y + 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_D, x + 1, y + 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W_DR, x + 1, y);
-			} else {
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_R, x + 1, y - 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_UR, x, y - 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_U, x - 1, y - 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_UL, x - 1, y);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_L, x - 1, y + 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_DL, x, y + 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_D, x + 1, y + 1);
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R_DR, x + 1, y);
-			}
-
-			break;
-		default:
-			if (editable(map_d, menu_d, x + map_d->cur_x, y + map_d->cur_y))
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_W, x, y);
-			else
-				draw_selector_part(rend, map_d, cam_d, tex_d, T_SELECTOR_R, x, y);
-
-	}
-}
-*/
-
-/*
 void draw_npc(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, npc* npcp) {
 	// calculate the npc texture coordinates based on the current view
 	int pos_x = 0;
@@ -98,73 +46,41 @@ void draw_npc(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* te
 }
 */
 
-void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, Sprite** sprite_arr, int col, int row) {
-	Sprite sprite;
-	SDL_Rect rect = {0, 0, 0, 0};
+void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, int col, int row, int tab_id, int tex_index, int rand_x, int rand_y) {
+	SDL_Rect rect = {.w = ZOOM_SCALE(data_p->tab_rect_w[tab_id]),
+					 .h = ZOOM_SCALE(data_p->tab_rect_h[tab_id]),
+					 .x = SCREEN_X(col, row) + ZOOM_SCALE(data_p->tab_rect_x[tab_id]),
+					 .y = SCREEN_Y(col, row) + ZOOM_SCALE(data_p->tab_rect_y[tab_id])};
 
-	int col_adj = 0;
-	int row_adj = 0;
-	switch (data_p->view) {
-		case 0:
-			col_adj = col + data_p->cur_x;
-			row_adj = row + data_p->cur_y;
-			sprite = sprite_arr[col_adj][row_adj];
-			if (sprite.type == TREE) {
-				rect.x += RANDOM_X(col_adj, row_adj) * ZOOM_SCALE(8);
-				rect.y += RANDOM_Y(col_adj, row_adj) * ZOOM_SCALE(8);
-			}
-			break;
-		case 1:
-			col_adj = row + data_p->cur_x;
-			row_adj = data_p->win_sz - 1 - col + data_p->cur_y;
-			sprite = sprite_arr[col_adj][row_adj];
-			if (sprite.type == TREE) {
-				rect.x += RANDOM_Y(col_adj, row_adj) * ZOOM_SCALE(8);
-				rect.y -= RANDOM_X(col_adj, row_adj) * ZOOM_SCALE(8);
-			}
-			break;
-		case 2:
-			sprite = sprite_arr[data_p->win_sz - 1 - col + data_p->cur_x][data_p->win_sz - 1 - row + data_p->cur_y];
-			col_adj = data_p->win_sz - 1 - col + data_p->cur_x;
-			row_adj = data_p->win_sz - 1 - row + data_p->cur_y;
-			sprite = sprite_arr[col_adj][row_adj];
-			if (sprite.type == TREE) {
-				rect.x -= RANDOM_X(col_adj, row_adj) * ZOOM_SCALE(8);
-				rect.y -= RANDOM_Y(col_adj, row_adj) * ZOOM_SCALE(8);
-			}
-			break;
-		case 3:
-			sprite = sprite_arr[data_p->win_sz - 1 - row + data_p->cur_x][col + data_p->cur_y];
-			col_adj = data_p->win_sz - 1 - row + data_p->cur_x;
-			row_adj = col + data_p->cur_y;
-			if (sprite.type == TREE) {
-				rect.x -= RANDOM_Y(col_adj, row_adj) * ZOOM_SCALE(8);
-				rect.y += RANDOM_X(col_adj, row_adj) * ZOOM_SCALE(8);
-			}
-			break;
-		default:
-			sprite = sprite_arr[col + data_p->cur_x][row + data_p->cur_y];
-			if (sprite.type == TREE) {
-				rect.x += RANDOM_X(col_adj, row_adj) * ZOOM_SCALE(8);
-				rect.y += RANDOM_Y(col_adj, row_adj) * ZOOM_SCALE(8);
-			}
-	}
+	if (tab_id == L_TREE)
+		switch (data_p->view) {
+			case 0:
+				rect.x += rand_x * ZOOM_SCALE(8);
+				rect.y += rand_y * ZOOM_SCALE(4);
+				break;
+			case 1:
+				rect.x += rand_y * ZOOM_SCALE(8);
+				rect.y -= rand_x * ZOOM_SCALE(4);
+				break;
+			case 2:
+				rect.x -= rand_x * ZOOM_SCALE(8);
+				rect.y -= rand_y * ZOOM_SCALE(4);
+				break;
+			case 3:
+				rect.x -= rand_y * ZOOM_SCALE(8);
+				rect.y += rand_x * ZOOM_SCALE(4);
+				break;
+		}
 
-	if (sprite.tab_id == L_EMPTY)
+	if (tab_id == L_EMPTY)
 		return;
-
-	rect.w = ZOOM_SCALE(data_p->tab_rect_w[sprite.tab_id]);
-	rect.h = ZOOM_SCALE(data_p->tab_rect_h[sprite.tab_id]);
-	rect.x += SCREEN_X(col, row) + ZOOM_SCALE(data_p->tab_rect_x[sprite.tab_id]);
-	rect.y += SCREEN_Y(col, row) + ZOOM_SCALE(data_p->tab_rect_y[sprite.tab_id]);
 
 	// checks if the object is on the screen
 	if (rect.x < -rect.w || rect.x > settings_p->win_w || rect.y < -rect.h || rect.y > settings_p->win_h)
 		return;
 
 	// rotate the texture
-	unsigned tex_index = sprite.tex_index;
-	if (sprite.type == WATER || sprite.type == GRASS || sprite.type == WALL) {
+	if (tab_id == L_WATER || tab_id == L_GRASS || tab_id == L_WALL) {
 		unsigned mask = 0b11111111;
 		unsigned temp = tex_index;
 		tex_index >>= 2 * data_p->view;
@@ -173,7 +89,7 @@ void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, Sprite*
 		tex_index &= mask;
 	}
 
-	SDL_RenderCopy(rend, data_p->tab_tex[sprite.tab_id][tex_index], NULL, &rect);
+	SDL_RenderCopy(rend, data_p->tab_tex[tab_id][tex_index], NULL, &rect);
 }
 
 // returns the row the given point is in
@@ -204,9 +120,41 @@ int get_column(Settings* settings_p, Data* data_p, int x, int y) {
 			ZOOM_SCALE(TILE_H) / 2.0f) / (float) ZOOM_SCALE(TILE_H));
 }
 
+void rend_selector(SDL_Renderer* rend, Settings* settings_p, Textures* textures_p, Maps* maps_p, Data* data_p) {
+	int col = data_p->mouse_col;
+	int row = data_p->mouse_row;
+	int size = data_p->selector_sz;
+	int legal = 1;
+	for (int i = data_p->mouse_adj_col - size; i <= data_p->mouse_adj_col + size; i++)
+		for (int j = data_p->mouse_adj_row - size; j <= data_p->mouse_adj_row + size; j++)
+			if (!editable(settings_p, maps_p, i, j))
+				legal = 0;
+
+	if (legal) {
+		for (int i = col - size; i <= col + size; i++) {
+			rend_sprite(rend, settings_p, data_p, i, row + size, L_SELECTOR, T_SEL_W_DL, 0, 0);
+			rend_sprite(rend, settings_p, data_p, i, row - size, L_SELECTOR, T_SEL_W_UR, 0, 0);
+		}
+
+		for (int j = row - size; j <= row + size; j++) {
+			rend_sprite(rend, settings_p, data_p, col + size, j, L_SELECTOR, T_SEL_W_DR, 0, 0);
+			rend_sprite(rend, settings_p, data_p, col - size, j, L_SELECTOR, T_SEL_W_UL, 0, 0);
+		}
+	} else {
+		for (int i = col - size; i <= col + size; i++) {
+			rend_sprite(rend, settings_p, data_p, i, row + size, L_SELECTOR, T_SEL_R_DL, 0, 0);
+			rend_sprite(rend, settings_p, data_p, i, row - size, L_SELECTOR, T_SEL_R_UR, 0, 0);
+		}
+
+		for (int j = row - size; j <= row + size; j++) {
+			rend_sprite(rend, settings_p, data_p, col + size, j, L_SELECTOR, T_SEL_R_DR, 0, 0);
+			rend_sprite(rend, settings_p, data_p, col - size, j, L_SELECTOR, T_SEL_R_UL, 0, 0);
+		}
+	}
+}
+
 int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures* textures_p, Maps* maps_p, Data* data_p) {
 	while (event(settings_p, data_p)) {
-		printf("iso x: %d iso y: %d\n", data_p->iso_x, data_p->iso_y);
 		data_p->old_t = data_p->pres_t;
 		data_p->pres_t = SDL_GetTicks();
 		data_p->mouse_button = SDL_GetMouseState(&data_p->mouse_x, &data_p->mouse_y);
@@ -233,21 +181,60 @@ int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures*
 
 		SDL_RenderClear(rend);
 
+		int col_adj = 0;
+		int row_adj = 0;
+
 		// render the background
 		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
-			for (int j = -GAP; j < data_p->win_sz + GAP; j++)
-				rend_sprite(rend, settings_p, data_p, maps_p->tiles, i, j);
+			for (int j = -GAP; j < data_p->win_sz + GAP; j++) {
+				switch (data_p->view) {
+					case 0:
+						col_adj = i + data_p->cur_x;
+						row_adj = j + data_p->cur_y;
+						break;
+					case 1:
+						col_adj = j + data_p->cur_x;
+						row_adj = data_p->win_sz - 1 - i + data_p->cur_y;
+						break;
+					case 2:
+						col_adj = data_p->win_sz - 1 - i + data_p->cur_x;
+						row_adj = data_p->win_sz - 1 - j + data_p->cur_y;
+						break;
+					case 3:
+						col_adj = data_p->win_sz - 1 - j + data_p->cur_x;
+						row_adj = i + data_p->cur_y;
+						break;
+				}
+				rend_sprite(rend, settings_p, data_p, i, j, maps_p->tiles[col_adj][row_adj].tab_id, maps_p->tiles[col_adj][row_adj].tex_index, 0, 0);
+			}
 
 		// render the foreground
 		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
-			for (int j = -GAP; j < data_p->win_sz + GAP; j++)
-				rend_sprite(rend, settings_p, data_p, maps_p->objs, i, j);
+			for (int j = -GAP; j < data_p->win_sz + GAP; j++) {
+				switch (data_p->view) {
+					case 0:
+						col_adj = i + data_p->cur_x;
+						row_adj = j + data_p->cur_y;
+						break;
+					case 1:
+						col_adj = j + data_p->cur_x;
+						row_adj = data_p->win_sz - 1 - i + data_p->cur_y;
+						break;
+					case 2:
+						col_adj = data_p->win_sz - 1 - i + data_p->cur_x;
+						row_adj = data_p->win_sz - 1 - j + data_p->cur_y;
+						break;
+					case 3:
+						col_adj = data_p->win_sz - 1 - j + data_p->cur_x;
+						row_adj = i + data_p->cur_y;
+						break;
+				}
+				rend_sprite(rend, settings_p, data_p, i, j, maps_p->objs[col_adj][row_adj].tab_id, maps_p->objs[col_adj][row_adj].tex_index, RANDOM_X(col_adj, row_adj), RANDOM_Y(col_adj, row_adj));
+			}
 
 		// draws the menu
-		/*
 		if (data_p->mode != U_DEFAULT)
-			draw_selector(rend, win_d, map_d, tex_d, cam_d, menu_d, get_column(map_d, cam_d, win_d->mouse_x, win_d->mouse_y), get_row(map_d, cam_d, win_d->mouse_x, win_d->mouse_y));
-		*/
+			rend_selector(rend, settings_p, textures_p, maps_p, data_p);
 
 		// render the npcs
 		/*

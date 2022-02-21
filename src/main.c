@@ -341,6 +341,7 @@ int main(void) {
 	// initalise lookup tables
 	data_p->tab_tex[L_GRASS] = textures_p->grass_tex;
 	data_p->tab_tex[L_WATER] = textures_p->water_tex;
+	data_p->tab_tex[L_SELECTOR] = textures_p->selector_tex;
 	data_p->tab_tex[L_TREE] = textures_p->obj_tex;
 	data_p->tab_tex[L_WALL] = textures_p->wall_tex;
 	data_p->tab_tex[L_BASE] = textures_p->obj_tex;
@@ -348,6 +349,7 @@ int main(void) {
 
 	data_p->tab_rect_w[L_GRASS] = TILE_W;
 	data_p->tab_rect_w[L_WATER] = TILE_W;
+	data_p->tab_rect_w[L_SELECTOR] = TILE_W;
 	data_p->tab_rect_w[L_TREE] = 70;
 	data_p->tab_rect_w[L_WALL] = 96;
 	data_p->tab_rect_w[L_BASE] = 244;
@@ -355,6 +357,7 @@ int main(void) {
 
 	data_p->tab_rect_h[L_GRASS] = TILE_H;
 	data_p->tab_rect_h[L_WATER] = TILE_H;
+	data_p->tab_rect_h[L_SELECTOR] = TILE_H;
 	data_p->tab_rect_h[L_TREE] = 144;
 	data_p->tab_rect_h[L_WALL] = 73;
 	data_p->tab_rect_h[L_BASE] = 392;
@@ -362,14 +365,16 @@ int main(void) {
 
 	data_p->tab_rect_x[L_GRASS] = 0;
 	data_p->tab_rect_x[L_WATER] = 0;
-	data_p->tab_rect_x[L_TREE] = 60;
+	data_p->tab_rect_x[L_SELECTOR] = 0;
+	data_p->tab_rect_x[L_TREE] = 30;
 	data_p->tab_rect_x[L_WALL] = 15;
 	data_p->tab_rect_x[L_BASE] = -60;
 	printf("Rect x-coordinate table initialised\n");
 
 	data_p->tab_rect_y[L_GRASS] = 0;
 	data_p->tab_rect_y[L_WATER] = 0;
-	data_p->tab_rect_y[L_TREE] = -90;
+	data_p->tab_rect_y[L_SELECTOR] = 0;
+	data_p->tab_rect_y[L_TREE] = -96;
 	data_p->tab_rect_y[L_WALL] = -15;
 	data_p->tab_rect_y[L_BASE] = -300;
 	printf("Rect y-coordinate table initialised\n");
@@ -393,6 +398,7 @@ int main(void) {
 	data_p->cur_y = settings_p->map_sz / 2;
 	data_p->mode = U_DEFAULT;
 	data_p->win_sz = WIN_SZ;
+	data_p->selector_sz = 1;
 	printf("***Initialisation complete***\n");
 
 	animate(win, rend, &settings, &textures, &maps, &data);

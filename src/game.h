@@ -15,11 +15,11 @@
 #define NUM_WATER (256)
 #define NUM_OBJS (2)
 #define NUM_MENU (0)
-#define NUM_SELECTOR (18)
+#define NUM_SELECTOR (8)
 #define NUM_WALL (256)
 #define NUM_GRASS (256)
 #define NUM_PLEB (64)
-#define NUM_SPRITES (9)
+#define NUM_SPRITES (6)
 #define GAP (4)
 #define BUF_SZ (60)
 #define OFF_X (settings_p->win_w / 2 - ZOOM_SCALE(TILE_W) / 2)
@@ -32,15 +32,13 @@
 #define OUT_OF_BOUNDS(x, y) (x <= settings_p->border_sz || y <= settings_p->border_sz || x >= settings_p->map_sz - settings_p->border_sz || y >= settings_p->map_sz - settings_p->border_sz)
 
 enum selector_tex_enum {
-	T_SELECTOR_W, T_SELECTOR_W_R, T_SELECTOR_W_UR, T_SELECTOR_W_U, T_SELECTOR_W_UL,
-	T_SELECTOR_W_L, T_SELECTOR_W_DL, T_SELECTOR_W_D, T_SELECTOR_W_DR,
-	T_SELECTOR_R, T_SELECTOR_R_R, T_SELECTOR_R_UR, T_SELECTOR_R_U, T_SELECTOR_R_UL,
-	T_SELECTOR_R_L, T_SELECTOR_R_DL, T_SELECTOR_R_D, T_SELECTOR_R_DR
+	T_SEL_W_UR, T_SEL_W_UL, T_SEL_W_DL, T_SEL_W_DR,
+	T_SEL_R_UR, T_SEL_R_UL, T_SEL_R_DL, T_SEL_R_DR
 };
 
 // enumerations for sprites
 enum type_enum {GRASS, WATER, EMPTY, OCCUPIED, TREE, WALL, BASE};
-enum tab_id_enum {L_EMPTY = -1, L_GRASS, L_WATER, L_TREE, L_WALL, L_BASE};
+enum tab_id_enum {L_EMPTY = -1, L_GRASS, L_WATER, L_TREE, L_WALL, L_BASE, L_SELECTOR};
 enum obj_tex_enum {T_EMPTY = -1, T_TREE, T_BASE};
 
 // enumerations for the menu modes
@@ -114,6 +112,8 @@ typedef struct {
 	int tab_rect_h[NUM_SPRITES];
 	int tab_rect_x[NUM_SPRITES];
 	int tab_rect_y[NUM_SPRITES];
+
+	int selector_sz;
 } Data;
 
 typedef struct {
@@ -137,6 +137,7 @@ int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures*
 // in event.c
 void mouse(Settings* settings_p, Maps* maps_p, Data* data_p);
 int event(Settings* settings_p, Data* data_p);
+int editable(Settings* settings_p, Maps* maps_p, int x, int y);
 
 // in npc.c
 

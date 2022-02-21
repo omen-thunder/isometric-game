@@ -49,6 +49,7 @@ void zoom_out(Settings* settings_p, Data* data_p) {
 
 int event(Settings* settings_p, Data* data_p) {
 	SDL_Event event;
+	const Uint8* key_state = SDL_GetKeyboardState(NULL);
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 			case SDL_QUIT:
@@ -88,17 +89,31 @@ int event(Settings* settings_p, Data* data_p) {
 				}
 				break;
 			case SDL_MOUSEWHEEL:
-				if (event.wheel.y > 0) {
+				if (key_state[SDL_SCANCODE_LCTRL]) {
+					if (event.wheel.y > 0 && data_p->selector_sz < data_p->win_sz / 4) {
+						data_p->selector_sz++;
+					} else if (event.wheel.y < 0 && data_p->selector_sz > 0) {
+						data_p->selector_sz--;
+					}
+				} else if (event.wheel.y > 0) {
 					zoom_in(settings_p, data_p);
 				} else if (event.wheel.y < 0) {
 					zoom_out(settings_p, data_p);
 				}
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				if (event.button.button == SDL_BUTTON_X1)
+				int temp = 0;
+				if (event.button.button == SDL_BUTTON_X1) {
 					data_p->view = (data_p->view + 1) % 4;
-				if (event.button.button == SDL_BUTTON_X2)
+					temp = data_p->iso_x;
+					data_p->iso_x = -data_p->iso_y;
+					data_p->iso_y = temp;
+				} else if (event.button.button == SDL_BUTTON_X2) {
 					data_p->view = (data_p->view + 3) % 4;
+					temp = data_p->iso_x;
+					data_p->iso_x = data_p->iso_y;
+					data_p->iso_y = -temp;
+				}
 				break;
 		}
 	}
@@ -117,53 +132,11 @@ int editable(Settings* settings_p, Maps* maps_p, int x, int y) {
 		return 0;
 }
 
-/*
-// returns the index of a grass tile based on its surrounding tiles
-int grass_index(map_data* map_d, int x, int y) {
+void fix_indices(Sprite** map, int x, int y, int size, int edit_type, int query_type) {
 	unsigned index = 0;
 
-	// check the up-right and down-right tiles
-	if (get_type(map_d->tiles, x, y - 1) == WATER && get_type(map_d->tiles, x + 1, y) == WATER)
-		index |= 1;
-	// check the up-right and up-left tiles
-	if (get_type(map_d->tiles, x, y - 1) == WATER && get_type(map_d->tiles, x - 1, y) == WATER)
-		index |= (1 << 1);
-	// check the up-left and down-left tiles
-	if (get_type(map_d->tiles, x - 1, y) == WATER && get_type(map_d->tiles, x, y + 1) == WATER)
-		index |= (1 << 2);
-	// check the down-left and down-right tiles
-	if (get_type(map_d->tiles, x, y + 1) == WATER && get_type(map_d->tiles, x + 1, y) == WATER)
-		index |= (1 << 3);
-
-	return index;
-}
-
-// returns the index of a wall sprite based on its surrounding tiles
-int wall_index(map_data* map_d, int x, int y) {
-	unsigned index = 0;
-
-	// check the up-right tile
-	if (get_type(map_d->objs, x, y - 1) == WALL)
-		index |= 1;
-	// check the up-left tile
-	if (get_type(map_d->objs, x - 1, y) == WALL)
-		index |= (1 << 1);
-	// check the down-left tile
-	if (get_type(map_d->objs, x, y + 1) == WALL)
-		index |= (1 << 2);
-	// check the down-right tile
-	if (get_type(map_d->objs, x + 1, y) == WALL)
-		index |= (1 << 3);
-
-	return index;
-}
-*/
-
-void fix_indices(Sprite** map, int x, int y, int edit_type, int query_type) {
-	unsigned index = 0;
-
-	for (int i = x - 1; i <= x + 1; i++)
-		for (int j = y - 1; j <= y + 1; j++)
+	for (int i = x - size; i <= x + size; i++)
+		for (int j = y - size; j <= y + size; j++)
 			if (map[i][j].type == edit_type) {
 				index = 0;
 				// check the right tile
@@ -199,50 +172,73 @@ void mouse(Settings* settings_p, Maps* maps_p, Data* data_p) {
 	int x = data_p->mouse_adj_col;
 	int y = data_p->mouse_adj_row;
 	int button = data_p->mouse_button;
+	int size = data_p->selector_sz;
 
 	switch (data_p->mode) {
 		case U_DEFAULT:
 			break;
 		case U_WATER:
-			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(settings_p, maps_p, x, y)) {
-				maps_p->tiles[x][y].type = WATER;
-				maps_p->tiles[x][y].tab_id = L_WATER;
-				fix_indices(maps_p->tiles, x, y, WATER, WATER);
-				fix_indices(maps_p->tiles, x, y, GRASS, WATER);
+			if (button == SDL_BUTTON(SDL_BUTTON_LEFT)) {
+				for (int i = x - size; i <= x + size; i++)
+					for (int j = y - size; j <= y + size; j++)
+						if (editable(settings_p, maps_p, i, j)) {
+							maps_p->tiles[i][j].type = WATER;
+							maps_p->tiles[i][j].tab_id = L_WATER;
+						}
+
+				fix_indices(maps_p->tiles, x, y, size + 1, WATER, WATER);
+				fix_indices(maps_p->tiles, x, y, size + 1, GRASS, WATER);
 			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
-				if (maps_p->tiles[x][y].type == WATER) {
-					maps_p->tiles[x][y].type = GRASS;
-					maps_p->tiles[x][y].tab_id = L_GRASS;
-					fix_indices(maps_p->tiles, x, y, WATER, WATER);
-					fix_indices(maps_p->tiles, x, y, GRASS, WATER);
-				}
+				for (int i = x - size; i <= x + size; i++)
+					for (int j = y - size; j <= y + size; j++)
+						if (maps_p->tiles[i][j].type == WATER) {
+							maps_p->tiles[i][j].type = GRASS;
+							maps_p->tiles[i][j].tab_id = L_GRASS;
+						}
+
+				fix_indices(maps_p->tiles, x, y, size + 1, WATER, WATER);
+				fix_indices(maps_p->tiles, x, y, size + 1, GRASS, WATER);
 			}
 			break;
 		case U_TREE:
-			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(settings_p, maps_p, x, y)) {
-				maps_p->objs[x][y].type = TREE;
-				maps_p->objs[x][y].tab_id = L_TREE;
-				maps_p->objs[x][y].tex_index = T_TREE;
+			if (button == SDL_BUTTON(SDL_BUTTON_LEFT)) {
+				for (int i = x - size; i <= x + size; i++)
+					for (int j = y - size; j <= y + size; j++)
+						if (editable(settings_p, maps_p, i, j)) {
+							maps_p->objs[i][j].type = TREE;
+							maps_p->objs[i][j].tab_id = L_TREE;
+							maps_p->objs[i][j].tex_index = T_TREE;
+						}
 			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
-				if (maps_p->objs[x][y].type == TREE) {
-					maps_p->objs[x][y].type = EMPTY;
-					maps_p->objs[x][y].tab_id = L_EMPTY;
-					maps_p->objs[x][y].tex_index = T_EMPTY;
-				}
+				for (int i = x - size; i <= x + size; i++)
+					for (int j = y - size; j <= y + size; j++)
+						if (maps_p->objs[i][j].type == TREE) {
+							maps_p->objs[i][j].type = EMPTY;
+							maps_p->objs[i][j].tab_id = L_EMPTY;
+							maps_p->objs[i][j].tex_index = T_EMPTY;
+						}
 			}
 			break;
 		case U_WALL:
-			if (button == SDL_BUTTON(SDL_BUTTON_LEFT) && editable(settings_p, maps_p, x, y)) {
-				maps_p->objs[x][y].type = WALL;
-				maps_p->objs[x][y].tab_id = L_WALL;
-				fix_indices(maps_p->objs, x, y, WALL, WALL);
+			if (button == SDL_BUTTON(SDL_BUTTON_LEFT)) {
+				for (int i = x - size; i <= x + size; i++)
+					for (int j = y - size; j <= y + size; j++)
+						if (editable(settings_p, maps_p, i, j)) {
+							maps_p->objs[i][j].type = WALL;
+							maps_p->objs[i][j].tab_id = L_WALL;
+						}
+
+				fix_indices(maps_p->objs, x, y, size + 1, WALL, WALL);
 			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
-				if (maps_p->objs[x][y].type == WALL) {
-					maps_p->objs[x][y].type = EMPTY;
-					maps_p->objs[x][y].tab_id = L_EMPTY;
-					maps_p->objs[x][y].tex_index = T_EMPTY;
-					fix_indices(maps_p->objs, x, y, WALL, WALL);
-				}
+				for (int i = x - size; i <= x + size; i++)
+					for (int j = y - size; j <= y + size; j++)
+						if (maps_p->objs[i][j].type == WALL) {
+							maps_p->objs[i][j].type = EMPTY;
+							maps_p->objs[i][j].tab_id = L_EMPTY;
+							maps_p->objs[i][j].tex_index = T_EMPTY;
+						}
+
+				fix_indices(maps_p->objs, x, y, size + 1, WALL, WALL);
 			}
 			break;
 		case U_BASE:
