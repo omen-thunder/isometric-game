@@ -3,7 +3,7 @@ CFLAGS = -g -O0 -Wall -std=gnu11 -fsanitize=address
 LDFLAGS = -lm
 
 DEPS = src/game.h
-_OBJ = animate.o camera.o event.o main.o
+_OBJ = animate.o camera.o event.o main.o npc.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 SDIR=src

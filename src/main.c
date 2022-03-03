@@ -230,6 +230,70 @@ int npc_init(SDL_Renderer* rend, Textures* textures_p) {
 	return 0;
 }
 
+int adj_col_0(Data* data_p, int col, int row) {
+	return col + data_p->cur_x;
+}
+
+int adj_col_1(Data* data_p, int col, int row) {
+	return row + data_p->cur_x;
+}
+
+int adj_col_2(Data* data_p, int col, int row) {
+	return data_p->win_sz - 1 - col + data_p->cur_x;
+}
+
+int adj_col_3(Data* data_p, int col, int row) {
+	return data_p->win_sz - 1 - row + data_p->cur_x;
+}
+
+int adj_row_0(Data* data_p, int col, int row) {
+	return row + data_p->cur_y;
+}
+
+int adj_row_1(Data* data_p, int col, int row) {
+	return data_p->win_sz - 1 - col + data_p->cur_y;
+}
+
+int adj_row_2(Data* data_p, int col, int row) {
+	return data_p->win_sz - 1 - row + data_p->cur_y;
+}
+
+int adj_row_3(Data* data_p, int col, int row) {
+	return col + data_p->cur_y;
+}
+
+int unadj_col_0(Data* data_p, int col, int row) {
+	return col - data_p->cur_x;
+}
+
+int unadj_col_1(Data* data_p, int col, int row) {
+	return data_p->win_sz - 1 - row + data_p->cur_y;
+}
+
+int unadj_col_2(Data* data_p, int col, int row) {
+	return data_p->win_sz - 1 - col + data_p->cur_x;
+}
+
+int unadj_col_3(Data* data_p, int col, int row) {
+	return row - data_p->cur_y;
+}
+
+int unadj_row_0(Data* data_p, int col, int row) {
+	return row - data_p->cur_y;
+}
+
+int unadj_row_1(Data* data_p, int col, int row) {
+	return col - data_p->cur_x;
+}
+
+int unadj_row_2(Data* data_p, int col, int row) {
+	return data_p->win_sz - 1 - row + data_p->cur_y;
+}
+
+int unadj_row_3(Data* data_p, int col, int row) {
+	return data_p->win_sz - 1 - col + data_p->cur_x;
+}
+
 int main(void) {
 	SDL_Window* win;
 	SDL_Renderer* rend;
@@ -345,6 +409,7 @@ int main(void) {
 	data_p->tab_tex[L_TREE] = textures_p->obj_tex;
 	data_p->tab_tex[L_WALL] = textures_p->wall_tex;
 	data_p->tab_tex[L_BASE] = textures_p->obj_tex;
+	data_p->tab_tex[L_PLEB] = textures_p->pleb_tex;
 	printf("Texture table initialised\n");
 
 	data_p->tab_rect_w[L_GRASS] = TILE_W;
@@ -353,6 +418,7 @@ int main(void) {
 	data_p->tab_rect_w[L_TREE] = 70;
 	data_p->tab_rect_w[L_WALL] = 96;
 	data_p->tab_rect_w[L_BASE] = 244;
+	data_p->tab_rect_w[L_PLEB] = 96;
 	printf("Rect width table initialised\n");
 
 	data_p->tab_rect_h[L_GRASS] = TILE_H;
@@ -361,6 +427,7 @@ int main(void) {
 	data_p->tab_rect_h[L_TREE] = 144;
 	data_p->tab_rect_h[L_WALL] = 73;
 	data_p->tab_rect_h[L_BASE] = 392;
+	data_p->tab_rect_h[L_PLEB] = 73;
 	printf("Rect height table initialised\n");
 
 	data_p->tab_rect_x[L_GRASS] = 0;
@@ -369,6 +436,7 @@ int main(void) {
 	data_p->tab_rect_x[L_TREE] = 30;
 	data_p->tab_rect_x[L_WALL] = 15;
 	data_p->tab_rect_x[L_BASE] = -60;
+	data_p->tab_rect_x[L_PLEB] = 15;
 	printf("Rect x-coordinate table initialised\n");
 
 	data_p->tab_rect_y[L_GRASS] = 0;
@@ -377,6 +445,7 @@ int main(void) {
 	data_p->tab_rect_y[L_TREE] = -96;
 	data_p->tab_rect_y[L_WALL] = -15;
 	data_p->tab_rect_y[L_BASE] = -300;
+	data_p->tab_rect_y[L_PLEB] = -15;
 	printf("Rect y-coordinate table initialised\n");
 
 	data_p->mouse_x = 0;
@@ -399,6 +468,23 @@ int main(void) {
 	data_p->mode = U_DEFAULT;
 	data_p->win_sz = WIN_SZ;
 	data_p->selector_sz = 1;
+	data_p->npc_head = NULL;
+	data_p->adj_col_arr[0] = adj_col_0;
+	data_p->adj_col_arr[1] = adj_col_1;
+	data_p->adj_col_arr[2] = adj_col_2;
+	data_p->adj_col_arr[3] = adj_col_3;
+	data_p->adj_row_arr[0] = adj_row_0;
+	data_p->adj_row_arr[1] = adj_row_1;
+	data_p->adj_row_arr[2] = adj_row_2;
+	data_p->adj_row_arr[3] = adj_row_3;
+	data_p->unadj_col_arr[0] = unadj_col_0;
+	data_p->unadj_col_arr[1] = unadj_col_1;
+	data_p->unadj_col_arr[2] = unadj_col_2;
+	data_p->unadj_col_arr[3] = unadj_col_3;
+	data_p->unadj_row_arr[0] = unadj_row_0;
+	data_p->unadj_row_arr[1] = unadj_row_1;
+	data_p->unadj_row_arr[2] = unadj_row_2;
+	data_p->unadj_row_arr[3] = unadj_row_3;
 	printf("***Initialisation complete***\n");
 
 	animate(win, rend, &settings, &textures, &maps, &data);
@@ -461,6 +547,10 @@ int main(void) {
 	for (int i = 1; i < NUM_PLEB; i++)
 		SDL_DestroyTexture(textures_p->pleb_tex[i]);
 	printf("Pleb textures destroyed\n");
+
+	while(data_p->npc_head)
+		pop_npc(&data_p->npc_head);
+	printf("NPC list memory freed\n");
 
 	SDL_DestroyRenderer(rend);
 	printf("Renderer destroyed\n");

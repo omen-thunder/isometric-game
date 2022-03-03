@@ -81,7 +81,8 @@ int event(Settings* settings_p, Data* data_p) {
 						data_p->mode = U_WALL;
 						break;
 					case SDLK_p:
-						data_p->mode = U_PLEB;
+						//data_p->mode = U_PLEB;
+						push_npc(&data_p->npc_head, data_p->mouse_adj_col, data_p->mouse_adj_row);
 						break;
 					case SDLK_SPACE:
 						data_p->mode = U_DEFAULT;

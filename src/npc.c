@@ -1,25 +1,30 @@
 #include "game.h"
 
-int create_npc(npc* npcp, int x, int y) {
-	if(npcp) {
-		printf("npc already exists\n");
-		create_npc(npcp->next, x, y);
-		return 0;
+int push_npc(Npc** npc_head, int col, int row) {
+	Npc* new_npc;
+	if (!(new_npc = malloc(sizeof(Npc)))) {
+			fprintf(stderr, "malloc() failed\n");
+			return -1;
 	}
 
-	printf("no npc\n");
-
-	if (!(npcp = malloc(sizeof(npc)))) {
-		fprintf(stderr, "malloc() failed\n");
-		return -1;
-	}
-
-	npcp->next = NULL;
-	npcp->x = x;
-	npcp->y = y;
+	new_npc->col = col;
+	new_npc->row = row;
+	new_npc->tex_index = 0;
+	new_npc->next = *npc_head;
+	*npc_head = new_npc;
 	return 0;
 }
 
-int delete_npc(npc* npc_list, int x, int y) {
-	return 0;
+void pop_npc(Npc** npc_head) {
+	Npc* next_npc = (*npc_head)->next;
+	free(*npc_head);
+	*npc_head = next_npc;
+}
+
+void print_npcs(Npc* npc_head) {
+	Npc* current = npc_head;
+	while (current) {
+		printf("col:%d row:%d tex_index:%d\n", current->col, current->row, current->tex_index);
+		current = current->next;
+	}
 }

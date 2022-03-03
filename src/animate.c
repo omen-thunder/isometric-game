@@ -6,46 +6,6 @@
 #define RANDOM_X(x, y) (((17 * x +  23 * y + 84) ^ 1734859) % 3 - 1)
 #define RANDOM_Y(x, y) (((19 * x + 27 * y + 55) ^ 8234594) % 3 - 1)
 
-/*
-void draw_npc(SDL_Renderer* rend, win_data* win_d, map_data* map_d, tex_data* tex_d, cam_data* cam_d, npc* npcp) {
-	// calculate the npc texture coordinates based on the current view
-	int pos_x = 0;
-	int pos_y = 0;
-	switch (map_d->view) {
-		case 0:
-			pos_x = npcp->x + map_d->cur_x;
-			pos_y = npcp->y + map_d->cur_y;
-			break;
-		case 1:
-			pos_x = npcp->y + map_d->cur_x;
-			pos_y = map_d->win_sz - 1 - npcp->x + map_d->cur_y;
-			break;
-		case 2:
-			pos_x = map_d->win_sz - 1 - npcp->x + map_d->cur_x;
-			pos_y = map_d->win_sz - 1 - npcp->y + map_d->cur_y;
-			break;
-		case 3:
-			pos_x = map_d->win_sz - 1 - npcp->y + map_d->cur_x;
-			pos_y = npcp->x + map_d->cur_y;
-			break;
-	}
-
-	// get the texture array and texture index
-	SDL_Rect rect;
-	rect.w = ZOOM_SCALE(96);
-	rect.h = ZOOM_SCALE(73);
-	rect.x = screen_x(map_d, cam_d, pos_x, pos_y) + ZOOM_SCALE(15);
-	rect.y = screen_y(map_d, cam_d, pos_x, pos_y) - ZOOM_SCALE(15);
-
-	// checks if the object is on the screen
-	if (rect.x < -rect.w || rect.x > win_d->win_w || rect.y < -rect.h || rect.y > win_d->win_h)
-		return;
-
-	// render the object
-	SDL_RenderCopy(rend, tex_d->pleb_tex[0], NULL, &rect);
-}
-*/
-
 void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, int col, int row, int tab_id, int tex_index, int rand_x, int rand_y) {
 	SDL_Rect rect = {.w = ZOOM_SCALE(data_p->tab_rect_w[tab_id]),
 					 .h = ZOOM_SCALE(data_p->tab_rect_h[tab_id]),
@@ -160,93 +120,40 @@ int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures*
 		data_p->mouse_button = SDL_GetMouseState(&data_p->mouse_x, &data_p->mouse_y);
 		data_p->mouse_col = get_column(settings_p, data_p, data_p->mouse_x, data_p->mouse_y);
 		data_p->mouse_row = get_row(settings_p, data_p, data_p->mouse_x, data_p->mouse_y);
-		switch (data_p->view) {
-			case 0:
-				data_p->mouse_adj_col = data_p->mouse_col + data_p->cur_x;
-				data_p->mouse_adj_row = data_p->mouse_row + data_p->cur_y;
-				break;
-			case 1:
-				data_p->mouse_adj_col = data_p->mouse_row + data_p->cur_x;
-				data_p->mouse_adj_row = data_p->win_sz - 1 - data_p->mouse_col + data_p->cur_y;
-				break;
-			case 2:
-				data_p->mouse_adj_col = data_p->win_sz - 1 - data_p->mouse_col + data_p->cur_x;
-				data_p->mouse_adj_row = data_p->win_sz - 1 - data_p->mouse_row + data_p->cur_y;
-				break;
-			case 3:
-				data_p->mouse_adj_col = data_p->win_sz - 1 - data_p->mouse_row + data_p->cur_x;
-				data_p->mouse_adj_row = data_p->mouse_col + data_p->cur_y;
-				break;
-		}
+		data_p->mouse_adj_col = (*data_p->adj_col_arr[data_p->view]) (data_p, data_p->mouse_col, data_p->mouse_row);
+		data_p->mouse_adj_row = (*data_p->adj_row_arr[data_p->view]) (data_p, data_p->mouse_col, data_p->mouse_row);
 
 		SDL_RenderClear(rend);
 
-		int col_adj = 0;
-		int row_adj = 0;
+		int adj_col = 0;
+		int adj_row = 0;
 
 		// render the background
 		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
 			for (int j = -GAP; j < data_p->win_sz + GAP; j++) {
-				switch (data_p->view) {
-					case 0:
-						col_adj = i + data_p->cur_x;
-						row_adj = j + data_p->cur_y;
-						break;
-					case 1:
-						col_adj = j + data_p->cur_x;
-						row_adj = data_p->win_sz - 1 - i + data_p->cur_y;
-						break;
-					case 2:
-						col_adj = data_p->win_sz - 1 - i + data_p->cur_x;
-						row_adj = data_p->win_sz - 1 - j + data_p->cur_y;
-						break;
-					case 3:
-						col_adj = data_p->win_sz - 1 - j + data_p->cur_x;
-						row_adj = i + data_p->cur_y;
-						break;
-				}
-				rend_sprite(rend, settings_p, data_p, i, j, maps_p->tiles[col_adj][row_adj].tab_id, maps_p->tiles[col_adj][row_adj].tex_index, 0, 0);
+				adj_col = (*data_p->adj_col_arr[data_p->view]) (data_p, i, j);
+				adj_row = (*data_p->adj_row_arr[data_p->view]) (data_p, i, j);
+				rend_sprite(rend, settings_p, data_p, i, j, maps_p->tiles[adj_col][adj_row].tab_id, maps_p->tiles[adj_col][adj_row].tex_index, 0, 0);
 			}
 
 		// render the foreground
 		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
 			for (int j = -GAP; j < data_p->win_sz + GAP; j++) {
-				switch (data_p->view) {
-					case 0:
-						col_adj = i + data_p->cur_x;
-						row_adj = j + data_p->cur_y;
-						break;
-					case 1:
-						col_adj = j + data_p->cur_x;
-						row_adj = data_p->win_sz - 1 - i + data_p->cur_y;
-						break;
-					case 2:
-						col_adj = data_p->win_sz - 1 - i + data_p->cur_x;
-						row_adj = data_p->win_sz - 1 - j + data_p->cur_y;
-						break;
-					case 3:
-						col_adj = data_p->win_sz - 1 - j + data_p->cur_x;
-						row_adj = i + data_p->cur_y;
-						break;
-				}
-				rend_sprite(rend, settings_p, data_p, i, j, maps_p->objs[col_adj][row_adj].tab_id, maps_p->objs[col_adj][row_adj].tex_index, RANDOM_X(col_adj, row_adj), RANDOM_Y(col_adj, row_adj));
+				adj_col = (*data_p->adj_col_arr[data_p->view]) (data_p, i, j);
+				adj_row = (*data_p->adj_row_arr[data_p->view]) (data_p, i, j);
+				rend_sprite(rend, settings_p, data_p, i, j, maps_p->objs[adj_col][adj_row].tab_id, maps_p->objs[adj_col][adj_row].tex_index, RANDOM_X(adj_col, adj_row), RANDOM_Y(adj_col, adj_row));
 			}
 
-		// draws the menu
-		if (data_p->mode != U_DEFAULT)
-			rend_selector(rend, settings_p, textures_p, maps_p, data_p);
-
 		// render the npcs
-		/*
-		npc* npcp = map_d->npc_head;
-		while (npcp) {
-			printf("npc!\n");
-			draw_npc(rend, win_d, map_d, tex_d, cam_d, npcp);
-			npcp = npcp->next;
+		Npc* current = data_p->npc_head;
+		while (current) {
+			rend_sprite(rend, settings_p, data_p, (*data_p->unadj_col_arr[data_p->view]) (data_p, current->col, current->row), (*data_p->unadj_row_arr[data_p->view]) (data_p, current->col, current->row), L_PLEB, current->tex_index, 0, 0);
+			current = current->next;
 		}
-		*/
 
 		// render the menu
+		if (data_p->mode != U_DEFAULT)
+			rend_selector(rend, settings_p, textures_p, maps_p, data_p);
 
 		SDL_RenderPresent(rend);
 

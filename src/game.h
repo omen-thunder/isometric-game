@@ -19,7 +19,7 @@
 #define NUM_WALL (256)
 #define NUM_GRASS (256)
 #define NUM_PLEB (64)
-#define NUM_SPRITES (6)
+#define NUM_SPRITES (7)
 #define GAP (4)
 #define BUF_SZ (60)
 #define OFF_X (settings_p->win_w / 2 - ZOOM_SCALE(TILE_W) / 2)
@@ -38,19 +38,18 @@ enum selector_tex_enum {
 
 // enumerations for sprites
 enum type_enum {GRASS, WATER, EMPTY, OCCUPIED, TREE, WALL, BASE};
-enum tab_id_enum {L_EMPTY = -1, L_GRASS, L_WATER, L_TREE, L_WALL, L_BASE, L_SELECTOR};
+enum tab_id_enum {L_EMPTY = -1, L_GRASS, L_WATER, L_TREE, L_WALL, L_BASE, L_SELECTOR, L_PLEB};
 enum obj_tex_enum {T_EMPTY = -1, T_TREE, T_BASE};
 
 // enumerations for the menu modes
 enum mode_enum {U_DEFAULT, U_WATER, U_TREE, U_BASE, U_WALL, U_PLEB};
 
-/*
-typedef struct npc_struct {
-	struct npc_struct* next;	// pointer to the next npc in the list
-	int x;				// the x-coordinate of the npc
-	int y;				// the y-coordinate of the npc
+typedef struct Npc_struct {
+	int col;
+	int row;
+	int tex_index;
+	struct Npc_struct* next;
 } Npc;
-*/
 
 typedef struct {
 	int win_w;
@@ -79,7 +78,7 @@ typedef struct {
 	SDL_Texture* pleb_tex[NUM_PLEB];
 } Textures;
 
-typedef struct {
+typedef struct Data_struct {
 	// mouse variables
 	int mouse_x;
 	int mouse_y;
@@ -114,6 +113,13 @@ typedef struct {
 	int tab_rect_y[NUM_SPRITES];
 
 	int selector_sz;
+
+	Npc* npc_head;
+
+	int (*adj_col_arr[4]) (struct Data_struct* data_p, int col, int row);
+	int (*adj_row_arr[4]) (struct Data_struct* data_p, int col, int row);
+	int (*unadj_col_arr[4]) (struct Data_struct* data_p, int col, int row);
+	int (*unadj_row_arr[4]) (struct Data_struct* data_p, int col, int row);
 } Data;
 
 typedef struct {
@@ -125,7 +131,6 @@ typedef struct {
 typedef struct {
 	Sprite** tiles;	// 2D array representing the background tiles
 	Sprite** objs;	// 2D array representing the objects on the map
-	//npc* npc_head;		// the linked-list head for npcs
 } Maps;
 
 // in camera.c
@@ -140,5 +145,8 @@ int event(Settings* settings_p, Data* data_p);
 int editable(Settings* settings_p, Maps* maps_p, int x, int y);
 
 // in npc.c
+int push_npc(Npc** npc_head, int col, int row);
+void pop_npc(Npc** npc_head);
+void print_npcs(Npc* npc_head);
 
 #endif
