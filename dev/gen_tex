@@ -1,0 +1,8 @@
+#!/bin/sh
+
+rm -f "../resources/tiles/grass/grass_???.png"
+python "grass/gen_grass.py"
+rm -f "../resources/tiles/water/water_???.png"
+python "water/gen_water.py"
+rm -f "../resources/objects/walls/wall_???.png"
+python "walls/gen_walls.py"

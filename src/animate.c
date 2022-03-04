@@ -136,6 +136,13 @@ int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures*
 				rend_sprite(rend, settings_p, data_p, i, j, maps_p->tiles[adj_col][adj_row].tab_id, maps_p->tiles[adj_col][adj_row].tex_index, 0, 0);
 			}
 
+		// render the npcs
+		Npc* current = data_p->npc_head;
+		while (current) {
+			rend_sprite(rend, settings_p, data_p, (*data_p->unadj_col_arr[data_p->view]) (data_p, current->col, current->row), (*data_p->unadj_row_arr[data_p->view]) (data_p, current->col, current->row), L_PLEB, current->tex_index, 0, 0);
+			current = current->next;
+		}
+
 		// render the foreground
 		for (int i = -GAP; i < data_p->win_sz + GAP; i++)
 			for (int j = -GAP; j < data_p->win_sz + GAP; j++) {
@@ -143,13 +150,6 @@ int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures*
 				adj_row = (*data_p->adj_row_arr[data_p->view]) (data_p, i, j);
 				rend_sprite(rend, settings_p, data_p, i, j, maps_p->objs[adj_col][adj_row].tab_id, maps_p->objs[adj_col][adj_row].tex_index, RANDOM_X(adj_col, adj_row), RANDOM_Y(adj_col, adj_row));
 			}
-
-		// render the npcs
-		Npc* current = data_p->npc_head;
-		while (current) {
-			rend_sprite(rend, settings_p, data_p, (*data_p->unadj_col_arr[data_p->view]) (data_p, current->col, current->row), (*data_p->unadj_row_arr[data_p->view]) (data_p, current->col, current->row), L_PLEB, current->tex_index, 0, 0);
-			current = current->next;
-		}
 
 		// render the menu
 		if (data_p->mode != U_DEFAULT)

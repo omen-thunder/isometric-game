@@ -1,9 +1,9 @@
 from PIL import Image
 
-grass_0 = Image.open("grass_layer_0.png")
-grass_1 = Image.open("grass_layer_1.png")
-grass_2 = Image.open("grass_layer_2.png")
-grass_3 = Image.open("grass_layer_3.png")
+grass_0 = Image.open("grass/grass_layer_0.png")
+grass_1 = Image.open("grass/grass_layer_1.png")
+grass_2 = Image.open("grass/grass_layer_2.png")
+grass_3 = Image.open("grass/grass_layer_3.png")
 
 for i in range(256):
     binary = '{0:08b}'.format(i)[::-1]
@@ -18,7 +18,7 @@ for i in range(256):
     if not(binary[1] == '1' and binary[7] == '1') and not(binary[1] == '1' and binary[3] == '1') and not(binary[3] == '1' and binary[5] == '1') and not(binary[5] == '1' and binary[7] == '1') and i != 0:
         continue
 
-    grass_base = Image.open("grass_layer_base.png")
+    grass_base = Image.open("grass/grass_layer_base.png")
 
     if (binary[1] == '1' and binary[7] == '1'):
         grass_base.paste(grass_0, (0,0), grass_0)
@@ -29,4 +29,4 @@ for i in range(256):
     if (binary[5] == '1' and binary[7] == '1'):
         grass_base.paste(grass_3, (0,0), grass_3)
 
-    grass_base.save("grass/grass_%03d.png" % (i))
+    grass_base.save("../resources/tiles/grass/grass_%03d.png" % (i))

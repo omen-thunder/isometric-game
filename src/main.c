@@ -418,7 +418,7 @@ int main(void) {
 	data_p->tab_rect_w[L_TREE] = 70;
 	data_p->tab_rect_w[L_WALL] = 96;
 	data_p->tab_rect_w[L_BASE] = 244;
-	data_p->tab_rect_w[L_PLEB] = 96;
+	data_p->tab_rect_w[L_PLEB] = 60;
 	printf("Rect width table initialised\n");
 
 	data_p->tab_rect_h[L_GRASS] = TILE_H;
@@ -427,7 +427,7 @@ int main(void) {
 	data_p->tab_rect_h[L_TREE] = 144;
 	data_p->tab_rect_h[L_WALL] = 73;
 	data_p->tab_rect_h[L_BASE] = 392;
-	data_p->tab_rect_h[L_PLEB] = 73;
+	data_p->tab_rect_h[L_PLEB] = 60;
 	printf("Rect height table initialised\n");
 
 	data_p->tab_rect_x[L_GRASS] = 0;
@@ -436,7 +436,7 @@ int main(void) {
 	data_p->tab_rect_x[L_TREE] = 30;
 	data_p->tab_rect_x[L_WALL] = 15;
 	data_p->tab_rect_x[L_BASE] = -60;
-	data_p->tab_rect_x[L_PLEB] = 15;
+	data_p->tab_rect_x[L_PLEB] = 34;
 	printf("Rect x-coordinate table initialised\n");
 
 	data_p->tab_rect_y[L_GRASS] = 0;
@@ -445,7 +445,7 @@ int main(void) {
 	data_p->tab_rect_y[L_TREE] = -96;
 	data_p->tab_rect_y[L_WALL] = -15;
 	data_p->tab_rect_y[L_BASE] = -300;
-	data_p->tab_rect_y[L_PLEB] = -15;
+	data_p->tab_rect_y[L_PLEB] = -18;
 	printf("Rect y-coordinate table initialised\n");
 
 	data_p->mouse_x = 0;
