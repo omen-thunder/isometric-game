@@ -39,7 +39,7 @@ for i in range(256):
         water_base.paste(water_4, (0,0), water_4)
     if (binary[6] == '1' or (binary[5] == '1' and binary[7] == '1')):
         water_base.paste(water_6, (0,0), water_6)
-    if (all(char == '1' for char in binary)):
+    if (binary[1] == '1' and binary[3] == '1' and binary[5] == '1' and binary[7] == '1'):
         water_base.paste(water_full, (0,0), water_full)
 
     water_base.save("../resources/tiles/water/water_%03d.png" % (i))
