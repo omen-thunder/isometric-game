@@ -1,9 +1,9 @@
 from PIL import Image
 
-wall_0 = Image.open("walls/wall_layer_0.png")
-wall_1 = Image.open("walls/wall_layer_1.png")
-wall_2 = Image.open("walls/wall_layer_2.png")
-wall_3 = Image.open("walls/wall_layer_3.png")
+wall_0 = Image.open("objects/walls/wall_layer_0.png")
+wall_1 = Image.open("objects/walls/wall_layer_1.png")
+wall_2 = Image.open("objects/walls/wall_layer_2.png")
+wall_3 = Image.open("objects/walls/wall_layer_3.png")
 
 for i in range(256):
     binary = '{0:08b}'.format(i)[::-1]
@@ -16,7 +16,7 @@ for i in range(256):
     if (binary[6] == '1'):
         continue
 
-    wall_base = Image.open("walls/wall_layer_base.png")
+    wall_base = Image.open("objects/walls/wall_layer_base.png")
 
     if (binary[1] == '1'):
         wall_base.paste(wall_0, (0,0), wall_0)

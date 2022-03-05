@@ -1,0 +1,6 @@
+#!/bin/sh
+
+rm -f ../resources/tiles/grass/grass_???.png
+rm -f ../resources/tiles/water/water_???.png
+rm -f ../resources/objects/walls/wall_???.png
+rm -f ../resources/npcs/pleb/pleb_???.png

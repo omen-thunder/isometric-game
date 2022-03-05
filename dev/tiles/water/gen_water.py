@@ -1,14 +1,14 @@
 from PIL import Image
 
-water_0 = Image.open("water/water_layer_0.png")
-water_1 = Image.open("water/water_layer_1.png")
-water_2 = Image.open("water/water_layer_2.png")
-water_3 = Image.open("water/water_layer_3.png")
-water_4 = Image.open("water/water_layer_4.png")
-water_5 = Image.open("water/water_layer_5.png")
-water_6 = Image.open("water/water_layer_6.png")
-water_7 = Image.open("water/water_layer_7.png")
-water_full = Image.open("water/water_layer_full.png")
+water_0 = Image.open("tiles/water/water_layer_0.png")
+water_1 = Image.open("tiles/water/water_layer_1.png")
+water_2 = Image.open("tiles/water/water_layer_2.png")
+water_3 = Image.open("tiles/water/water_layer_3.png")
+water_4 = Image.open("tiles/water/water_layer_4.png")
+water_5 = Image.open("tiles/water/water_layer_5.png")
+water_6 = Image.open("tiles/water/water_layer_6.png")
+water_7 = Image.open("tiles/water/water_layer_7.png")
+water_full = Image.open("tiles/water/water_layer_full.png")
 
 for i in range(256):
     binary = '{0:08b}'.format(i)[::-1]
@@ -21,7 +21,7 @@ for i in range(256):
     if (binary[6] == '1' and binary[5] == '1' and binary[7] == '1'):
         continue
 
-    water_base = Image.open("water/water_layer_base.png")
+    water_base = Image.open("tiles/water/water_layer_base.png")
 
     if (binary[1] == '1'):
         water_base.paste(water_1, (0,0), water_1)

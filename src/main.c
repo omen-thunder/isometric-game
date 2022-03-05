@@ -219,9 +219,9 @@ int npc_init(SDL_Renderer* rend, Textures* textures_p) {
 
 	// load the pleb textures
 	for (int i = 0; i < NUM_PLEB; i++) {
-		sprintf(path, "./resources/npcs/pleb/pleb_%02d.png", i);
+		sprintf(path, "./resources/npcs/pleb/pleb_%03d.png", i);
 		if (load_texture(rend, path, &textures_p->pleb_tex[i], SDL_BLENDMODE_BLEND)) {
-			fprintf(stderr, "Failed to load pleb_%02d.png texture\n", i);
+			fprintf(stderr, "Failed to load pleb_%03d.png texture\n", i);
 			return -1;
 		}
 	}
