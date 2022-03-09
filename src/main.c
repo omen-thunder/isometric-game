@@ -7,7 +7,7 @@ int ld_settings(Settings* settings_p) {
 		fscanf(setf, "Resolution height=%d\n", &settings_p->win_h);
 		fscanf(setf, "Fullscreen=%d\n", &settings_p->fullscreen);
 		fscanf(setf, "Borderless window=%d\n", &settings_p->borderless);
-		fscanf(setf, "Input grab=%d\n", &settings_p->grab);
+		fscanf(setf, "Input grab=%d\n", &settings_p->screen_grab);
 		fscanf(setf, "VSync=%d\n", &settings_p->vsync);
 		fscanf(setf, "FPS=%d\n", &settings_p->fps);
 		fscanf(setf, "Camera base velocity=%d\n", &settings_p->pan_rate);
@@ -25,7 +25,7 @@ int ld_settings(Settings* settings_p) {
 		settings_p->win_w = 1920;
 		settings_p->win_h = 1080;
 		settings_p->fullscreen = 2;
-		settings_p->grab = 1;
+		settings_p->screen_grab = 1;
 		settings_p->vsync = 1;
 		settings_p->fps = 60;
 		settings_p->pan_rate = 15;
@@ -46,7 +46,7 @@ int sv_settings(Settings* settings_p) {
 		fprintf(setf, "Resolution height=%d\n", settings_p->win_h);
 		fprintf(setf, "Fullscreen=%d\n", settings_p->fullscreen);
 		fprintf(setf, "Borderless window=%d\n", settings_p->borderless);
-		fprintf(setf, "Input grab=%d\n", settings_p->grab);
+		fprintf(setf, "Input grab=%d\n", settings_p->screen_grab);
 		fprintf(setf, "VSync=%d\n", settings_p->vsync);
 		fprintf(setf, "FPS=%d\n", settings_p->fps);
 		fprintf(setf, "Camera base velocity=%d\n", settings_p->pan_rate);
@@ -230,68 +230,48 @@ int npc_init(SDL_Renderer* rend, Textures* textures_p) {
 	return 0;
 }
 
-int adj_col_0(Data* data_p, int col, int row) {
-	return col + data_p->cur_x;
+void adj_col_row_0(Data* data_p, int* col, int* row) {
+	*col = *col + data_p->map_cur_x;
+	*row = *row + data_p->map_cur_y;
 }
 
-int adj_col_1(Data* data_p, int col, int row) {
-	return row + data_p->cur_x;
+void adj_col_row_1(Data* data_p, int* col, int* row) {
+	int temp = *row + data_p->map_cur_x;
+	*row = data_p->win_sz - 1 - *col + data_p->map_cur_y;
+	*col = temp;
 }
 
-int adj_col_2(Data* data_p, int col, int row) {
-	return data_p->win_sz - 1 - col + data_p->cur_x;
+void adj_col_row_2(Data* data_p, int* col, int* row) {
+	*col = data_p->win_sz - 1 - *col + data_p->map_cur_x;
+	*row = data_p->win_sz - 1 - *row + data_p->map_cur_y;
 }
 
-int adj_col_3(Data* data_p, int col, int row) {
-	return data_p->win_sz - 1 - row + data_p->cur_x;
+void adj_col_row_3(Data* data_p, int* col, int* row) {
+	int temp = data_p->win_sz - 1 - *row + data_p->map_cur_x;
+	*row = *col + data_p->map_cur_y;
+	*col = temp;
 }
 
-int adj_row_0(Data* data_p, int col, int row) {
-	return row + data_p->cur_y;
+void unadj_col_row_0(Data* data_p, int* col, int* row) {
+	*col = *col - data_p->map_cur_x;
+	*row = *row - data_p->map_cur_y;
 }
 
-int adj_row_1(Data* data_p, int col, int row) {
-	return data_p->win_sz - 1 - col + data_p->cur_y;
+void unadj_col_row_1(Data* data_p, int* col, int* row) {
+	int temp = data_p->win_sz - 1 - *row + data_p->map_cur_y;
+	*row = *col - data_p->map_cur_x;
+	*col = temp;
 }
 
-int adj_row_2(Data* data_p, int col, int row) {
-	return data_p->win_sz - 1 - row + data_p->cur_y;
+void unadj_col_row_2(Data* data_p, int* col, int* row) {
+	*col = data_p->win_sz - 1 - *col + data_p->map_cur_x;
+	*row = data_p->win_sz - 1 - *row + data_p->map_cur_y;
 }
 
-int adj_row_3(Data* data_p, int col, int row) {
-	return col + data_p->cur_y;
-}
-
-int unadj_col_0(Data* data_p, int col, int row) {
-	return col - data_p->cur_x;
-}
-
-int unadj_col_1(Data* data_p, int col, int row) {
-	return data_p->win_sz - 1 - row + data_p->cur_y;
-}
-
-int unadj_col_2(Data* data_p, int col, int row) {
-	return data_p->win_sz - 1 - col + data_p->cur_x;
-}
-
-int unadj_col_3(Data* data_p, int col, int row) {
-	return row - data_p->cur_y;
-}
-
-int unadj_row_0(Data* data_p, int col, int row) {
-	return row - data_p->cur_y;
-}
-
-int unadj_row_1(Data* data_p, int col, int row) {
-	return col - data_p->cur_x;
-}
-
-int unadj_row_2(Data* data_p, int col, int row) {
-	return data_p->win_sz - 1 - row + data_p->cur_y;
-}
-
-int unadj_row_3(Data* data_p, int col, int row) {
-	return data_p->win_sz - 1 - col + data_p->cur_x;
+void unadj_col_row_3(Data* data_p, int* col, int* row) {
+	int temp = *row - data_p->map_cur_y;
+	*row = data_p->win_sz - 1 - *col + data_p->map_cur_x;
+	*col = temp;
 }
 
 int main(void) {
@@ -301,8 +281,6 @@ int main(void) {
 	Settings* settings_p = &settings;
 	Textures textures;
 	Textures* textures_p = &textures;
-	Maps maps;
-	Maps* maps_p = &maps;
 	Data data;
 	Data* data_p = &data;
 
@@ -324,7 +302,7 @@ int main(void) {
 		options |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	if (settings_p->borderless)
 		options |= SDL_WINDOW_BORDERLESS;
-	if (settings_p->grab)
+	if (settings_p->screen_grab)
 		options |= SDL_WINDOW_INPUT_GRABBED;
 	win = SDL_CreateWindow("game", SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED, settings_p->win_w, settings_p->win_h, options);
@@ -355,12 +333,12 @@ int main(void) {
 		return -1;
 
 	// allocate memory for the tile map
-	if (!(maps_p->tiles = malloc(settings_p->map_sz * sizeof(Sprite*)))) {
+	if (!(data_p->map_tiles = malloc(settings_p->map_sz * sizeof(Sprite*)))) {
 		fprintf(stderr, "malloc() failed\n");
 		return -1;
 	}
 	for (int i = 0; i < settings_p->map_sz; i++)
-		if (!(maps_p->tiles[i] = malloc(settings_p->map_sz * sizeof(Sprite)))) {
+		if (!(data_p->map_tiles[i] = malloc(settings_p->map_sz * sizeof(Sprite)))) {
 			fprintf(stderr, "malloc() failed\n");
 			return -1;
 		}
@@ -369,19 +347,21 @@ int main(void) {
 	// initialise the tile maps
 	for (int x = 0; x < settings_p->map_sz; x++)
 		for (int y = 0; y < settings_p->map_sz; y++) {
-			maps_p->tiles[x][y].type = GRASS;
-			maps_p->tiles[x][y].tab_id = L_GRASS;
-			maps_p->tiles[x][y].tex_index = 0;
+			data_p->map_tiles[x][y].type = GRASS;
+			data_p->map_tiles[x][y].tab_id = L_GRASS;
+			data_p->map_tiles[x][y].tex_index = 0;
+			data_p->map_tiles[x][y].rand_x = 0;
+			data_p->map_tiles[x][y].rand_y = 0;
 		}
 	printf("Tile map initialised\n");
 
 	// allocate memory for the object map
-	if (!(maps_p->objs = malloc(settings_p->map_sz * sizeof(Sprite*)))) {
+	if (!(data_p->map_objs = malloc(settings_p->map_sz * sizeof(Sprite*)))) {
 		fprintf(stderr, "malloc() failed\n");
 		return -1;
 	}
 	for (int i = 0; i < settings_p->map_sz; i++)
-		if (!(maps_p->objs[i] = malloc(settings_p->map_sz * sizeof(Sprite)))) {
+		if (!(data_p->map_objs[i] = malloc(settings_p->map_sz * sizeof(Sprite)))) {
 			fprintf(stderr, "malloc() failed\n");
 			return -1;
 		}
@@ -391,13 +371,17 @@ int main(void) {
 	for (int x = 0; x < settings_p->map_sz; x++)
 		for (int y = 0; y < settings_p->map_sz; y++) {
 			if (OUT_OF_BOUNDS(x, y)) {
-				maps_p->objs[x][y].type = TREE;
-				maps_p->objs[x][y].tab_id = L_TREE;
-				maps_p->objs[x][y].tex_index = T_TREE;
+				data_p->map_objs[x][y].type = TREE;
+				data_p->map_objs[x][y].tab_id = L_TREE;
+				data_p->map_objs[x][y].tex_index = T_TREE;
+				data_p->map_objs[x][y].rand_x = RANDOM_X(x, y);
+				data_p->map_objs[x][y].rand_y = RANDOM_Y(x, y);
 			} else {
-				maps_p->objs[x][y].type = EMPTY;
-				maps_p->objs[x][y].tab_id = L_EMPTY;
-				maps_p->objs[x][y].tex_index = T_EMPTY;
+				data_p->map_objs[x][y].type = EMPTY;
+				data_p->map_objs[x][y].tab_id = L_EMPTY;
+				data_p->map_objs[x][y].tex_index = T_EMPTY;
+				data_p->map_objs[x][y].rand_x = 0;
+				data_p->map_objs[x][y].rand_y = 0;
 			}
 		}
 	printf("Object map initialised\n");
@@ -450,6 +434,8 @@ int main(void) {
 
 	data_p->mouse_x = 0;
 	data_p->mouse_y = 0;
+	data_p->mouse_prev_x = 0;
+	data_p->mouse_prev_y = 0;
 	data_p->mouse_col = 0;
 	data_p->mouse_row = 0;
 	data_p->mouse_adj_col = 0;
@@ -457,37 +443,30 @@ int main(void) {
 	data_p->mouse_button = 0;
 	data_p->old_t = 0;
 	data_p->pres_t = 0;
-	data_p->iso_x = 0;
-	data_p->iso_y = 0;
-	data_p->buf = 0;
-	data_p->view = 0;
-	data_p->zoom = 2;
-	data_p->prev_dir = 0;
-	data_p->cur_x = settings_p->map_sz / 2;
-	data_p->cur_y = settings_p->map_sz / 2;
-	data_p->mode = U_DEFAULT;
+	data_p->cam_iso_x = 0;
+	data_p->cam_iso_y = 0;
+	data_p->cam_buf_x = 0;
+	data_p->cam_buf_y = 0;
+	data_p->cam_view = 0;
+	data_p->cam_zoom = 2;
+	data_p->cam_drag = 0;
+	data_p->map_cur_x = settings_p->map_sz / 2;
+	data_p->map_cur_y = settings_p->map_sz / 2;
+	data_p->menu_mode = U_DEFAULT;
 	data_p->win_sz = WIN_SZ;
-	data_p->selector_sz = 1;
+	data_p->menu_selec_sz = 1;
 	data_p->npc_head = NULL;
-	data_p->adj_col_arr[0] = adj_col_0;
-	data_p->adj_col_arr[1] = adj_col_1;
-	data_p->adj_col_arr[2] = adj_col_2;
-	data_p->adj_col_arr[3] = adj_col_3;
-	data_p->adj_row_arr[0] = adj_row_0;
-	data_p->adj_row_arr[1] = adj_row_1;
-	data_p->adj_row_arr[2] = adj_row_2;
-	data_p->adj_row_arr[3] = adj_row_3;
-	data_p->unadj_col_arr[0] = unadj_col_0;
-	data_p->unadj_col_arr[1] = unadj_col_1;
-	data_p->unadj_col_arr[2] = unadj_col_2;
-	data_p->unadj_col_arr[3] = unadj_col_3;
-	data_p->unadj_row_arr[0] = unadj_row_0;
-	data_p->unadj_row_arr[1] = unadj_row_1;
-	data_p->unadj_row_arr[2] = unadj_row_2;
-	data_p->unadj_row_arr[3] = unadj_row_3;
+	data_p->adj_arr[0] = adj_col_row_0;
+	data_p->adj_arr[1] = adj_col_row_1;
+	data_p->adj_arr[2] = adj_col_row_2;
+	data_p->adj_arr[3] = adj_col_row_3;
+	data_p->unadj_arr[0] = unadj_col_row_0;
+	data_p->unadj_arr[1] = unadj_col_row_1;
+	data_p->unadj_arr[2] = unadj_col_row_2;
+	data_p->unadj_arr[3] = unadj_col_row_3;
 	printf("***Initialisation complete***\n");
 
-	animate(win, rend, &settings, &textures, &maps, &data);
+	animate(win, rend, &settings, &textures, &data);
 
 	printf("***Beginning deinitialisation***\n");
 	if (sv_settings(settings_p))
@@ -495,14 +474,14 @@ int main(void) {
 
 	//free tile arrays
 	for (int i = 0; i < settings_p->map_sz; i++)
-		free(maps_p->tiles[i]);
-	free(maps_p->tiles);
+		free(data_p->map_tiles[i]);
+	free(data_p->map_tiles);
 	printf("Tile map memory freed\n");
 
 	//free object arrays
 	for (int i = 0; i < settings_p->map_sz; i++)
-		free(maps_p->objs[i]);
-	free(maps_p->objs);
+		free(data_p->map_objs[i]);
+	free(data_p->map_objs);
 	printf("Object map memory freed\n");
 
 	// free the tile textures

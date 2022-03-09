@@ -5,36 +5,92 @@
 #define SCREEN_U (settings_p->win_h / settings_p->pan_sens)
 #define SCREEN_D (settings_p->win_h - SCREEN_U)
 
-enum directions {CENTRE, R, UR, U, UL, L, DL, D, DR};
+void view_adj(Data* data_p, int* x, int* y) {
+	int adj_x = 0;
+	int adj_y = 0;
+	switch (data_p->cam_view) {
+		case 0:
+			adj_x = *x;
+			adj_y = *y;
+			break;
+		case 1:
+			adj_x = *y;
+			adj_y = -*x;
+			break;
+		case 2:
+			adj_x = -*x;
+			adj_y = -*y;
+			break;
+		case 3:
+			adj_x = -*y;
+			adj_y = *x;
+			break;
+	}
 
-// returns the edge-pan direction based on the mouse position
-int direction(Settings* settings_p, Data* data_p) {
+	*x = adj_x;
+	*y = adj_y;
+}
+
+int legal(Settings* settings_p, Data* data_p, int x, int y) {
+	view_adj(data_p, &x, &y);
+
+	// UR when view == 0
+	if (y < 0 && data_p->map_cur_y <= GAP)
+		return 0;
+	// UL when view == 0
+	if (x < 0 && data_p->map_cur_x <= GAP)
+		return 0;
+	// DL when view == 0
+	if (y > 0 && data_p->map_cur_y >= settings_p->map_sz - data_p->win_sz - GAP)
+		return 0;
+	// DR when view == 0
+	if (x > 0 && data_p->map_cur_x >= settings_p->map_sz - data_p->win_sz - GAP)
+		return 0;
+
+	return 1;
+}
+
+int pan(Settings* settings_p, Data* data_p) {
 	if ((data_p->mouse_x >= SCREEN_R && data_p->mouse_y <= SCREEN_U * 2)
-			|| (data_p->mouse_x >= SCREEN_R - SCREEN_L && data_p->mouse_y <= SCREEN_U))
-		return UR;
-	if ((data_p->mouse_x <= SCREEN_L && data_p->mouse_y <= SCREEN_U * 2)
-			|| (data_p->mouse_x <= SCREEN_L * 2 && data_p->mouse_y <= SCREEN_U))
-		return UL;
-	if ((data_p->mouse_x <= SCREEN_L && data_p->mouse_y >= SCREEN_D - SCREEN_U)
-			|| (data_p->mouse_x <= SCREEN_L * 2 && data_p->mouse_y >= SCREEN_D))
-		return DL;
-	if ((data_p->mouse_x >= SCREEN_R && data_p->mouse_y >= SCREEN_D - SCREEN_U)
-			|| (data_p->mouse_x >= SCREEN_R - SCREEN_L && data_p->mouse_y >= SCREEN_D))
-		return DR;
-	if (data_p->mouse_x >= SCREEN_R)
-		return R;
-	if (data_p->mouse_y <= SCREEN_U)
-		return U;
-	if (data_p->mouse_x <= SCREEN_L)
-		return L;
-	if (data_p->mouse_y >= SCREEN_D)
-		return D;
-	return CENTRE;
+			|| (data_p->mouse_x >= SCREEN_R - SCREEN_L && data_p->mouse_y <= SCREEN_U)) {
+		data_p->cam_buf_y -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		return 0;
+	} else if ((data_p->mouse_x <= SCREEN_L && data_p->mouse_y <= SCREEN_U * 2)
+			|| (data_p->mouse_x <= SCREEN_L * 2 && data_p->mouse_y <= SCREEN_U)) {
+		data_p->cam_buf_x -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		return 0;
+	} else if ((data_p->mouse_x <= SCREEN_L && data_p->mouse_y >= SCREEN_D - SCREEN_U)
+			|| (data_p->mouse_x <= SCREEN_L * 2 && data_p->mouse_y >= SCREEN_D)) {
+		data_p->cam_buf_y += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		return 0;
+	} else if ((data_p->mouse_x >= SCREEN_R && data_p->mouse_y >= SCREEN_D - SCREEN_U)
+			|| (data_p->mouse_x >= SCREEN_R - SCREEN_L && data_p->mouse_y >= SCREEN_D)) {
+		data_p->cam_buf_x += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		return 0;
+	} else if (data_p->mouse_x >= SCREEN_R) {
+		data_p->cam_buf_x += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4 / 2;
+		data_p->cam_buf_y -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4 / 2;
+		return 1;
+	} else if (data_p->mouse_y <= SCREEN_U) {
+		data_p->cam_buf_x -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		data_p->cam_buf_y -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		return 1;
+	} else if (data_p->mouse_x <= SCREEN_L) {
+		data_p->cam_buf_x -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4 / 2;
+		data_p->cam_buf_y += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4 / 2;
+		return 1;
+	} else if (data_p->mouse_y >= SCREEN_D) {
+		data_p->cam_buf_x += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		data_p->cam_buf_y += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		return 1;
+	}
+
+	return 1;
 }
 
 // returns the panning speed for the right direction
 float speed_r(Settings* settings_p, Data* data_p) {
-	return settings_p->pan_rate * ((float) (data_p->mouse_x - SCREEN_R) * settings_p->pan_accel / (float) (settings_p->win_w - SCREEN_R - 1) + 1) / 2;
+	return settings_p->pan_rate * ((float) (data_p->mouse_x - SCREEN_R) * settings_p->pan_accel / (float) (settings_p->win_w - SCREEN_R - 1) + 1) / 2.0;
 }
 
 // returns the panning speed for the up-right direction
@@ -64,7 +120,7 @@ float speed_ul(Settings* settings_p, Data* data_p) {
 
 // returns the panning speed for the left direction
 float speed_l(Settings* settings_p, Data* data_p) {
-	return settings_p->pan_rate * ((float) (SCREEN_L - data_p->mouse_x) * settings_p->pan_accel / (float) SCREEN_L + 1) / 2;
+	return settings_p->pan_rate * ((float) (SCREEN_L - data_p->mouse_x) * settings_p->pan_accel / (float) SCREEN_L + 1) / 2.0;
 }
 
 // returns the panning speed for the down-left direction
@@ -92,221 +148,72 @@ float speed_dr(Settings* settings_p, Data* data_p) {
 		return y_rate;
 }
 
-int pan_legal(Settings* settings_p, Data* data_p, int dir) {
-	// UR when view == 0
-	if (dir == 0 && data_p->cur_y > GAP)
-		return 1;
-	// UL when view == 0
-	if (dir == 1 && data_p->cur_x > GAP)
-		return 1;
-	// DL when view == 0
-	if (dir == 2 && data_p->cur_y < settings_p->map_sz - data_p->win_sz - GAP)
-		return 1;
-	// DR when view == 0
-	if (dir == 3 && data_p->cur_x < settings_p->map_sz - data_p->win_sz - GAP)
-		return 1;
+//float speed(Settings* settings_p, int mouse_pos, int screen_pos, 
 
-	return 0;
+void map_move(Settings* settings_p, Data* data_p, int x, int y) {
+	view_adj(data_p, &x, &y);
+	data_p->map_cur_x += x;
+	data_p->map_cur_y += y;
 }
 
-
-// pans the camera up and right
-void pan_ur(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (0 + data_p->view) % 4))
-		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_ur(settings_p, data_p);
-
-	if (data_p->buf >= BUF_SZ) {
-		data_p->iso_y -= data_p->buf / BUF_SZ;
-		data_p->buf -= data_p->buf /  BUF_SZ * BUF_SZ;
-	}
+int sign(int val) {
+	return (val > 0) - (val < 0);
 }
 
-// pans the camera up and left
-void pan_ul(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (1 + data_p->view) % 4))
-		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_ul(settings_p, data_p);
+void cam_pan(Settings* settings_p, Data* data_p) {
+	int ortho = 0;
 
-	if (data_p->buf >= BUF_SZ) {
-		data_p->iso_x -= data_p->buf / BUF_SZ;
-		data_p->buf -= data_p->buf /  BUF_SZ * BUF_SZ;
-	}
-}
+	if (data_p->cam_drag) {
+		int diff_iso_x = (data_p->mouse_x - data_p->mouse_prev_x) * BUF_SZ / 2;
+		int diff_iso_y = (data_p->mouse_prev_y - data_p->mouse_y) * BUF_SZ;
+		data_p->cam_buf_x += diff_iso_y - diff_iso_x;
+		data_p->cam_buf_y += diff_iso_x + diff_iso_y;
+	} else
+		ortho = pan(settings_p, data_p);
 
-// pans the camera down and left
-void pan_dl(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (2 + data_p->view) % 4))
-		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_dl(settings_p, data_p);
 
-	if (data_p->buf >= BUF_SZ) {
-		data_p->iso_y += data_p->buf / BUF_SZ;
-		data_p->buf -= data_p->buf /  BUF_SZ * BUF_SZ;
-	}
-}
+	if (ortho) {
+		if (legal(settings_p, data_p, data_p->cam_buf_x / BUF_SZ, data_p->cam_buf_y / BUF_SZ)) {
+			if (abs(data_p->cam_buf_x) >= BUF_SZ && abs(data_p->cam_buf_y) >= BUF_SZ) {
+				int min = abs(data_p->cam_buf_x) < abs(data_p->cam_buf_y) ? abs(data_p->cam_buf_x) : abs(data_p->cam_buf_y);
+				data_p->cam_iso_x += min / BUF_SZ * sign(data_p->cam_buf_x);
+				data_p->cam_buf_x -= min / BUF_SZ * sign(data_p->cam_buf_x) * BUF_SZ;
+				data_p->cam_iso_y += min / BUF_SZ * sign(data_p->cam_buf_y);
+				data_p->cam_buf_y -= min / BUF_SZ * sign(data_p->cam_buf_y) * BUF_SZ;
+			}
+		} else {
+			ortho = 0;
+		}
+	} 
 
-// pans the camera down and right
-void pan_dr(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (3 + data_p->view) % 4))
-		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_dr(settings_p, data_p);
-
-	if (data_p->buf >= BUF_SZ) {
-		data_p->iso_x += data_p->buf / BUF_SZ;
-		data_p->buf -= data_p->buf /  BUF_SZ * BUF_SZ;
-	}
-}
-
-// pans the camera right
-void pan_r(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (0 + data_p->view) % 4) && pan_legal(settings_p, data_p, (3 + data_p->view) % 4)) {
-		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_r(settings_p, data_p);
-
-		// allows camera to move in both isometric axes
-		// at the same time to avoid jittering
-		if (data_p->buf >= BUF_SZ) {
-			data_p->iso_x += data_p->buf / BUF_SZ;
-			data_p->iso_y -= data_p->buf / BUF_SZ;
-			data_p->buf -= data_p->buf /  BUF_SZ * BUF_SZ;
+	if (!ortho) {
+		if (abs(data_p->cam_buf_x) >= BUF_SZ && legal(settings_p, data_p, data_p->cam_buf_x / BUF_SZ, 0)) {
+			data_p->cam_iso_x += data_p->cam_buf_x / BUF_SZ;
+			data_p->cam_buf_x -= data_p->cam_buf_x / BUF_SZ * BUF_SZ;
 		}
 
-	} else {
-		pan_ur(settings_p, maps_p, data_p);
-		pan_dr(settings_p, maps_p, data_p);
-	}
-}
-
-// pans the camera up
-void pan_u(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (0 + data_p->view) % 4) && pan_legal(settings_p, data_p, (1 + data_p->view) % 4)) {
-		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_u(settings_p, data_p);
-
-		// allows camera to move in both isometric axes
-		// at the same time to avoid jittering
-		if (data_p->buf >= BUF_SZ) {
-			data_p->iso_x -= data_p->buf / BUF_SZ;
-			data_p->iso_y -= data_p->buf / BUF_SZ;
-			data_p->buf -= data_p->buf /  BUF_SZ * BUF_SZ;
+		if (abs(data_p->cam_buf_y) >= BUF_SZ && legal(settings_p, data_p, 0, data_p->cam_buf_y / BUF_SZ)) {
+			data_p->cam_iso_y += data_p->cam_buf_y / BUF_SZ;
+			data_p->cam_buf_y -= data_p->cam_buf_y / BUF_SZ * BUF_SZ;
 		}
 
-	} else {
-		pan_ur(settings_p, maps_p, data_p);
-		pan_ul(settings_p, maps_p, data_p);
-	}
-}
+		if (data_p->cam_buf_x >= BUF_SZ || data_p->cam_buf_x <= -BUF_SZ)
+				data_p->cam_buf_x -= data_p->cam_buf_x / BUF_SZ * BUF_SZ;
 
-// pans the camera left
-void pan_l(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (1 + data_p->view) % 4) && pan_legal(settings_p, data_p, (2 + data_p->view) % 4)) {
-		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_l(settings_p, data_p);
-
-		// allows camera to move in both isometric axes
-		// at the same time to avoid jittering
-		if (data_p->buf >= BUF_SZ) {
-			data_p->iso_x -= data_p->buf / BUF_SZ;
-			data_p->iso_y += data_p->buf / BUF_SZ;
-			data_p->buf -= data_p->buf /  BUF_SZ * BUF_SZ;
-		}
-
-	} else {
-		pan_ul(settings_p, maps_p, data_p);
-		pan_dl(settings_p, maps_p, data_p);
-	}
-}
-
-// pans the camera down
-void pan_d(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	if (pan_legal(settings_p, data_p, (2 + data_p->view) % 4) && pan_legal(settings_p, data_p, (3 + data_p->view) % 4)) {
-		data_p->buf += (data_p->pres_t - data_p->old_t) * speed_d(settings_p, data_p);
-
-		// allows camera to move in both isometric axes
-		// at the same time to avoid jittering
-		if (data_p->buf >= BUF_SZ) {
-			data_p->iso_x += data_p->buf / BUF_SZ;
-			data_p->iso_y += data_p->buf / BUF_SZ;
-			data_p->buf = 0;
-		}
-
-	} else {
-		pan_dl(settings_p, maps_p, data_p);
-		pan_dr(settings_p, maps_p, data_p);
-	}
-}
-
-void map_move(Settings* settings_p, Data* data_p, int dir) {
-	if (pan_legal(settings_p, data_p, dir))
-		switch (dir) {
-			case 0:
-				// move the map cursor up and right
-				data_p->cur_y--;
-				break;
-			case 1:
-				// move the map cursor up and left
-				data_p->cur_x--;
-				break;
-			case 2:
-				// move the map cursor down and left
-				data_p->cur_y++;
-				break;
-			case 3:
-				// move the map cursor down and right
-				data_p->cur_x++;
-				break;
-		}
-}
-
-void cam_pan(Settings* settings_p, Maps* maps_p, Data* data_p) {
-	int cur_dir = direction(settings_p, data_p);
-
-	// resets the iso buffer
-	if (data_p->prev_dir != cur_dir)
-		data_p->buf = 0;
-
-	// check if the mouse is on the edge of the screen and, if so, pan the camera
-	switch (cur_dir) {
-		case CENTRE:
-			break;
-		case R:
-			pan_r(settings_p, maps_p, data_p);
-			break;
-		case UR:
-			pan_ur(settings_p, maps_p, data_p);
-			break;
-		case U:
-			pan_u(settings_p, maps_p, data_p);
-			break;
-		case UL:
-			pan_ul(settings_p, maps_p, data_p);
-			break;
-		case L:
-			pan_l(settings_p, maps_p, data_p);
-			break;
-		case DL:
-			pan_dl(settings_p, maps_p, data_p);
-			break;
-		case D:
-			pan_d(settings_p, maps_p, data_p);
-			break;
-		case DR:
-			pan_dr(settings_p, maps_p, data_p);
-			break;
+		if (data_p->cam_buf_y >= BUF_SZ || data_p->cam_buf_y <= -BUF_SZ)
+				data_p->cam_buf_y -= data_p->cam_buf_y / BUF_SZ * BUF_SZ;
 	}
 
 	// moves the map cursor on the x and y axes
 	// if the camera has panned a whole tile's width or height,
 	// reset the x or y offset and change the map cursor
-	if (data_p->iso_x >= ZOOM_SCALE(TILE_H)) {
-		data_p->iso_x -= ZOOM_SCALE(TILE_H);
-		map_move(settings_p, data_p, (3 + data_p->view) % 4);
-	} else if (data_p->iso_x <= -ZOOM_SCALE(TILE_H)) {
-		data_p->iso_x += ZOOM_SCALE(TILE_H);
-		map_move(settings_p, data_p, (1 + data_p->view) % 4);
+	while (abs(data_p->cam_iso_x) >= ZOOM_SCALE(TILE_H)) {
+		map_move(settings_p, data_p, sign(data_p->cam_iso_x), 0);
+		data_p->cam_iso_x -= ZOOM_SCALE(TILE_H) * sign(data_p->cam_iso_x);
 	}
 
-	if (data_p->iso_y >= ZOOM_SCALE(TILE_H)) {
-		data_p->iso_y -= ZOOM_SCALE(TILE_H);
-		map_move(settings_p, data_p, (2 + data_p->view) % 4);
-	} else if (data_p->iso_y <= -ZOOM_SCALE(TILE_H)) {
-		data_p->iso_y += ZOOM_SCALE(TILE_H);
-		map_move(settings_p, data_p, (0 + data_p->view) % 4);
+	while (abs(data_p->cam_iso_y) >= ZOOM_SCALE(TILE_H)) {
+		map_move(settings_p, data_p, 0, sign(data_p->cam_iso_y));
+		data_p->cam_iso_y -= ZOOM_SCALE(TILE_H) * sign(data_p->cam_iso_y);
 	}
-
-	data_p->prev_dir = cur_dir;
 }
