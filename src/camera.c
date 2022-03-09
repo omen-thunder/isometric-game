@@ -50,105 +50,51 @@ int legal(Settings* settings_p, Data* data_p, int x, int y) {
 	return 1;
 }
 
+float speed(Settings* settings_p, Data* data_p) {
+	float right = (float) (data_p->mouse_x - SCREEN_R) * settings_p->pan_accel / (float) (settings_p->win_w - SCREEN_R - 1) + 1;
+	float up = (float) (SCREEN_U - data_p->mouse_y) * settings_p->pan_accel / (float) SCREEN_U + 1;
+	float left = (float) (SCREEN_L - data_p->mouse_x) * settings_p->pan_accel / (float) SCREEN_L + 1;
+	float down = (float) (data_p->mouse_y - SCREEN_D) * settings_p->pan_accel / (float) (settings_p->win_h - SCREEN_D - 1) + 1;
+	return fmax(fmax(right, left), fmax(up, down)) * BUF_SZ / settings_p->pan_rate;
+}
+
 int pan(Settings* settings_p, Data* data_p) {
 	if ((data_p->mouse_x >= SCREEN_R && data_p->mouse_y <= SCREEN_U * 2)
 			|| (data_p->mouse_x >= SCREEN_R - SCREEN_L && data_p->mouse_y <= SCREEN_U)) {
-		data_p->cam_buf_y -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		data_p->cam_buf_y -= (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p);
 		return 0;
 	} else if ((data_p->mouse_x <= SCREEN_L && data_p->mouse_y <= SCREEN_U * 2)
 			|| (data_p->mouse_x <= SCREEN_L * 2 && data_p->mouse_y <= SCREEN_U)) {
-		data_p->cam_buf_x -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		data_p->cam_buf_x -= (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p);
 		return 0;
 	} else if ((data_p->mouse_x <= SCREEN_L && data_p->mouse_y >= SCREEN_D - SCREEN_U)
 			|| (data_p->mouse_x <= SCREEN_L * 2 && data_p->mouse_y >= SCREEN_D)) {
-		data_p->cam_buf_y += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		data_p->cam_buf_y += (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p);
 		return 0;
 	} else if ((data_p->mouse_x >= SCREEN_R && data_p->mouse_y >= SCREEN_D - SCREEN_U)
 			|| (data_p->mouse_x >= SCREEN_R - SCREEN_L && data_p->mouse_y >= SCREEN_D)) {
-		data_p->cam_buf_x += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		data_p->cam_buf_x += (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p);
 		return 0;
 	} else if (data_p->mouse_x >= SCREEN_R) {
-		data_p->cam_buf_x += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4 / 2;
-		data_p->cam_buf_y -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4 / 2;
+		data_p->cam_buf_x += (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p) / 2;
+		data_p->cam_buf_y -= (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p) / 2;
 		return 1;
 	} else if (data_p->mouse_y <= SCREEN_U) {
-		data_p->cam_buf_x -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
-		data_p->cam_buf_y -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		data_p->cam_buf_x -= (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p);
+		data_p->cam_buf_y -= (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p);
 		return 1;
 	} else if (data_p->mouse_x <= SCREEN_L) {
-		data_p->cam_buf_x -= (data_p->pres_t - data_p->old_t) * BUF_SZ / 4 / 2;
-		data_p->cam_buf_y += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4 / 2;
+		data_p->cam_buf_x -= (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p) / 2;
+		data_p->cam_buf_y += (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p) / 2;
 		return 1;
 	} else if (data_p->mouse_y >= SCREEN_D) {
-		data_p->cam_buf_x += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
-		data_p->cam_buf_y += (data_p->pres_t - data_p->old_t) * BUF_SZ / 4;
+		data_p->cam_buf_x += (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p);
+		data_p->cam_buf_y += (data_p->pres_t - data_p->old_t) * speed(settings_p, data_p);
 		return 1;
 	}
 
 	return 1;
 }
-
-// returns the panning speed for the right direction
-float speed_r(Settings* settings_p, Data* data_p) {
-	return settings_p->pan_rate * ((float) (data_p->mouse_x - SCREEN_R) * settings_p->pan_accel / (float) (settings_p->win_w - SCREEN_R - 1) + 1) / 2.0;
-}
-
-// returns the panning speed for the up-right direction
-float speed_ur(Settings* settings_p, Data* data_p) {
-	float x_rate = settings_p->pan_rate * ((float) (data_p->mouse_x - SCREEN_R) * settings_p->pan_accel / (float) (settings_p->win_w - SCREEN_R - 1) + 1);
-	float y_rate = settings_p->pan_rate * ((float) (SCREEN_U - data_p->mouse_y) * settings_p->pan_accel / (float) SCREEN_U + 1);
-	if (x_rate > y_rate)
-		return x_rate;
-	else
-		return y_rate;
-}
-
-// returns the panning speed for the up direction
-float speed_u(Settings* settings_p, Data* data_p) {
-	return settings_p->pan_rate * ((float) (SCREEN_U - data_p->mouse_y) * settings_p->pan_accel / (float) SCREEN_U + 1);
-}
-
-// returns the panning speed for the up-left direction
-float speed_ul(Settings* settings_p, Data* data_p) {
-	float x_rate = settings_p->pan_rate * ((float) (SCREEN_L - data_p->mouse_x) * settings_p->pan_accel / (float) SCREEN_L + 1);
-	float y_rate = settings_p->pan_rate * ((float) (SCREEN_U - data_p->mouse_y) * settings_p->pan_accel / (float) SCREEN_U + 1);
-	if (x_rate > y_rate)
-		return x_rate;
-	else
-		return y_rate;
-}
-
-// returns the panning speed for the left direction
-float speed_l(Settings* settings_p, Data* data_p) {
-	return settings_p->pan_rate * ((float) (SCREEN_L - data_p->mouse_x) * settings_p->pan_accel / (float) SCREEN_L + 1) / 2.0;
-}
-
-// returns the panning speed for the down-left direction
-float speed_dl(Settings* settings_p, Data* data_p) {
-	float x_rate = settings_p->pan_rate * ((float) (SCREEN_L - data_p->mouse_x) * settings_p->pan_accel / (float) SCREEN_L + 1);
-	float y_rate = settings_p->pan_rate * ((float) (data_p->mouse_y - SCREEN_D) * settings_p->pan_accel / (float) (settings_p->win_h - SCREEN_D - 1) + 1);
-	if (x_rate > y_rate)
-		return x_rate;
-	else
-		return y_rate;
-}
-
-// returns the panning speed for the down direction
-float speed_d(Settings* settings_p, Data* data_p) {
-	return settings_p->pan_rate * ((float) (data_p->mouse_y - SCREEN_D) * settings_p->pan_accel / (float) (settings_p->win_h - SCREEN_D - 1) + 1);
-}
-
-// returns the panning speed for the down-right direction
-float speed_dr(Settings* settings_p, Data* data_p) {
-	float x_rate = settings_p->pan_rate * ((float) (data_p->mouse_x - SCREEN_R) * settings_p->pan_accel / (float) (settings_p->win_w - SCREEN_R - 1) + 1);
-	float y_rate = settings_p->pan_rate * ((float) (data_p->mouse_y - SCREEN_D) * settings_p->pan_accel / (float) (settings_p->win_h - SCREEN_D - 1) + 1);
-	if (x_rate > y_rate)
-		return x_rate;
-	else
-		return y_rate;
-}
-
-//float speed(Settings* settings_p, int mouse_pos, int screen_pos, 
 
 void map_move(Settings* settings_p, Data* data_p, int x, int y) {
 	view_adj(data_p, &x, &y);
@@ -161,6 +107,7 @@ int sign(int val) {
 }
 
 void cam_pan(Settings* settings_p, Data* data_p) {
+	printf("speed: %f\n", speed(settings_p, data_p));
 	int ortho = 0;
 
 	if (data_p->cam_drag) {
