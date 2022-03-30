@@ -107,7 +107,6 @@ int sign(int val) {
 }
 
 void cam_pan(Settings* settings_p, Data* data_p) {
-	printf("speed: %f\n", speed(settings_p, data_p));
 	int ortho = 0;
 
 	if (data_p->cam_drag) {
@@ -134,12 +133,12 @@ void cam_pan(Settings* settings_p, Data* data_p) {
 	} 
 
 	if (!ortho) {
-		if (abs(data_p->cam_buf_x) >= BUF_SZ && legal(settings_p, data_p, data_p->cam_buf_x / BUF_SZ, 0)) {
+		if (abs(data_p->cam_buf_x) >= BUF_SZ && legal(settings_p, data_p, data_p->cam_buf_x, 0)) {
 			data_p->cam_iso_x += data_p->cam_buf_x / BUF_SZ;
 			data_p->cam_buf_x -= data_p->cam_buf_x / BUF_SZ * BUF_SZ;
 		}
 
-		if (abs(data_p->cam_buf_y) >= BUF_SZ && legal(settings_p, data_p, 0, data_p->cam_buf_y / BUF_SZ)) {
+		if (abs(data_p->cam_buf_y) >= BUF_SZ && legal(settings_p, data_p, 0, data_p->cam_buf_y)) {
 			data_p->cam_iso_y += data_p->cam_buf_y / BUF_SZ;
 			data_p->cam_buf_y -= data_p->cam_buf_y / BUF_SZ * BUF_SZ;
 		}
@@ -155,12 +154,16 @@ void cam_pan(Settings* settings_p, Data* data_p) {
 	// if the camera has panned a whole tile's width or height,
 	// reset the x or y offset and change the map cursor
 	while (abs(data_p->cam_iso_x) >= ZOOM_SCALE(TILE_H)) {
-		map_move(settings_p, data_p, sign(data_p->cam_iso_x), 0);
+		if(legal(settings_p, data_p, data_p->cam_iso_x, 0))
+			map_move(settings_p, data_p, sign(data_p->cam_iso_x), 0);
+
 		data_p->cam_iso_x -= ZOOM_SCALE(TILE_H) * sign(data_p->cam_iso_x);
 	}
 
 	while (abs(data_p->cam_iso_y) >= ZOOM_SCALE(TILE_H)) {
-		map_move(settings_p, data_p, 0, sign(data_p->cam_iso_y));
+		if(legal(settings_p, data_p, 0, data_p->cam_iso_y))
+			map_move(settings_p, data_p, 0, sign(data_p->cam_iso_y));
+
 		data_p->cam_iso_y -= ZOOM_SCALE(TILE_H) * sign(data_p->cam_iso_y);
 	}
 }

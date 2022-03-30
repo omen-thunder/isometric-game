@@ -20,6 +20,9 @@ void zoom_in(Settings* settings_p, Data* data_p) {
 			data_p->map_cur_y = GAP;
 		else if (new_y > settings_p->map_sz - data_p->win_sz - GAP)
 			data_p->map_cur_y = settings_p->map_sz - data_p->win_sz - GAP;
+
+		data_p->cam_iso_x *= 2;
+		data_p->cam_iso_y *= 2;
 	}
 }
 
@@ -44,7 +47,10 @@ void zoom_out(Settings* settings_p, Data* data_p) {
 			data_p->map_cur_y = GAP;
 		else if (new_y > settings_p->map_sz - data_p->win_sz - GAP)
 			data_p->map_cur_y = settings_p->map_sz - data_p->win_sz - GAP;
-		}
+
+		data_p->cam_iso_x /= 2;
+		data_p->cam_iso_y /= 2;
+	}
 }
 
 void rot_clockwise(Data* data_p) {
@@ -95,8 +101,10 @@ int event(Settings* settings_p, Data* data_p) {
 						data_p->menu_mode = U_WALL;
 						break;
 					case SDLK_p:
-						//data_p->menu_mode = U_PLEB;
-						push_npc(&data_p->npc_head, data_p->mouse_adj_col, data_p->mouse_adj_row);
+						data_p->menu_mode = U_PLEB;
+						break;
+					case SDLK_c:
+						data_p->menu_mode = U_COMMAND;
 						break;
 					case SDLK_SPACE:
 						data_p->menu_mode = U_DEFAULT;
@@ -188,6 +196,7 @@ void mouse(Settings* settings_p, Data* data_p) {
 	int y = data_p->mouse_adj_row;
 	int button = data_p->mouse_button;
 	int size = data_p->menu_selec_sz;
+	Npc* current = NULL;
 
 	switch (data_p->menu_mode) {
 		case U_DEFAULT:
@@ -199,8 +208,8 @@ void mouse(Settings* settings_p, Data* data_p) {
 						if (editable(settings_p, data_p, i, j)) {
 							data_p->map_tiles[i][j].type = WATER;
 							data_p->map_tiles[i][j].tab_id = L_WATER;
-							data_p->map_tiles[i][j].rand_x = 0;
-							data_p->map_tiles[i][j].rand_y = 0;
+							data_p->map_tiles[i][j].adj_x = 0;
+							data_p->map_tiles[i][j].adj_y = 0;
 						}
 
 				fix_indices(data_p->map_tiles, x, y, size + 1, WATER, WATER);
@@ -211,8 +220,8 @@ void mouse(Settings* settings_p, Data* data_p) {
 						if (data_p->map_tiles[i][j].type == WATER) {
 							data_p->map_tiles[i][j].type = GRASS;
 							data_p->map_tiles[i][j].tab_id = L_GRASS;
-							data_p->map_tiles[i][j].rand_x = 0;
-							data_p->map_tiles[i][j].rand_y = 0;
+							data_p->map_tiles[i][j].adj_x = 0;
+							data_p->map_tiles[i][j].adj_y = 0;
 						}
 
 				fix_indices(data_p->map_tiles, x, y, size + 1, WATER, WATER);
@@ -227,8 +236,8 @@ void mouse(Settings* settings_p, Data* data_p) {
 							data_p->map_objs[i][j].type = TREE;
 							data_p->map_objs[i][j].tab_id = L_TREE;
 							data_p->map_objs[i][j].tex_index = T_TREE;
-							data_p->map_objs[i][j].rand_x = RANDOM_X(i, j);
-							data_p->map_objs[i][j].rand_y = RANDOM_Y(i, j);
+							data_p->map_objs[i][j].adj_x = RANDOM_X(i, j);
+							data_p->map_objs[i][j].adj_y = RANDOM_Y(i, j);
 						}
 			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
 				for (int i = x - size; i <= x + size; i++)
@@ -237,8 +246,8 @@ void mouse(Settings* settings_p, Data* data_p) {
 							data_p->map_objs[i][j].type = EMPTY;
 							data_p->map_objs[i][j].tab_id = L_EMPTY;
 							data_p->map_objs[i][j].tex_index = T_EMPTY;
-							data_p->map_objs[i][j].rand_x = 0;
-							data_p->map_objs[i][j].rand_y = 0;
+							data_p->map_objs[i][j].adj_x = 0;
+							data_p->map_objs[i][j].adj_y = 0;
 						}
 			}
 			break;
@@ -249,8 +258,8 @@ void mouse(Settings* settings_p, Data* data_p) {
 						if (editable(settings_p, data_p, i, j)) {
 							data_p->map_objs[i][j].type = WALL;
 							data_p->map_objs[i][j].tab_id = L_WALL;
-							data_p->map_objs[i][j].rand_x = 0;
-							data_p->map_objs[i][j].rand_y = 0;
+							data_p->map_objs[i][j].adj_x = 0;
+							data_p->map_objs[i][j].adj_y = 0;
 						}
 
 				fix_indices(data_p->map_objs, x, y, size + 1, WALL, WALL);
@@ -261,8 +270,8 @@ void mouse(Settings* settings_p, Data* data_p) {
 							data_p->map_objs[i][j].type = EMPTY;
 							data_p->map_objs[i][j].tab_id = L_EMPTY;
 							data_p->map_objs[i][j].tex_index = T_EMPTY;
-							data_p->map_objs[i][j].rand_x = 0;
-							data_p->map_objs[i][j].rand_y = 0;
+							data_p->map_objs[i][j].adj_x = 0;
+							data_p->map_objs[i][j].adj_y = 0;
 						}
 
 				fix_indices(data_p->map_objs, x, y, size + 1, WALL, WALL);
@@ -282,8 +291,8 @@ void mouse(Settings* settings_p, Data* data_p) {
 				data_p->map_objs[x][y].type = BASE;
 				data_p->map_objs[x][y].tab_id = L_BASE;
 				data_p->map_objs[x][y].tex_index = T_BASE;
-				data_p->map_objs[x][y].rand_x = 0;
-				data_p->map_objs[x][y].rand_y = 0;
+				data_p->map_objs[x][y].adj_x = 0;
+				data_p->map_objs[x][y].adj_y = 0;
 			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT) && data_p->map_objs[x][y].type == BASE) {
 				for (int i = x - 1; i <= x + 1; i++)
 					for (int j = y - 1; j <= y + 1; j++)
@@ -291,14 +300,26 @@ void mouse(Settings* settings_p, Data* data_p) {
 
 				data_p->map_objs[x][y].tab_id = L_EMPTY;
 				data_p->map_objs[x][y].tex_index = T_EMPTY;
-				data_p->map_objs[x][y].rand_x = 0;
-				data_p->map_objs[x][y].rand_y = 0;
+				data_p->map_objs[x][y].adj_x = 0;
+				data_p->map_objs[x][y].adj_y = 0;
 			}
 			break;
 		case U_PLEB:
 			if (button == SDL_BUTTON(SDL_BUTTON_LEFT)) {
-				printf("pleb click!\n");
+				push_npc(&data_p->npc_head, data_p->mouse_adj_col, data_p->mouse_adj_row);
+			} else if (button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
+				del_npc(&data_p->npc_head, data_p->mouse_adj_col, data_p->mouse_adj_row);
 			}
 			break;
+		case U_COMMAND:
+			if (button == SDL_BUTTON(SDL_BUTTON_LEFT)) {
+				current = data_p->npc_head;
+				while (current) {
+					printf("settings goal!\n");
+					current->goal_col = data_p->mouse_adj_col;
+					current->goal_row = data_p->mouse_adj_row;
+					current = current->next;
+				}
+			}
 	}
 }

@@ -3,10 +3,15 @@
 #define Y_INTER(x, y, off) ((y) - ((x) / 2) - (off))
 
 void set_rect_xy (Settings* settings_p, Data* data_p, int col, int row, Sprite* sprite_p, SDL_Rect* rect_p) {
-	double iso_x = (data_p->cam_iso_x + cos(data_p->cam_view / 2.0 * M_PI) * ZOOM_SCALE(sprite_p->rand_x) + sin(data_p->cam_view / 2.0 * M_PI) * ZOOM_SCALE(sprite_p->rand_y));
-	double iso_y = (data_p->cam_iso_y + sin(data_p->cam_view / 2.0 * M_PI) * ZOOM_SCALE(sprite_p->rand_x) - cos(data_p->cam_view / 2.0 * M_PI) * ZOOM_SCALE(sprite_p->rand_y));
-	rect_p->x = ((col - row) * ZOOM_SCALE(TILE_W) / 2 + OFF_X - iso_x + iso_y) + ZOOM_SCALE(data_p->tab_rect_x[sprite_p->tab_id]);
-	rect_p->y = ((row + col) * ZOOM_SCALE(TILE_H) / 2 + OFF_Y - iso_x / 2.0 - iso_y / 2.0) + ZOOM_SCALE(data_p->tab_rect_y[sprite_p->tab_id]);
+	double iso_x = (data_p->cam_iso_x + cos(data_p->cam_view / 2.0 * M_PI) * ZOOM_SCALE(sprite_p->adj_x) + sin(data_p->cam_view / 2.0 * M_PI) * ZOOM_SCALE(sprite_p->adj_y));
+	double iso_y = (data_p->cam_iso_y + sin(data_p->cam_view / 2.0 * M_PI) * ZOOM_SCALE(sprite_p->adj_x) - cos(data_p->cam_view / 2.0 * M_PI) * ZOOM_SCALE(sprite_p->adj_y));
+	/*
+	if (col == 5 && row == 5)
+		printf("iso_x: %f, iso_y: %f\n", iso_x, iso_y);
+	*/
+
+	rect_p->x = (col - row) * ZOOM_SCALE(TILE_W) / 2 + OFF_X - iso_x + iso_y + ZOOM_SCALE(data_p->tab_rect_x[sprite_p->tab_id]);
+	rect_p->y = (row + col) * ZOOM_SCALE(TILE_H) / 2 + OFF_Y - iso_x / 2.0 - iso_y / 2.0 + ZOOM_SCALE(data_p->tab_rect_y[sprite_p->tab_id]);
 }
 
 void rend_sprite(SDL_Renderer* rend, Settings* settings_p, Data* data_p, int col, int row, Sprite* sprite_p) {
@@ -78,26 +83,26 @@ void rend_selector(SDL_Renderer* rend, Settings* settings_p, Textures* textures_
 	Sprite sprite_ur = {.type = MENU,
 						.tab_id = L_SELECTOR,
 						.tex_index = T_SEL_W_UR,
-						.rand_x = 0,
-						.rand_y = 0};
+						.adj_x = 0,
+						.adj_y = 0};
 
 	Sprite sprite_ul = {.type = MENU,
 						.tab_id = L_SELECTOR,
 						.tex_index = T_SEL_W_UL,
-						.rand_x = 0,
-						.rand_y = 0};
+						.adj_x = 0,
+						.adj_y = 0};
 
 	Sprite sprite_dl = {.type = MENU,
 						.tab_id = L_SELECTOR,
 						.tex_index = T_SEL_W_DL,
-						.rand_x = 0,
-						.rand_y = 0};
+						.adj_x = 0,
+						.adj_y = 0};
 
 	Sprite sprite_dr = {.type = MENU,
 						.tab_id = L_SELECTOR,
 						.tex_index = T_SEL_W_DR,
-						.rand_x = 0,
-						.rand_y = 0};
+						.adj_x = 0,
+						.adj_y = 0};
 
 	if (!legal) {
 		sprite_ur.tex_index += 4;
@@ -147,8 +152,8 @@ int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures*
 		// render the npcs
 		Npc* current = data_p->npc_head;
 		while (current) {
-			adj_col = current->col;
-			adj_row = current->row;
+			adj_col = current->start_col;
+			adj_row = current->start_row;
 			(*data_p->unadj_arr[data_p->cam_view]) (data_p, &adj_col, &adj_row);
 			rend_sprite(rend, settings_p, data_p, adj_col, adj_row, &current->sprite);
 			current = current->next;
@@ -178,6 +183,7 @@ int animate(SDL_Window* win, SDL_Renderer* rend, Settings* settings_p, Textures*
 
 		mouse(settings_p, data_p);
 		cam_pan(settings_p, data_p);
+		move_npcs(settings_p, data_p, data_p->npc_head);
 	}
 
 	return 0;

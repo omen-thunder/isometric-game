@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <SDL2/SDL_thread.h>
 #include <math.h>
 #include <stdint.h>
 
@@ -44,7 +43,7 @@ enum tab_id_enum {L_EMPTY = -1, L_GRASS, L_WATER, L_TREE, L_WALL, L_BASE, L_SELE
 enum obj_tex_enum {T_EMPTY = -1, T_TREE, T_BASE};
 
 // enumerations for the menu modes
-enum mode_enum {U_DEFAULT, U_WATER, U_TREE, U_BASE, U_WALL, U_PLEB};
+enum mode_enum {U_DEFAULT, U_WATER, U_TREE, U_BASE, U_WALL, U_PLEB, U_COMMAND};
 
 typedef struct {
 	int win_w;
@@ -77,13 +76,17 @@ typedef struct {
 	int type;
 	int tab_id;
 	unsigned tex_index;
-	int rand_x;
-	int rand_y;
+	int adj_x;
+	int adj_y;
 } Sprite;
 
 typedef struct Npc_struct {
-	int col;
-	int row;
+	int start_col;
+	int start_row;
+	int goal_col;
+	int goal_row;
+	float buf_x;
+	float buf_y;
 	Sprite sprite;
 	struct Npc_struct* next;
 } Npc;
@@ -149,6 +152,8 @@ int editable(Settings* settings_p, Data* data_p, int x, int y);
 // in npc.c
 int push_npc(Npc** npc_head, int col, int row);
 void pop_npc(Npc** npc_head);
+void del_npc(Npc** npc_head, int col, int row);
+void move_npcs(Settings* settings_p, Data* data_p, Npc* npc_head);
 void print_npcs(Npc* npc_head);
 
 #endif

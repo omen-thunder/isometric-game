@@ -350,8 +350,8 @@ int main(void) {
 			data_p->map_tiles[x][y].type = GRASS;
 			data_p->map_tiles[x][y].tab_id = L_GRASS;
 			data_p->map_tiles[x][y].tex_index = 0;
-			data_p->map_tiles[x][y].rand_x = 0;
-			data_p->map_tiles[x][y].rand_y = 0;
+			data_p->map_tiles[x][y].adj_x = 0;
+			data_p->map_tiles[x][y].adj_y = 0;
 		}
 	printf("Tile map initialised\n");
 
@@ -374,14 +374,14 @@ int main(void) {
 				data_p->map_objs[x][y].type = TREE;
 				data_p->map_objs[x][y].tab_id = L_TREE;
 				data_p->map_objs[x][y].tex_index = T_TREE;
-				data_p->map_objs[x][y].rand_x = RANDOM_X(x, y);
-				data_p->map_objs[x][y].rand_y = RANDOM_Y(x, y);
+				data_p->map_objs[x][y].adj_x = RANDOM_X(x, y);
+				data_p->map_objs[x][y].adj_y = RANDOM_Y(x, y);
 			} else {
 				data_p->map_objs[x][y].type = EMPTY;
 				data_p->map_objs[x][y].tab_id = L_EMPTY;
 				data_p->map_objs[x][y].tex_index = T_EMPTY;
-				data_p->map_objs[x][y].rand_x = 0;
-				data_p->map_objs[x][y].rand_y = 0;
+				data_p->map_objs[x][y].adj_x = 0;
+				data_p->map_objs[x][y].adj_y = 0;
 			}
 		}
 	printf("Object map initialised\n");
