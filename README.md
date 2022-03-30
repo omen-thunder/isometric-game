@@ -3,14 +3,14 @@
 
 ## How to build from source
 
-**Requirements**
+### Requirements
 
-<details>
 - GCC installed locally
 - GNU Make installed locally
 - SDL 2.X installed locally
 - SDL\_image 2.X installed locally
-</details>
+
+### Instructions
 
 Use the included Make file to build the executable from source.
 From inside the project's directory, run `make`.
